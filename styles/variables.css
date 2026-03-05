@@ -1,0 +1,24 @@
+:root {
+  --cream: #F7F3ED;
+  --linen: #EFE9DF;
+  --green-deep: #1E3A2F;
+  --green-mid: #2D5241;
+  --green-soft: #4A7A62;
+  --amber: #B87C4C;
+  --amber-light: #D4A574;
+  --charcoal: #2C2C27;
+  --muted: #6B6456;
+  --border: #D4C9B8;
+  --card: #FAF7F2;
+  --dark: #111B16;
+
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'Lato', sans-serif;
+
+  --radius: 2px;
+  --transition: 0.2s ease;
+
+  --section-pad: 7rem 2rem;
+  --max-w: 1100px;
+  --max-w-narrow: 820px;
+}
