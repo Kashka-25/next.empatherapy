@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button';
 
 const links = [
   { href: '/',            label: 'Home' },
+  { href: '/hopeium',      label: 'HOPEIUM' },
   { href: '/therapists',  label: 'Find a Guide' },
   { href: '/about',       label: 'Philosophy' },
   { href: '/fund',        label: 'Community Fund' },
