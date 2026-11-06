@@ -1,0 +1,173 @@
+/* HOPEIUM — calm, human and nature-led */
+.hopeium-page {
+  --hopeium-forest: #304b3c;
+  --hopeium-deep: #23392e;
+  --hopeium-sage: #879782;
+  --hopeium-cream: #f7f4ed;
+  --hopeium-paper: #eee9df;
+  --hopeium-gold: #c7a878;
+  --hopeium-ink: #2c3930;
+  --hopeium-muted: #69736a;
+  color: var(--hopeium-ink);
+  background: var(--hopeium-cream);
+}
+.hopeium-page * { box-sizing: border-box; }
+.hopeium-hero {
+  min-height: 690px;
+  height: min(790px, calc(100svh - 72px));
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  background: #33483a;
+  margin-top: 72px;
+}
+.hopeium-hero__image {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image: url('https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=2200&q=88');
+  background-size: cover;
+  background-position: center 54%;
+  transform: scale(1.015);
+}
+.hopeium-hero__wash {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(28,48,36,.82) 0%, rgba(35,57,43,.66) 43%, rgba(35,57,43,.16) 100%), linear-gradient(0deg, rgba(22,39,29,.34), transparent 48%);
+}
+.hopeium-hero__content {
+  width: min(690px, 84%);
+  margin-left: clamp(28px, 10vw, 150px);
+  padding: 72px 0 90px;
+  color: #fffdf8;
+}
+.hopeium-eyebrow, .hopeium-section__label {
+  color: var(--hopeium-gold);
+  text-transform: uppercase;
+  letter-spacing: .19em;
+  font-size: .66rem;
+  font-weight: 600;
+}
+.hopeium-hero h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(3.6rem, 7.2vw, 6.5rem);
+  line-height: .98;
+  letter-spacing: -.035em;
+  font-weight: 400;
+  margin: 1.35rem 0 1.45rem;
+}
+.hopeium-hero h1 em, .hopeium-page h2 em {
+  color: #e3c89f;
+  font-style: italic;
+  font-weight: 300;
+}
+.hopeium-hero__intro {
+  max-width: 510px;
+  color: rgba(255,253,248,.86);
+  font-size: 1rem;
+  line-height: 1.85;
+  font-weight: 300;
+}
+.hopeium-actions { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; margin-top: 2rem; }
+.hopeium-button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 13px 21px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-family: 'Lato', sans-serif;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .07em;
+  transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.hopeium-button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(24,38,28,.14); }
+.hopeium-button--light { color: var(--hopeium-deep); background: #f5eddf; border: 1px solid #f5eddf; }
+.hopeium-button--light:hover { background: #fffaf0; }
+.hopeium-button--forest { color: #fffdf8; background: var(--hopeium-forest); border: 1px solid var(--hopeium-forest); margin-top: 1rem; }
+.hopeium-button--forest:hover { background: #3d604b; }
+.hopeium-text-link { color: #fffdf8; font-size: .76rem; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.45); padding-bottom: 5px; }
+.hopeium-text-link span { margin-left: 7px; }
+.hopeium-hero__quiet { margin-top: 2rem; color: rgba(255,253,248,.64); font-size: .72rem; letter-spacing: .025em; }
+.hopeium-hero__caption { position: absolute; bottom: 27px; left: clamp(28px, 10vw, 150px); display: flex; align-items: center; gap: 9px; color: rgba(255,253,248,.76); font-size: .63rem; letter-spacing: .12em; text-transform: uppercase; }
+.hopeium-caption-dot { width: 6px; height: 6px; background: #d8bd91; border-radius: 50%; }
+.hopeium-section { padding: clamp(76px, 9vw, 126px) clamp(26px, 9vw, 140px); }
+.hopeium-intro { background: var(--hopeium-cream); }
+.hopeium-intro__grid, .hopeium-access__inner { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(35px, 8vw, 120px); align-items: start; margin-top: 24px; }
+.hopeium-page h2 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2.65rem, 4.8vw, 4.4rem);
+  line-height: 1.02;
+  letter-spacing: -.025em;
+  font-weight: 400;
+  color: var(--hopeium-forest);
+  margin: 1rem 0 1.5rem;
+}
+.hopeium-page h2 em { color: #82917d; }
+.hopeium-copy { max-width: 590px; }
+.hopeium-copy p, .hopeium-founder__content > p:not(.hopeium-lead) {
+  color: var(--hopeium-muted);
+  font-size: .94rem;
+  line-height: 1.9;
+  font-weight: 300;
+  margin: 0 0 1rem;
+}
+.hopeium-lead { color: #3d4d41; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.55rem; line-height: 1.45; margin: 0 0 1.15rem; }
+.hopeium-steps { background: var(--hopeium-paper); }
+.hopeium-section__heading { text-align: center; margin: 0 auto 3.5rem; }
+.hopeium-section__heading h2 { margin-bottom: .7rem; }
+.hopeium-section__heading > p { color: var(--hopeium-muted); font-size: .9rem; }
+.hopeium-step-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; max-width: 1180px; margin: 0 auto; }
+.hopeium-step { background: rgba(255,253,248,.7); border: 1px solid rgba(48,75,60,.1); padding: 30px; min-height: 230px; }
+.hopeium-step__number { color: #b28e61; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.5rem; font-style: italic; }
+.hopeium-step h3 { font-family: 'Cormorant Garamond', Georgia, serif; color: var(--hopeium-forest); font-size: 1.8rem; font-weight: 500; margin: 1.5rem 0 .7rem; }
+.hopeium-step p { color: var(--hopeium-muted); font-size: .84rem; line-height: 1.8; font-weight: 300; }
+.hopeium-founder { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1fr); gap: clamp(40px, 8vw, 110px); align-items: center; background: var(--hopeium-cream); }
+.hopeium-founder__photo {
+  min-height: 510px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(30,52,38,.04), rgba(30,52,38,.18)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=88') center/cover;
+  border-radius: 2px;
+}
+.hopeium-photo-note { position: absolute; bottom: 15px; left: 15px; background: rgba(247,244,237,.88); color: #526354; padding: 8px 11px; font-size: .62rem; letter-spacing: .04em; }
+.hopeium-founder__content { max-width: 560px; }
+.hopeium-founder__content h2 { margin-top: 1.2rem; }
+.hopeium-access { background: #e8e3d9; }
+.hopeium-access__inner { align-items: center; margin-top: 0; }
+.hopeium-text-link--dark { display: inline-block; color: var(--hopeium-forest); border-bottom-color: rgba(48,75,60,.4); margin-top: .6rem; }
+.hopeium-closing { background: var(--hopeium-forest); color: var(--hopeium-cream); text-align: center; padding: 88px 24px 38px; }
+.hopeium-closing__mark { width: 43px; height: 43px; display: grid; place-items: center; border: 1px solid rgba(215,183,131,.65); border-radius: 50%; color: var(--hopeium-gold); font-size: 1.25rem; margin: 0 auto 25px; }
+.hopeium-closing h2 { color: var(--hopeium-cream); margin: 20px 0 16px; }
+.hopeium-closing h2 em { color: #e3c89f; }
+.hopeium-closing > p:not(.hopeium-eyebrow):not(.hopeium-safety) { color: rgba(247,244,237,.72); font-size: .9rem; margin: 0 auto 25px; }
+.hopeium-safety { max-width: 690px; margin: 50px auto 0; color: rgba(247,244,237,.56); font-size: .68rem; line-height: 1.7; }
+.hopeium-parent { border-top: 1px solid rgba(247,244,237,.16); margin: 36px auto 0; padding-top: 20px; color: rgba(247,244,237,.56); text-transform: uppercase; letter-spacing: .18em; font-size: .58rem; }
+@media (max-width: 800px) {
+  .hopeium-hero { min-height: 680px; height: auto; }
+  .hopeium-hero__image { background-position: 58% center; }
+  .hopeium-hero__wash { background: linear-gradient(90deg, rgba(28,48,36,.84), rgba(35,57,43,.48)), linear-gradient(0deg, rgba(22,39,29,.3), transparent 55%); }
+  .hopeium-hero__content { margin: 0 auto; width: 86%; padding: 100px 0 110px; }
+  .hopeium-hero__caption { left: 7%; }
+  .hopeium-intro__grid, .hopeium-access__inner, .hopeium-founder { grid-template-columns: 1fr; gap: 28px; }
+  .hopeium-step-grid { grid-template-columns: 1fr; }
+  .hopeium-step { min-height: auto; }
+  .hopeium-founder__photo { min-height: 380px; order: 2; }
+  .hopeium-founder__content { order: 1; }
+}
+@media (max-width: 480px) {
+  .hopeium-hero h1 { font-size: clamp(3.15rem, 15vw, 4.5rem); }
+  .hopeium-hero__intro { font-size: .92rem; }
+  .hopeium-actions { align-items: flex-start; flex-direction: column; gap: 18px; }
+  .hopeium-section { padding: 72px 24px; }
+  .hopeium-founder__photo { min-height: 320px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hopeium-button { transition: none; }
+}
