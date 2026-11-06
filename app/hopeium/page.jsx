@@ -94,7 +94,6 @@ export default function HopeiumPage() {
 
       <section className="hopeium-founder hopeium-section">
         <div className="hopeium-founder__photo" role="img" aria-label="A quiet woodland clearing in soft natural light">
-          <span className="hopeium-photo-note">Founder portrait to be added</span>
         </div>
         <div className="hopeium-founder__content">
           <div className="hopeium-section__label">The founding beta</div>
