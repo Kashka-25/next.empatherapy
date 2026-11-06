@@ -5,6 +5,7 @@ const cols = [
     heading: 'Navigate',
     links: [
       { href: '/',            label: 'Home' },
+      { href: '/hopeium',      label: 'HOPEIUM' },
       { href: '/therapists',  label: 'Find a Guide' },
       { href: '/about',       label: 'Philosophy' },
       { href: '/fund',        label: 'Community Fund' },
