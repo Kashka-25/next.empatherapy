@@ -29,11 +29,10 @@ integration support and emotional wellness. Founder: Cassidy Dugan (GitHub Kashk
 - `lib/stripe.js` and `lib/supabase.js` are placeholders exporting `null`.
 
 ## Concepts and relations
-- **Alchemists and Seekers**: this exact phrase is not in this repo or in
-  Kashka-25/empatherapy. What the files show: "Find Alchemists" as a section of the future
-  Empatherapy website in the YOU note below, and "seekers" in Cassidy's bio
-  (`data/therapists.js`). The code still calls practitioners "guides"/"therapists". Confirm the
-  wording with Cassidy before using it in copy or renaming anything.
+- **Seekers and Alchemists** (confirmed by Cassidy, 8 Nov 2026): people who come to browse
+  the site are **Seekers**; practitioners shown on the site are **Alchemists**. The current
+  code and copy still say "guides"/"therapists" (e.g. `/therapists`, `data/therapists.js`,
+  "Find Your Guide"); move them to the new terms as sections are rebuilt.
 - **IntoTheLighthouse (I.T.L)**, formerly HOPEIUM: a separate project with its own repo
   (Kashka-25/IntoTheLighthouse), meant to integrate into Empatherapy later.
   The remote branch `feature/hopeium-gentle-landing` (5 commits adding a HOPEIUM landing

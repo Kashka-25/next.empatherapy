@@ -12,7 +12,8 @@ This repo leads that work; the legacy site (empatherapy.co) stays live until it'
 - [ ] Define the vision mock-up: the clearly labelled "vision in progress" view that the
       Creative Universe hub will show for Empatherapy
 - [ ] Rebuild the sections against that vision, one at a time
-- [ ] Confirm naming with Cassidy ("Alchemists and Seekers" vs current "guides"/"therapists")
+- [x] Confirm naming: visitors are **Seekers**, practitioners are **Alchemists** (Cassidy, 8 Nov 2026)
+- [ ] Move copy, routes and data from "guides"/"therapists" to Seekers/Alchemists as sections are rebuilt
 
 ## Later (named in README or code comments, not built)
 - [ ] Scheduling: Cal.com or Calendly instead of the mailto booking link
