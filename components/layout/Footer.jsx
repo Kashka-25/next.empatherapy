@@ -1,28 +1,29 @@
 import Link from 'next/link';
+import { DEMO, T } from '@/lib/demo';
+import { therapists } from '@/lib/data';
 
 const cols = [
   {
     heading: 'Navigate',
     links: [
       { href: '/',            label: 'Home' },
-      { href: '/therapists',  label: 'Find a Guide' },
+      { href: '/therapists',  label: DEMO ? T.findCta : 'Find a Guide' },
+      ...(DEMO ? [{ href: '/resources', label: 'Resources' }] : []),
       { href: '/about',       label: 'Philosophy' },
       { href: '/fund',        label: 'Community Fund' },
       { href: '/contact',     label: 'Contact' },
     ],
   },
   {
-    heading: 'Guides',
-    links: [
-      { href: '/therapists/cass-dugan', label: 'Cassidy Dugan' },
-    ],
+    heading: T.many,
+    links: therapists.map((t) => ({ href: `/therapists/${t.slug}`, label: t.name })),
   },
 ];
 
 export default function Footer() {
   return (
     <footer style={{ background: '#111B16', padding: '4.5rem 2.5rem 2.5rem' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '3rem', marginBottom: '3.5rem' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '3rem', marginBottom: '3.5rem' }} className="footer-grid">
         {/* Brand */}
         <div>
           <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.5rem', color: 'rgba(247,243,237,0.9)', marginBottom: '0.8rem' }}>
@@ -64,7 +65,7 @@ export default function Footer() {
           © 2026 Empatherapy. All rights reserved.
         </p>
         <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.73rem', fontWeight: 300, color: 'rgba(247,243,237,0.3)' }}>
-          AHHCA Registered · CPAT-Therapist Certified
+          {DEMO ? 'Vision in progress · example data' : 'AHHCA Registered · CPAT-Therapist Certified'}
         </p>
       </div>
     </footer>

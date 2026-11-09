@@ -3,10 +3,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/ui/Button';
+import { DEMO, T } from '@/lib/demo';
 
 const links = [
   { href: '/',            label: 'Home' },
-  { href: '/therapists',  label: 'Find a Guide' },
+  { href: '/therapists',  label: DEMO ? T.many : 'Find a Guide' },
+  ...(DEMO ? [{ href: '/resources', label: 'Resources' }] : []),
   { href: '/about',       label: 'Philosophy' },
   { href: '/fund',        label: 'Community Fund' },
   { href: '/contact',     label: 'Contact' },
@@ -14,6 +16,7 @@ const links = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const isHome = pathname === '/';
 
@@ -23,7 +26,9 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', h);
   }, []);
 
-  const solid = scrolled || !isHome;
+  useEffect(() => { setOpen(false); }, [pathname]);
+
+  const solid = scrolled || !isHome || open;
 
   return (
     <nav style={{
@@ -34,7 +39,7 @@ export default function Navbar() {
       backdropFilter: solid ? 'blur(14px)' : 'none',
       borderBottom: solid ? '1px solid rgba(212,193,184,0.4)' : '1px solid transparent',
       transition: 'all 0.4s ease',
-    }}>
+    }} className="site-nav">
       {/* Wordmark */}
       <Link href="/" style={{
         fontFamily: 'Cormorant Garamond, serif',
@@ -47,8 +52,20 @@ export default function Navbar() {
         Empatherapy
       </Link>
 
+      {/* Mobile menu toggle */}
+      <button
+        type="button"
+        className="nav-toggle"
+        aria-expanded={open}
+        aria-controls="site-nav-links"
+        onClick={() => setOpen((o) => !o)}
+        style={{ color: solid ? 'var(--green-deep)' : 'var(--cream)' }}
+      >
+        {open ? 'Close' : 'Menu'}
+      </button>
+
       {/* Links */}
-      <div style={{ display: 'flex', gap: '2.2rem', alignItems: 'center' }}>
+      <div id="site-nav-links" className={`nav-links${open ? ' open' : ''}`}>
         {links.map((l) => (
           <Link key={l.href} href={l.href} style={{
             fontFamily: 'Lato, sans-serif',
@@ -64,7 +81,9 @@ export default function Navbar() {
             {l.label}
           </Link>
         ))}
-        <Button href="/therapists" size="sm">Book a Session</Button>
+        {DEMO
+          ? <Button href="/therapists" size="sm">{T.findCta}</Button>
+          : <Button href="/therapists" size="sm">Book a Session</Button>}
       </div>
     </nav>
   );

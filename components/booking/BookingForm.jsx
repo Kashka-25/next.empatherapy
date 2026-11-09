@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Button from '@/components/ui/Button';
 import { buildMailto } from '@/lib/utils';
+import { DEMO } from '@/lib/demo';
 
 const inputStyle = {
   width: '100%',
@@ -35,15 +36,18 @@ export default function BookingForm({ guides = ['Cassidy Dugan'] }) {
 
   const handleSubmit = () => {
     if (!form.name || !form.email || !form.message) return;
-    window.location.href = buildMailto(form);
+    // Demo mode: nothing is sent anywhere.
+    if (!DEMO) window.location.href = buildMailto(form);
     setSent(true);
   };
 
   if (sent) {
     return (
       <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-        <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '2.2rem', color: 'var(--green-deep)', marginBottom: '0.8rem' }}>Thank you</p>
-        <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.88rem', color: 'var(--muted)', fontWeight: 300 }}>We'll be in touch soon.</p>
+        <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '2.2rem', color: 'var(--green-deep)', marginBottom: '0.8rem' }}>{DEMO ? 'This is a preview' : 'Thank you'}</p>
+        <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.88rem', color: 'var(--muted)', fontWeight: 300 }}>
+          {DEMO ? 'Nothing was sent. In the finished Empatherapy, your message would reach the Alchemist you chose.' : "We'll be in touch soon."}
+        </p>
       </div>
     );
   }
@@ -68,7 +72,7 @@ export default function BookingForm({ guides = ['Cassidy Dugan'] }) {
         <label style={labelStyle}>Interested in a session with</label>
         <select value={form.guide} onChange={set('guide')}
           style={{ ...inputStyle, appearance: 'none', cursor: 'pointer' }}>
-          <option value="">Select a guide (optional)</option>
+          <option value="">{DEMO ? 'Select an Alchemist (optional)' : 'Select a guide (optional)'}</option>
           {guides.map((g) => <option key={g} value={g}>{g}</option>)}
           <option value="Not sure yet">Not sure yet</option>
         </select>
@@ -83,7 +87,7 @@ export default function BookingForm({ guides = ['Cassidy Dugan'] }) {
           style={{ ...inputStyle, resize: 'vertical' }} />
       </div>
 
-      <Button onClick={handleSubmit}>Send Message</Button>
+      <Button onClick={handleSubmit}>{DEMO ? 'Send (preview only)' : 'Send Message'}</Button>
     </div>
   );
 }

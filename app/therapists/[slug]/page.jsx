@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { therapists, getTherapistBySlug } from '@/data/therapists';
+import { therapists, getTherapistBySlug } from '@/lib/data';
 import TherapistProfile from '@/components/therapists/TherapistProfile';
 
 export async function generateStaticParams() {

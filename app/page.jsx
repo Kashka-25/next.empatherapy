@@ -3,7 +3,8 @@ import Button from '@/components/ui/Button';
 import FadeIn from '@/components/ui/FadeIn';
 import Label from '@/components/ui/Label';
 import TherapistCard from '@/components/therapists/TherapistCard';
-import { therapists } from '@/data/therapists';
+import { therapists } from '@/lib/data';
+import { DEMO, T } from '@/lib/demo';
 
 export const metadata = {
   title: 'Empatherapy | Where Humanity is Our Medicine',
@@ -34,7 +35,7 @@ export default function HomePage() {
             Empatherapy connects you with guides who meet you where you are — in your emotions, in your body, in your becoming.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button href="/therapists" variant="amber" size="lg">Find Your Guide</Button>
+            <Button href="/therapists" variant="amber" size="lg">{T.findCta}</Button>
             <Button href="/about" variant="ghost" size="lg">Our Philosophy</Button>
           </div>
         </div>
@@ -73,17 +74,17 @@ export default function HomePage() {
         <div style={{ maxWidth: 'var(--max-w)', margin: '0 auto' }}>
           <FadeIn style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
             <div>
-              <Label>Our Guides</Label>
+              <Label>{DEMO ? 'Our Alchemists' : 'Our Guides'}</Label>
               <h2 style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: 'var(--green-deep)' }}>Find someone who resonates</h2>
             </div>
-            <Button href="/therapists" variant="outline">View All Guides</Button>
+            <Button href="/therapists" variant="outline">{`View All ${T.many}`}</Button>
           </FadeIn>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
-            {therapists.map((t) => <TherapistCard key={t.slug} therapist={t} />)}
-            {[1, 2].map((i) => (
+            {(DEMO ? therapists.slice(0, 3) : therapists).map((t) => <TherapistCard key={t.slug} therapist={t} />)}
+            {(DEMO ? [] : [1, 2]).map((i) => (
               <FadeIn key={i} delay={i} style={{ background: 'var(--card)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '420px', opacity: 0.45 }}>
                 <div style={{ width: '64px', height: '64px', borderRadius: '50%', border: '1px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.2rem', fontSize: '1.5rem', color: 'var(--border)' }}>+</div>
-                <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--muted)' }}>Guide Coming Soon</p>
+                <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--muted)' }}>{T.comingSoon}</p>
               </FadeIn>
             ))}
           </div>
@@ -131,7 +132,7 @@ export default function HomePage() {
           <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.93rem', color: 'var(--muted)', fontWeight: 300, lineHeight: 1.9, marginBottom: '2.5rem' }}>
             Explore our guides and try a session. No pressure. No long-term commitment. Just a space to be met.
           </p>
-          <Button href="/therapists" variant="amber" size="lg">Find Your Guide</Button>
+          <Button href="/therapists" variant="amber" size="lg">{T.findCta}</Button>
         </FadeIn>
       </section>
     </div>

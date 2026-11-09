@@ -2,10 +2,11 @@ import Button from '@/components/ui/Button';
 import FadeIn from '@/components/ui/FadeIn';
 import Label from '@/components/ui/Label';
 import TherapistCard from '@/components/therapists/TherapistCard';
-import { therapists } from '@/data/therapists';
+import { therapists } from '@/lib/data';
+import { DEMO, T } from '@/lib/demo';
 
 export const metadata = {
-  title: 'Find a Guide | Empatherapy',
+  title: `${DEMO ? 'Find an Alchemist' : 'Find a Guide'} | Empatherapy`,
 };
 
 export default function TherapistsPage() {
@@ -13,12 +14,12 @@ export default function TherapistsPage() {
     <div style={{ paddingTop: '72px' }}>
       {/* Header */}
       <div style={{ padding: '6rem 2rem 4.5rem', background: 'var(--green-deep)', textAlign: 'center' }}>
-        <Label>Our Guides</Label>
+        <Label>{DEMO ? 'Our Alchemists' : 'Our Guides'}</Label>
         <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(2.5rem,5vw,4rem)', fontWeight: 300, color: 'var(--cream)', marginBottom: '1.5rem' }}>
-          Find Your Guide
+          {T.findTitle}
         </h1>
         <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '1rem', color: 'rgba(247,243,237,0.62)', fontWeight: 300, maxWidth: '480px', margin: '0 auto', lineHeight: 1.85 }}>
-          Each guide brings their own unique presence. Trust your instinct — and if it feels right, try a session before committing.
+          {DEMO ? 'Each Alchemist brings their own unique presence.' : 'Each guide brings their own unique presence.'} Trust your instinct — and if it feels right, try a session before committing.
         </p>
       </div>
 
@@ -28,10 +29,10 @@ export default function TherapistsPage() {
           {therapists.map((t) => (
             <FadeIn key={t.slug}><TherapistCard therapist={t} /></FadeIn>
           ))}
-          {[1, 2, 3].map((i) => (
+          {(DEMO ? [1, 2] : [1, 2, 3]).map((i) => (
             <FadeIn key={i} delay={i} style={{ background: 'var(--card)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '460px', opacity: 0.42 }}>
               <div style={{ width: '70px', height: '70px', borderRadius: '50%', border: '1px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.3rem', fontSize: '1.6rem', color: 'var(--border)' }}>+</div>
-              <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--muted)' }}>Guide Coming Soon</p>
+              <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--muted)' }}>{T.comingSoon}</p>
             </FadeIn>
           ))}
         </div>

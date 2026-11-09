@@ -3,7 +3,7 @@ import TherapistTags from './TherapistTags';
 import Card from '@/components/ui/Card';
 
 export default function TherapistCard({ therapist }) {
-  const { name, slug, title, initials, shortBio, specialties, sessions } = therapist;
+  const { name, slug, title, initials, shortBio, specialties, sessions, avatar } = therapist;
   const trialSession = sessions?.find((s) => s.highlight);
 
   return (
@@ -12,7 +12,7 @@ export default function TherapistCard({ therapist }) {
         {/* Avatar */}
         <div style={{
           height: '280px',
-          background: 'linear-gradient(160deg, #2D5241, #1E3A2F)',
+          background: avatar ? `linear-gradient(160deg, ${avatar[1]}, ${avatar[0]})` : 'linear-gradient(160deg, #2D5241, #1E3A2F)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           position: 'relative',
         }}>

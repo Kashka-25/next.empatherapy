@@ -1,7 +1,7 @@
 import FadeIn from '@/components/ui/FadeIn';
 import Label from '@/components/ui/Label';
 import BookingForm from '@/components/booking/BookingForm';
-import { therapists } from '@/data/therapists';
+import { therapists } from '@/lib/data';
 
 export const metadata = {
   title: 'Contact | Empatherapy',

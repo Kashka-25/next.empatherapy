@@ -2,15 +2,16 @@ import TherapistTags from './TherapistTags';
 import Button from '@/components/ui/Button';
 import FadeIn from '@/components/ui/FadeIn';
 import Label from '@/components/ui/Label';
+import { DEMO } from '@/lib/demo';
 
 export default function TherapistProfile({ therapist }) {
-  const { name, title, initials, credentials, bio, approach, modalities, areas, sessions } = therapist;
+  const { name, title, initials, credentials, bio, approach, modalities, areas, sessions, headline, avatar } = therapist;
 
   return (
     <div>
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(160deg, #152B22, #1E3A2F, #2D5241)',
+        background: avatar ? `linear-gradient(160deg, #152B22, ${avatar[0]}, ${avatar[1]})` : 'linear-gradient(160deg, #152B22, #1E3A2F, #2D5241)',
         padding: '5rem 2rem', display: 'flex', flexDirection: 'column',
         alignItems: 'center', textAlign: 'center',
       }}>
@@ -46,7 +47,7 @@ export default function TherapistProfile({ therapist }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '5rem', marginBottom: '5rem' }}>
           <FadeIn>
             <Label>About</Label>
-            <h2 style={{ fontSize: '2rem', color: 'var(--green-deep)', marginBottom: '1.5rem' }}>A guide for those who feel deeply</h2>
+            <h2 style={{ fontSize: '2rem', color: 'var(--green-deep)', marginBottom: '1.5rem' }}>{headline ?? 'A guide for those who feel deeply'}</h2>
             {bio?.map((p, i) => (
               <p key={i} style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.92rem', color: 'var(--muted)', fontWeight: 300, lineHeight: 1.95, marginBottom: '1.1rem' }}>{p}</p>
             ))}
@@ -75,7 +76,7 @@ export default function TherapistProfile({ therapist }) {
 
         {/* Sessions */}
         <FadeIn style={{ marginBottom: '2.5rem' }}>
-          <Label>Book a Session</Label>
+          <Label>{DEMO ? 'Example Sessions' : 'Book a Session'}</Label>
           <h2 style={{ fontSize: '2.2rem', color: 'var(--green-deep)' }}>Session Options</h2>
         </FadeIn>
 
@@ -105,9 +106,13 @@ export default function TherapistProfile({ therapist }) {
 
         <FadeIn style={{ textAlign: 'center' }}>
           <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.82rem', color: 'var(--muted)', fontWeight: 300, marginBottom: '2rem' }}>
-            All sessions include a 15-minute follow-up available within 72 hours.
+            {DEMO
+              ? 'Example sessions and prices for the vision preview. Booking is not live yet.'
+              : 'All sessions include a 15-minute follow-up available within 72 hours.'}
           </p>
-          <Button href="/contact" variant="amber" size="lg">Book a Session</Button>
+          {DEMO
+            ? <Button href="/resources" variant="amber_outline" size="lg">Explore Resources</Button>
+            : <Button href="/contact" variant="amber" size="lg">Book a Session</Button>}
         </FadeIn>
       </div>
     </div>
