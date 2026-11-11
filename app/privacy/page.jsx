@@ -21,7 +21,7 @@ export default function PrivacyPage() {
       <section className="section">
         <div className="container container--narrow">
           <div className="stack" style={{ gap: '1.8rem' }}>
-            <DevNote>Draft for Cassidy to confirm. Before launch: check the database provider and region named in &ldquo;Where it is kept&rdquo;, and have a privacy professional review this notice against the Australian Privacy Act.</DevNote>
+            <DevNote>Retention periods confirmed by Cassidy (14 Nov 2026). Before launch: check the database provider and region named in &ldquo;Where it is kept&rdquo;, and have a privacy professional review this notice against the Australian Privacy Act.</DevNote>
 
             <div className="stack">
               <h2>If you are a Seeker</h2>
