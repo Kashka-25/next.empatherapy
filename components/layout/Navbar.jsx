@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/ui/Button';
-import { Sprig } from '@/components/art/Botanicals';
+import { TeaMark } from '@/components/art/Botanicals';
 
 const links = [
   { href: '/', label: 'Home' },
@@ -25,7 +25,7 @@ export default function Navbar() {
     <header className="site-nav">
       <nav className="site-nav__inner" aria-label="Main">
         <Link href="/" className="wordmark">
-          <Sprig color="var(--botanical)" />
+          <TeaMark />
           Empatherapy
         </Link>
 
