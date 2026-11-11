@@ -45,7 +45,7 @@ export default async function AccountsPage({ searchParams }) {
                     </form>
                   </td>
                   <td>{a.last_login_at ? new Date(a.last_login_at).toLocaleDateString('en-AU') : 'Never'}</td>
-                  <td>{a.active ? 'Active' : 'Deactivated'}</td>
+                  <td>{a.active ? 'Active' : 'Deactivated'}<br /><span style={{ color: 'var(--muted)' }}>Two-step: {a.two_step ? 'on' : 'off'}</span></td>
                   <td>
                     <div className="stack" style={{ gap: '0.5rem' }}>
                       <form action={updateAccountAction}>
@@ -53,6 +53,13 @@ export default async function AccountsPage({ searchParams }) {
                         <input type="hidden" name="active" value={a.active ? 'no' : 'yes'} />
                         <button type="submit" className="btn btn--soft btn--sm" disabled={a.id === me.id}>{a.active ? 'Deactivate' : 'Reactivate'}</button>
                       </form>
+                      {a.two_step && a.id !== me.id ? (
+                        <form action={updateAccountAction}>
+                          <input type="hidden" name="id" value={a.id} />
+                          <input type="hidden" name="reset_two_step" value="yes" />
+                          <button type="submit" className="btn btn--soft btn--sm">Reset two-step</button>
+                        </form>
+                      ) : null}
                       <form action={updateAccountAction} className="row">
                         <input type="hidden" name="id" value={a.id} />
                         <label className="sr-only" htmlFor={`pw-${a.id}`}>New password for {a.name}</label>

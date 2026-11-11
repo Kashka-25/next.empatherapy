@@ -359,3 +359,10 @@ fieldset { border: 0; }
 .photo-card { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1.2rem; align-items: start; padding: 1rem; background: var(--parchment); border-radius: var(--radius); }
 .photo-card img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius); display: block; }
 @media (max-width: 36rem) { .photo-card { grid-template-columns: 1fr; } .photo-card img { max-width: 12rem; } }
+
+/* ---------- Two-step sign-in setup ---------- */
+.steps { display: grid; gap: 1rem; padding-left: 1.3rem; }
+.secret-key { margin: 0.6rem 0 0.3rem; }
+.secret-key code { display: inline-block; font-size: 1.15rem; letter-spacing: 0.08em; background: var(--parchment); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.55rem 0.8rem; word-break: break-all; user-select: all; }
+.recovery-codes { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 0.6rem; }
+.recovery-codes code { display: block; font-size: 1.05rem; letter-spacing: 0.06em; background: var(--parchment); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.5rem 0.7rem; text-align: center; user-select: all; }

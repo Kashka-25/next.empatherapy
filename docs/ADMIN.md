@@ -9,6 +9,12 @@ The admin area is for the Empatherapy team only. It is **off by default** and no
   - **Editor:** Alchemist profiles, modality pages and weekly features. Editors never see applicants' personal details.
   - **Reviewer:** Alchemist applications only.
   - Who is signed in is re-read from the store on every request, so deactivating or demoting someone takes effect at once, even mid-session. The last active owner can never be deactivated or demoted. Passwords are stored only as salted scrypt hashes.
+- **Two-step sign-in** (each person turns it on under **My account**). After the password, a 6-digit code from an authenticator app (Google Authenticator, Microsoft Authenticator, Authy, 1Password and others) is needed. Standard time-based codes (RFC 6238), no extra service or dependency.
+  - Setup shows a key to type into the app (or a link that opens it on a phone) and only switches on once a correct code proves the app works. Eight one-time **recovery codes** are shown once, for a lost phone; only hashes are stored.
+  - A code works once, and each use must be newer than the last. Wrong codes are limited (5 per account and 10 per address in 15 minutes).
+  - Between password and code a person is only "half signed in", held in a separate short-lived cookie signed with a different key, so it can never open the admin on its own.
+  - An owner can **Reset two-step** for a locked-out person (not for themselves); turning it off yourself needs your password. Accounts without it get a gentle reminder on the overview. Everything is recorded in the activity log, never the codes.
+  - Known limits: no QR code (the key is typed in), the two-step key sits in the database record unencrypted (anyone who can read the database can already read everything else), and it is optional, not enforced.
 - **The setup password.** `ADMIN_PASSWORD_HASH` is a one-time way in, used only to create the first owner. It stops working the moment an active owner account exists. After that, remove it from the host's settings.
 - **Route protection.** Middleware sends anyone without a valid session to the sign-in page and marks admin pages `noindex` and `no-store`. Every page and action then checks the person's role again.
 - **Applications** (`/admin/applications`): read, add private notes, move through New, In review, Approved, Declined, or delete permanently for data-deletion requests. Approving does **not** publish anything.
@@ -31,7 +37,7 @@ The admin area is for the Empatherapy team only. It is **off by default** and no
 - Photo cropping or focal-point choice (photos are centred, slightly above the middle, so faces are kept). Alchemists uploading their own photos (today an admin uploads on their behalf).
 - Homepage content and image management, reviews moderation, IntoTheLighthouse content.
 - Email invitations and password-reset emails (an owner sets and shares a starting password privately instead).
-- Two-step sign-in (a second factor). Worth adding before more than a handful of people have accounts.
+- A QR code for setting up two-step sign-in, and a way to require it for owners.
 
 ## Storage drivers
 `lib/store/index.mjs` defines four methods (`list`, `get`, `put`, `remove`). Pages never talk to a database directly.
