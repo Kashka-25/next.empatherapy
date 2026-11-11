@@ -1,7 +1,7 @@
 # Empatherapy: progress and decisions
 
 The source of truth for what has been built, what has been decided, and what is still open.
-Update it at the end of every working session. Last updated: 13 Nov 2026.
+Update it at the end of every working session. Last updated: 14 Nov 2026.
 
 ## The product in one paragraph
 Empatherapy is a discovery and connection ecosystem. **Seekers** (people looking for understanding, support,
@@ -21,7 +21,7 @@ Tagline: **Discover new pathways to yourself.** Feeling: a cup of lemon and hone
 | 5. IntoTheLighthouse, personal offering, apply | Done as landing page and preview form. No live peer support. |
 | 6a. Admin foundation | Done: storage layer, sign-in, route protection, applications review, weekly features. See `docs/ADMIN.md` |
 | 6b. Admin content editing | Done: edit and create Alchemist profiles and modality pages, with publish rules and reset to original |
-| 6c. Production readiness | **Not started:** database driver, individual admin accounts, shared rate limiting, photo uploads, privacy notice |
+| 6c. Production readiness | Built, **not yet connected to a real database:** Supabase driver and schema, individual admin accounts with roles, shared rate limiting, privacy notice and retention rule. **Photo uploads not started.** |
 
 ## What works today
 - `/` warm homepage, then discovery invitation, this week's modalities, featured Alchemists, IntoTheLighthouse, philosophy, apply.
@@ -54,6 +54,7 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 - **Visual signature:** honey drip dividers, a hand-drawn sprig, a lemon slice, handwritten margin notes, soft sunlit window light. IntoTheLighthouse gets a calm evening palette with a lantern glow.
 
 ## Open questions for Cassidy
+0. **Privacy and retention (needs a decision before launch).** Proposed rule: declined applications deleted after 90 days; all others 12 months after last touched; spam-protection counters after 2 days. It is written on `/privacy` and enforced from `/admin/retention` (an owner clicks; nothing is automatic). Please confirm or change it, name the database provider and region, and have a privacy professional read `/privacy`. The site's fonts load from Google Fonts, so visitors' browsers contact Google; the notice says so and we can self-host the fonts if you prefer.
 1. **Founding profile accuracy.** Please check `data/alchemists.mjs` (search `confirm: true`): AHHCA and CPAT credentials and the prices were carried over from the old profile; which of your practices are formal training versus study or lived experience? Also write your own "what brought me here" story.
 2. **Mind Medicine Australia** was in the old profile and is **left out** on purpose, because it could imply psychedelic competence. Add it back only with exact wording you are comfortable with.
 3. **Healing Fund.** Keep the 10% commitment for all Alchemists, only for your own sessions, or retire it?
@@ -62,16 +63,15 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 6. **IntoTheLighthouse repo.** Should the page here link to its own repo or site when ready?
 
 ## Not built yet (and why)
-- **A production database.** The file driver cannot be used on a normal host (see `docs/ADMIN.md`, "Before this goes on a real host").
-- **Individual admin accounts and roles.** There is one shared admin password.
+- **A live database.** The Supabase driver and schema exist and are tested against a fake of the Supabase API, but no Supabase project has been created or connected yet (that needs Cassidy). See `docs/ADMIN.md`, "Going live".
+- **Photo uploads.** Needs a storage bucket and an image-safety decision (size, type, who may upload).
 - **Enquiries, bookings, reviews, favourites, Seeker accounts.**
 - **Images.** No photographs yet.
-- **Shared rate limiting.** The limiter is per server instance; production needs a shared one.
 
 ## How to run and test
 ```bash
 npm install
 npm run dev     # http://localhost:3000
-npm test        # 75 tests: matching, content, directory, validation, storage, sessions, passwords, rate limits, applications, features
+npm test        # 87 tests: matching, content, directory, validation, storage (file, memory, Supabase), sessions, passwords, rate limits, accounts and roles, retention, applications, features
 npm run build   # also runs lint
 ```

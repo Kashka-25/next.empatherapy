@@ -6,7 +6,7 @@ import { listApplications, STATUS_LABEL } from '@/lib/applications.mjs';
 export const metadata = { title: 'Applications' };
 
 export default async function ApplicationsPage({ searchParams }) {
-  await requireAdmin();
+  await requireAdmin('applications');
   const store = getStore();
   const apps = store ? await listApplications(store) : [];
 

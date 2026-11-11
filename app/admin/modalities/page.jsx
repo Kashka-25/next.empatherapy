@@ -6,7 +6,7 @@ import { loadContent } from '@/lib/content-store.mjs';
 export const metadata = { title: 'Modalities' };
 
 export default async function ModalitiesAdminPage({ searchParams }) {
-  await requireAdmin();
+  await requireAdmin('content');
   const store = getStore();
   const { modalities, alchemists, edited } = await loadContent(store);
 

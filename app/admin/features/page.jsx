@@ -31,7 +31,7 @@ function Row({ f, editable, name }) {
 }
 
 export default async function FeaturesPage({ searchParams }) {
-  await requireAdmin();
+  await requireAdmin('content');
   const store = getStore();
   const { modalities } = await loadContent(store);
   const name = (id) => modalities.find((m) => m.id === id)?.name ?? id;
