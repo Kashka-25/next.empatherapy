@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en-AU" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>The Golden Pause</title>
+<meta name="description" content="Preview of The Golden Pause, a 12-second optional opening film for the Empatherapy homepage. Not the live site.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3C19 10 26 15 26 21a10 10 0 0 1-20 0c0-6 7-11 10-18z' fill='%23D9A441' stroke='%23B9823E' stroke-width='1.5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Fonts never block the page or the film: fetched early here, applied by player.js (or by the noscript link). -->
+<link rel="preload" as="style" data-gp-fonts href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Nunito+Sans:wght@400;600;700&display=swap">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Nunito+Sans:wght@400;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="player.css">
+<!-- The page stays "no-js" (the calm still, no controls) until player.js has really started the player.
+     "gp-wait" only hides that fallback while the scripts load; if they never start the player, it is lifted. -->
+<script>(function (d) { var h = d.documentElement; h.className += ' gp-wait'; d.addEventListener('DOMContentLoaded', function () { h.className = h.className.replace(/\s*\bgp-wait\b/, ''); }); })(document);</script>
+</head>
+<body>
+<a class="skip-link" href="#hero">Skip past the film</a>
+
+<p class="preview-note" role="note">
+  <strong>Preview of The Golden Pause. Not the live site.</strong>
+  <span>The little mark at the end is provisional until Cassidy chooses the logo.</span>
+</p>
+
+<header class="mock-nav">
+  <div class="mock-nav__inner">
+    <span class="mock-wordmark">Empatherapy</span>
+    <p class="mock-links" aria-hidden="true">
+      <span>Discover Alchemists</span><span>Explore Modalities</span><span>IntoTheLighthouse</span><span>About</span>
+      <span class="mock-menu">Menu</span>
+    </p>
+  </div>
+</header>
+
+<main>
+  <!-- The Golden Pause stage. An optional moment: never a gate, nothing stored or measured.
+       All words are live HTML; the film itself has no words and no sound track. -->
+  <section class="gp" data-gp-stage data-gp-mode="loading" tabindex="-1"
+           aria-label="The Golden Pause, a short optional breathing moment">
+    <div class="gp__inner">
+      <!-- The film for screen readers: one static description (the picture is aria-hidden; nothing is announced on a timer). -->
+      <p class="sr-only" data-gp="description">About the film: a 12-second film, just if you like. Honey falls from a wooden dipper into a cup of chamomile tea with a slice of lemon. The words &ldquo;Take a gentle breath in&hellip;&rdquo; appear, then &ldquo;And slowly let it go&hellip;&rdquo;, with &ldquo;Breathe along if you like, or simply watch the honey.&rdquo; The view moves slowly into the golden honey, and ripples spread where it meets the lemon. Then the name Empatherapy appears, with &ldquo;Discover new pathways to yourself.&rdquo;</p>
+      <div class="gp__frame" data-gp="frame">
+        <video class="gp__video" data-gp="video" muted playsinline webkit-playsinline preload="none"
+               disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video>
+        <!-- the cup: reduced motion, Save-Data, slow or failed video, autoplay refused -->
+        <img class="gp__still" data-gp="still" alt="" aria-hidden="true" decoding="async" hidden>
+        <!-- the settled welcome plate: after Skip and at the end -->
+        <img class="gp__end" data-gp="end" alt="" aria-hidden="true" decoding="async" hidden>
+        <!-- the cup, by CSS alone, when the player is not running (no JavaScript, or player.js / cues.js did not load) -->
+        <div class="gp__fallback" aria-hidden="true"></div>
+
+        <div class="gp__ring" data-gp="ring" aria-hidden="true"></div>
+
+        <div class="gp__words" aria-hidden="true">
+          <span class="gp__backing" data-gp="words-backing"></span>
+          <p class="gp__line" data-gp="line-in"><span>Take a gentle</span> <span>breath in&hellip;</span></p>
+          <p class="gp__line" data-gp="line-out"><span>And slowly</span> <span>let it go&hellip;</span></p>
+        </div>
+
+        <!-- Shown instead of the moving film: reduced motion, Save-Data, slow or missing video, or no JavaScript.
+             Both lines here, with the permission line below in its usual place (shown fully in the calm state). -->
+        <div class="gp__calm" aria-hidden="true">
+          <span class="gp__backing gp__backing--calm" data-gp="calm-backing"></span>
+          <p><span>Take a gentle</span> <span>breath in&hellip;</span></p>
+          <p><span>And slowly</span> <span>let it go&hellip;</span></p>
+        </div>
+
+        <p class="gp__permission" data-gp="permission" aria-hidden="true"><span><span class="gp__l">Breathe along if you like,</span> <span class="gp__l">or simply watch the honey.</span></span></p>
+
+        <div class="gp__welcome" aria-hidden="true">
+          <div class="gp__welcome-inner">
+            <span class="gp__backing gp__backing--welcome" data-gp="welcome-backing"></span>
+            <!-- PROVISIONAL MARK: a placeholder until Cassidy chooses the logo.
+                 A honey drop under a soft half-sun of thin rays, honey and amber tones. No lotus, no house. -->
+            <svg class="gp__mark" data-gp="mark" viewBox="14 8 68 74" width="68" height="74" focusable="false">
+              <defs>
+                <linearGradient id="gp-drop-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#E8BE67"/>
+                  <stop offset="1" stop-color="#D9A441"/>
+                </linearGradient>
+              </defs>
+              <path d="M32 40 A16 16 0 0 1 64 40 Z" fill="#FAF3CE" stroke="#D9A441" stroke-width="1.4" stroke-linejoin="round"/>
+              <g stroke="#E8BE67" stroke-width="1.3" stroke-linecap="round" fill="none">
+                <path d="M28.6 31.96 L23.06 29.67"/>
+                <path d="M33.15 25.15 L28.91 20.91"/>
+                <path d="M39.96 20.6 L37.67 15.06"/>
+                <path d="M48 19 L48 13"/>
+                <path d="M56.04 20.6 L58.33 15.06"/>
+                <path d="M62.85 25.15 L67.09 20.91"/>
+                <path d="M67.4 31.96 L72.94 29.67"/>
+              </g>
+              <path d="M48 44 C51 51 59 58 59 67 A11 11 0 0 1 37 67 C37 58 45 51 48 44 Z" fill="url(#gp-drop-fill)" stroke="#B9823E" stroke-width="1.1" stroke-linejoin="round"/>
+              <ellipse cx="43.5" cy="65" rx="2" ry="3.2" fill="#FFFDF7" opacity=".6"/>
+            </svg>
+            <p class="gp__wordmark" data-gp="wordmark">Empatherapy</p>
+            <p class="gp__tagline" data-gp="tagline">Discover new pathways to yourself.</p>
+          </div>
+        </div>
+
+        <span class="gp__glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false"><path d="M9 6.5v11l8.5-5.5z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+
+      <div class="gp__bar">
+        <p class="gp__caption"><b>The Golden Pause</b> <span>12 seconds, just if you like</span></p>
+        <div class="gp__controls" role="group" aria-label="Film controls">
+          <button type="button" class="gp-btn" data-gp="toggle" data-state="pause">
+            <svg class="gp-ico gp-ico--pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6.5v11M15 6.5v11"/></svg>
+            <svg class="gp-ico gp-ico--play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8.5 6v12l9.5-6z" fill="currentColor"/></svg>
+            <span class="gp-btn__label">Pause</span>
+          </button>
+          <button type="button" class="gp-btn" data-gp="sound" aria-pressed="false">
+            <svg class="gp-ico gp-ico--muted" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 10l4 4M19.5 10l-4 4"/></svg>
+            <svg class="gp-ico gp-ico--sound" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/></svg>
+            <span class="gp-btn__label">Sound</span>
+          </button>
+          <button type="button" class="gp-btn" data-gp="skip" data-state="skip">
+            <svg class="gp-ico gp-ico--skip" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 6.5l7 5.5-7 5.5zM17.5 6.5v11"/></svg>
+            <svg class="gp-ico gp-ico--replay" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12a7 7 0 1 0 2.05-4.95"/><path d="M5 4.8v3.4h3.4"/></svg>
+            <span class="gp-btn__label">Skip</span>
+          </button>
+        </div>
+      </div>
+      <audio data-gp="audio" preload="none" crossorigin="anonymous" aria-hidden="true"></audio>
+    </div>
+  </section>
+
+  <section class="hero" id="hero" tabindex="-1" aria-labelledby="hero-title">
+    <div class="container hero__copy">
+      <span class="hand">welcome, come on in</span>
+      <h1 id="hero-title">Your journey starts <em>somewhere.</em></h1>
+      <p class="lede">Discover new pathways, meet people who care, and explore what resonates with you.</p>
+      <div class="row"><a class="btn btn--honey btn--lg" href="#rest">Begin your discovery</a></div>
+      <p class="hero__small">A few gentle questions. No sign-up needed.</p>
+    </div>
+  </section>
+
+  <section class="rest" id="rest" tabindex="-1" aria-label="About this preview">
+    <div class="container">
+      <p>On the live site, the rest of the homepage continues here: the discovery invitation, this week&rsquo;s modalities and featured Alchemists.</p>
+      <p>This preview stores nothing and measures nothing. No cookies, no analytics.</p>
+    </div>
+  </section>
+</main>
+
+<script src="cues.js"></script>
+<script src="player.js"></script>
+</body>
+</html>

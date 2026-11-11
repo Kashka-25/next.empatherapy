@@ -1,0 +1,91 @@
+(fonts: ok italic 400 20px Fraunces, ok italic 300 20px Fraunces, ok 400 20px Fraunces, ok 500 20px Fraunces, ok 400 20px "Nunito Sans", ok 600 20px "Nunito Sans", ok 700 20px "Nunito Sans", ok 500 20px Caveat, 5 Google Fonts responses cached for the run)
+PASS  wide: film autoplays muted
+PASS  wide: uses film-wide.mp4 (muted, playsinline, aria-hidden)  {"src":"http://127.0.0.1:8765/_test/film-wide.mp4","muted":true,"playsInline":true,"ariaHidden":"true","fmt":"wide","vfc":true}
+PASS  wide: clock sampled with requestVideoFrameCallback
+PASS  stage is a labelled region  {"tag":"SECTION","label":"The Golden Pause, a short optional breathing moment"}
+PASS  playback: rendered overlay time stays within ~1.5 frames of video.currentTime  max |video - rendered| = 20.2 ms over 30 samples (0.06s to 2.98s)
+PASS  playback: DOM matches stateAt(rendered time)  []
+PASS  screen readers: first breathing line announced politely  Take a gentle breath in…
+PASS  page scrolls while the film plays (not a gate)  {"y":669,"mode":"playing"}
+PASS  keyboard: tab order Pause, Sound, Skip, then the hero button  toggle | sound | skip | Begin your discovery
+PASS  hero button focusable, scrolled into view and not covered, while the film plays  {"inView":true,"hitIsButton":true,"mode":"playing"}
+PASS  keyboard: Enter on Pause pauses the film and the button reads Play  {"mode":"paused","paused":true,"label":"Play"}
+PASS  paused: the clock and every overlay hold still
+PASS  seeking: DOM matches stateAt(t) at 20 times  []
+PASS  cue: "Take a gentle breath in" fades in 0.3 to 1.0 and out 2.7 to 3.2
+PASS  cue: "And slowly let it go" fades in 3.2 to 3.9 and out 7.6 to 8.4
+PASS  cue: permission line in 0.6 to 1.4, out 7.6 to 8.4
+PASS  cue: ring 0.82 at inhale start, 1.0 at inhale end, 0.82 at exhale end, gone by 8.4  {"s03":0.82,"s30":1,"s80":0.82}
+PASS  cue: welcome mark 10.0 to 11.0, wordmark to 11.1, tagline 10.5 to 11.5
+PASS  cue: nothing over the picture at 9.0 (the meeting)
+PASS  wide: at full breath the ring stays clear of the permission line  {"ringBottom":585,"permissionTop":627,"gap":42}
+PASS  contrast (wide) lineIn: >= 4.5:1 over the worst case (black under the backing)  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.43,"backingAlphaAtWorstCorner":0.777,"ratioOverBlack":6.72,"ratioOverDarkHoney":7.89}
+PASS  contrast (wide) permission: >= 4.5:1 over the worst case (black under the backing)  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.491,"backingAlphaAtWorstCorner":0.75,"ratioOverBlack":6.26,"ratioOverDarkHoney":7.52}
+PASS  contrast (wide) lineOut: >= 4.5:1 over the worst case (black under the backing)  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.376,"backingAlphaAtWorstCorner":0.792,"ratioOverBlack":6.99,"ratioOverDarkHoney":8.1}
+PASS  contrast (wide) wordmark: >= 4.5:1 over the worst case (black under the backing)  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.583,"backingAlphaAtWorstCorner":0.883,"ratioOverBlack":8.76,"ratioOverDarkHoney":9.47}
+PASS  contrast (wide) tagline: >= 4.5:1 over the worst case (black under the backing)  {"text":"rgb(82, 76, 66)","worstEllipseRadius":0.645,"backingAlphaAtWorstCorner":0.881,"ratioOverBlack":6.07,"ratioOverDarkHoney":6.56}
+PASS  keyboard: Enter on Play resumes  Pause
+PASS  sound: Space turns it on; silent until on the film clock, then fades up (Web Audio gain)  {"pressed":"true","src":"golden-pause.webm","paused":false,"gain":1,"webaudio":true,"drift":-0.002,"learnedLead":0,"msToAudible":986}
+PASS  sound: stays within ~50 ms of the film over 1.5 s  {"maxDriftMs":10}
+PASS  sound: a 400 ms drift is re-seated to within 50 ms (with a short fade)  {"drift":0.003,"fixes":1,"gain":0.946}
+PASS  sound: a 120 ms drift is nudged back by speed (no dip, no seek)  {"secs":"3.0","minGain":1,"maxRate":1.06}
+PASS  sound: Pause fades the sound out and stops it  {"paused":true,"gain":0}
+PASS  sound: Play resumes the sound in sync  {"paused":false,"gain":0.977,"drift":-0.012}
+PASS  sound: off again fades out and stops  {"paused":true,"pressed":"false","gain":0}
+PASS  keyboard: Skip jumps to the settled end within one frame  {"mode":"ended","focus":"skip","wordmark":1,"tagline":1,"ring":0,"lineOut":0,"stillShown":true,"videoPaused":true}
+PASS  Skip turns into Replay without moving focus  {"label":"Replay","focus":"skip"}
+PASS  sound: Skip fades the sound out and stops it  {"paused":true,"gain":0}
+PASS  ended: Pause is hidden, Replay and Sound remain
+PASS  keyboard: Replay plays again from the start, focus stays, button reads Skip  {"t":0.0308,"focus":"skip","still":true}
+PASS  sound: Replay restarts the sound with the film  {"paused":false,"drift":-0.005}
+PASS  Esc inside the stage skips (focus moves from the hidden Pause to Replay)  {"mode":"ended","focus":"skip"}
+PASS  Esc outside the stage does nothing to the film
+PASS  natural end: settles on the welcome, offers Replay, plays once (no loop)  {"ended":true,"videoEnded":true,"wordmark":{"opacity":1},"endLabel":"Replay","mode":"ended"}
+PASS  natural end: stays ended
+PASS  wide: nothing stored (localStorage, sessionStorage, cookies, IndexedDB)  {"localStorage":0,"sessionStorage":0,"cookie":"","indexedDB":0,"contextCookies":0}
+PASS  wide: no network calls beyond the page, its media and Google Fonts  13 requests
+PASS  wide: no console errors
+PASS  narrow: autoplays
+PASS  narrow: uses film-square.mp4 in a square frame  {"src":"http://127.0.0.1:8765/_test/film-square.mp4","fmt":"square","w":358,"h":358,"frameBottom":520.03125,"barTop":520.03125,"scrollW":390,"innerW":390}
+PASS  narrow: no horizontal scroll  {"src":"http://127.0.0.1:8765/_test/film-square.mp4","fmt":"square","w":358,"h":358,"frameBottom":520.03125,"barTop":520.03125,"scrollW":390,"innerW":390}
+PASS  controls sit below the frame, never over the words  {"frameBottom":520.03125,"barTop":520.03125}
+PASS  controls are at least 44 x 44 px  [["Pause",101,44],["Sound",104,44],["Skip",90,44]]
+PASS  touch: tapping Pause pauses
+PASS  contrast (narrow) lineIn: >= 4.5:1 over the worst case  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.501,"backingAlphaAtWorstCorner":0.746,"ratioOverBlack":6.19,"ratioOverDarkHoney":7.46}
+PASS  contrast (narrow) permission: >= 4.5:1 over the worst case  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.562,"backingAlphaAtWorstCorner":0.717,"ratioOverBlack":5.72,"ratioOverDarkHoney":7.08}
+PASS  contrast (narrow) lineOut: >= 4.5:1 over the worst case  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.436,"backingAlphaAtWorstCorner":0.774,"ratioOverBlack":6.67,"ratioOverDarkHoney":7.85}
+PASS  contrast (narrow) wordmark: >= 4.5:1 over the worst case  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.53,"backingAlphaAtWorstCorner":0.884,"ratioOverBlack":8.8,"ratioOverDarkHoney":9.49}
+PASS  contrast (narrow) tagline: >= 4.5:1 over the worst case  {"text":"rgb(82, 76, 66)","worstEllipseRadius":0.678,"backingAlphaAtWorstCorner":0.88,"ratioOverBlack":6.05,"ratioOverDarkHoney":6.55}
+PASS  narrow: at full breath the ring stays clear of the permission line  {"ringBottom":432,"permissionTop":455,"gap":23}
+PASS  narrow: the words stay inside the ring even at its smallest  {"line-in":{"textCornerDist":61,"smallestRingRadius":88},"line-out":{"textCornerDist":52,"smallestRingRadius":88}}
+PASS  touch: Skip shows the end, Replay offered
+PASS  narrow: nothing stored (localStorage, sessionStorage, cookies, IndexedDB)  {"localStorage":0,"sessionStorage":0,"cookie":"","indexedDB":0,"contextCookies":0}
+PASS  narrow: no network calls beyond the page, its media and Google Fonts  12 requests
+PASS  narrow: no console errors
+PASS  reduced motion: no autoplay; calm still with the two lines as static text  {"mode":"calm","reason":"reduced-motion","paused":true,"t":0,"stillShown":true,"calmShown":true,"calmText":"Take a gentle breath in… And slowly let it go…","ring":{"opacity":0.75,"scale":0.94}}
+PASS  reduced motion: the film is not downloaded until asked  0
+PASS  reduced motion: an optional Play button, no Skip
+PASS  contrast (calm) calm0: >= 4.5:1 over the worst case  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.488,"backingAlphaAtWorstCorner":0.752,"ratioOverBlack":6.28,"ratioOverDarkHoney":7.54}
+PASS  contrast (calm) calm1: >= 4.5:1 over the worst case  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.452,"backingAlphaAtWorstCorner":0.767,"ratioOverBlack":6.55,"ratioOverDarkHoney":7.75}
+PASS  reduced motion: Play starts the film when asked
+PASS  reduced motion: nothing stored (localStorage, sessionStorage, cookies, IndexedDB)  {"localStorage":0,"sessionStorage":0,"cookie":"","indexedDB":0,"contextCookies":0}
+PASS  reduced motion: no network calls beyond the page, its media and Google Fonts  13 requests
+PASS  reduced motion: no console errors
+PASS  broken video: falls back to the calm still within ~1.5 s  {"msAfterPlayerStart":87,"reason":"error","calm":"grid"}
+PASS  broken video: no Play offered (nothing to play), page still usable
+PASS  broken video (404s expected): no console errors
+PASS  before the media exist: page loads into the calm state  error
+PASS  no media yet (404s expected): no console errors
+PASS  slow video: calm still after ~1.5 s  {"msAfterPlayerStart":1502}
+PASS  slow video: Play offered
+PASS  slow video: Play starts it once it arrives
+PASS  slow video: no console errors
+PASS  Save-Data: calm still, the film is not requested  {"mode":"calm","reason":"save-data","src":null}
+PASS  Save-Data: Play loads and plays the film on request
+PASS  save-data: no console errors
+PASS  autoplay refused: poster and a Play button  {"glyph":"grid","primary":true,"poster":"_test/poster-wide.jpg"}
+PASS  autoplay refused: Play starts the film
+PASS  autoplay refused: no console errors
+PASS  JavaScript off: still image with the two lines, no dead controls  {"img":true,"calm":true,"controls":false,"hero":true}
+
+88/88 checks passed
