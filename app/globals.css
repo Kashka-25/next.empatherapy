@@ -201,7 +201,8 @@ fieldset { border: 0; }
 .profile-hero { padding: clamp(6.5rem, 10vw, 8rem) 0 3rem; background: radial-gradient(70% 100% at 100% 0%, rgba(243, 230, 166, .7), transparent 62%), var(--parchment); border-bottom: 1px solid var(--border); }
 .profile-hero__grid { display: grid; grid-template-columns: 280px 1fr; gap: clamp(1.5rem, 4vw, 3rem); align-items: center; }
 .profile-hero__portrait { border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; overflow: hidden; box-shadow: var(--shadow-lift); aspect-ratio: 1; border: 6px solid var(--surface); }
-.profile-hero__portrait svg { width: 100%; height: 100%; display: block; }
+.profile-hero__portrait svg, .profile-hero__portrait img { width: 100%; height: 100%; display: block; }
+.portrait-img { object-fit: cover; object-position: 50% 30%; background: var(--parchment); }
 .profile-hero__copy { display: grid; gap: 1rem; }
 .profile-layout { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: clamp(2rem, 5vw, 4rem); align-items: start; padding-block: 3.5rem var(--section-pad); }
 .profile-main { display: grid; gap: 3.5rem; min-width: 0; }
@@ -265,7 +266,7 @@ fieldset { border: 0; }
 .privacy-note { font-size: 0.9rem; color: var(--muted); display: flex; gap: 0.6rem; align-items: flex-start; background: var(--sage-soft); border-radius: var(--radius); padding: 0.85rem 1.1rem; }
 .result-card { display: grid; grid-template-columns: 140px 1fr; gap: 1.5rem; padding: 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); }
 .result-card__portrait { border-radius: 40% 60% 55% 45% / 50% 45% 55% 50%; overflow: hidden; width: 140px; height: 140px; }
-.result-card__portrait svg { width: 100%; height: 100%; display: block; }
+.result-card__portrait svg, .result-card__portrait img, .card__portrait img { width: 100%; height: 100%; display: block; }
 .result-card__body { display: grid; gap: 0.7rem; align-content: start; }
 .why { background: var(--lemon-soft); border: 1px solid var(--lemon); border-radius: var(--radius); padding: 0.9rem 1.1rem; font-size: 0.98rem; }
 .why ul { display: grid; gap: 0.35rem; margin-top: 0.4rem; }
@@ -342,3 +343,19 @@ fieldset { border: 0; }
 .status--in_review { background: #E4EEF6; color: #1F5A8E; border-color: #CADCEB; }
 .admin-flash { background: var(--sage-soft); border: 1px solid #D5E0C8; color: var(--botanical-deep); border-radius: var(--radius); padding: 0.7rem 1rem; font-weight: 600; }
 .admin code { background: var(--surface); border: 1px solid var(--border); padding: 0.05rem 0.4rem; border-radius: 6px; font-size: 0.9em; }
+
+/* ---------- Photos: "Meet them" carousel and the admin photo manager ---------- */
+.carousel { display: grid; gap: 0.9rem; }
+.carousel__track { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 0; margin: 0; list-style: none; position: relative; border-radius: var(--radius-lg); }
+.carousel__track:focus-visible { outline: 3px solid var(--honey); outline-offset: 3px; }
+.carousel__slide { flex: 0 0 min(100%, 30rem); scroll-snap-align: start; }
+.carousel__slide figure { margin: 0; display: grid; gap: 0.5rem; }
+.carousel__slide img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 30%; border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); background: var(--parchment); display: block; }
+.carousel__slide figcaption { font-size: 0.95rem; color: var(--muted); }
+.carousel__bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.carousel__count { font-size: 0.9rem; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .carousel__track { scroll-behavior: auto; } }
+.photo-grid { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.2rem; }
+.photo-card { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1.2rem; align-items: start; padding: 1rem; background: var(--parchment); border-radius: var(--radius); }
+.photo-card img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius); display: block; }
+@media (max-width: 36rem) { .photo-card { grid-template-columns: 1fr; } .photo-card img { max-width: 12rem; } }

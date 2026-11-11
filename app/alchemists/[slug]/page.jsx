@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import AlchemistAvatar from '@/components/alchemists/AlchemistAvatar';
+import AlchemistPortrait from '@/components/alchemists/AlchemistPortrait';
+import PhotoCarousel from '@/components/alchemists/PhotoCarousel';
+import { photosOf } from '@/lib/photos.mjs';
 import Button from '@/components/ui/Button';
 import Eyebrow from '@/components/ui/Eyebrow';
 import DevNote from '@/components/ui/DevNote';
@@ -31,13 +33,15 @@ export default async function AlchemistPage({ params }) {
   const drawn = mods.filter((m) => m.basis === 'confirm');
   const needsConfirm = [...a.qualifications, ...a.experience, ...a.pricing.sessions].filter((x) => x.confirm).length;
   const founder = !a.demo;
+  const photos = photosOf(a);
+  const first = a.name.split(' ')[0];
   const enquiry = a.enquiry_email ? `mailto:${a.enquiry_email}?subject=${encodeURIComponent(`Enquiry about ${a.offering_name || a.name}`)}` : null;
 
   return (
     <>
       <section className="profile-hero">
         <div className="container profile-hero__grid">
-          <div className="profile-hero__portrait"><AlchemistAvatar alchemist={a} /></div>
+          <div className="profile-hero__portrait"><AlchemistPortrait alchemist={a} /></div>
           <div className="profile-hero__copy">
             <div className="row">
               {a.demo ? <span className="tag tag--demo">Example profile</span> : <span className="tag tag--honey">Founding Alchemist</span>}
@@ -61,6 +65,14 @@ export default async function AlchemistPage({ params }) {
               {needsConfirm ? <DevNote>{needsConfirm} items (credentials, experience, prices) still need your confirmation. Search for <code>confirm: true</code> in data/alchemists.mjs.</DevNote> : null}
             </>
           )}
+
+          {photos.length > 1 ? (
+            <section className="profile-section" aria-labelledby="meet-h">
+              <Eyebrow>Meet {first}</Eyebrow>
+              <h2 id="meet-h">A little of {first}&rsquo;s world</h2>
+              <PhotoCarousel name={a.name} photos={photos} />
+            </section>
+          ) : null}
 
           <section className="profile-section story" aria-labelledby="story-h">
             <Eyebrow>{founder ? 'Where it began' : 'My story'}</Eyebrow>

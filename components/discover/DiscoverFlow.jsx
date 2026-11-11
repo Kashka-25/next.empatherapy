@@ -1,7 +1,7 @@
 'use client';
 import { useRef, useState } from 'react';
 import Link from 'next/link';
-import AlchemistAvatar from '@/components/alchemists/AlchemistAvatar';
+import AlchemistPortrait from '@/components/alchemists/AlchemistPortrait';
 import { matchSeeker } from '@/lib/matching/index.mjs';
 import { INTENTS, STYLES } from '@/lib/matching/vocabulary.mjs';
 import { modalitiesOf, BASIS_LABEL, placeAndFormat, priceFrom } from '@/lib/content.mjs';
@@ -207,7 +207,7 @@ function AlchemistResult({ x, modalities }) {
   const firstSteps = a.session_steps.slice(0, 2).map((s) => s.title.toLowerCase()).join(', then ');
   return (
     <article className="result-card" aria-label={a.name}>
-      <div className="result-card__portrait"><AlchemistAvatar alchemist={a} label={false} /></div>
+      <div className="result-card__portrait"><AlchemistPortrait alchemist={a} label={false} /></div>
       <div className="result-card__body">
         <div className="row">
           <span className="tag tag--sage">{x.primaryModality.name}</span>

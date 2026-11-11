@@ -1,7 +1,7 @@
 # Empatherapy: progress and decisions
 
 The source of truth for what has been built, what has been decided, and what is still open.
-Update it at the end of every working session. Last updated: 14 Nov 2026.
+Update it at the end of every working session. Last updated: 15 Nov 2026.
 
 ## The product in one paragraph
 Empatherapy is a discovery and connection ecosystem. **Seekers** (people looking for understanding, support,
@@ -21,7 +21,8 @@ Tagline: **Discover new pathways to yourself.** Feeling: a cup of lemon and hone
 | 5. IntoTheLighthouse, personal offering, apply | Done as landing page and preview form. No live peer support. |
 | 6a. Admin foundation | Done: storage layer, sign-in, route protection, applications review, weekly features. See `docs/ADMIN.md` |
 | 6b. Admin content editing | Done: edit and create Alchemist profiles and modality pages, with publish rules and reset to original |
-| 6c. Production readiness | Built, **not yet connected to a real database:** Supabase driver and schema, individual admin accounts with roles, shared rate limiting, privacy notice and retention rule. **Photo uploads not started.** |
+| 6c. Production readiness | Built, **not yet connected to a real database:** Supabase driver and schema, individual admin accounts with roles, shared rate limiting, privacy notice and retention rule. **Photo uploads built (6d).** |
+| 6d. Alchemist photos | Done: up to 5 photos per profile with a "Meet them" carousel, profile picture, alt text and consent tick, metadata stripped, private storage |
 
 ## What works today
 - `/` warm homepage, then discovery invitation, this week's modalities, featured Alchemists, IntoTheLighthouse, philosophy, apply.
@@ -58,13 +59,13 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 1. **Founding profile accuracy.** Please check `data/alchemists.mjs` (search `confirm: true`): AHHCA and CPAT credentials and the prices were carried over from the old profile; which of your practices are formal training versus study or lived experience? Also write your own "what brought me here" story.
 2. **Mind Medicine Australia** was in the old profile and is **left out** on purpose, because it could imply psychedelic competence. Add it back only with exact wording you are comfortable with.
 3. **Healing Fund.** Keep the 10% commitment for all Alchemists, only for your own sessions, or retire it?
-4. **Real photographs.** Profiles use illustrated placeholders. The data model has a `portrait` field for photos.
+4. **Real photographs.** Uploads now work (up to 5 per profile), but no real photos have been added. Which Alchemists do you want to start with, and who will take or collect them?
 5. **Typefaces:** Fraunces (headings), Nunito Sans (body), Caveat (handwritten notes). Happy to change.
 6. **IntoTheLighthouse repo.** Should the page here link to its own repo or site when ready?
 
 ## Not built yet (and why)
 - **A live database.** The Supabase driver and schema exist and are tested against a fake of the Supabase API, but no Supabase project has been created or connected yet (that needs Cassidy). See `docs/ADMIN.md`, "Going live".
-- **Photo uploads.** Needs a storage bucket and an image-safety decision (size, type, who may upload).
+- **Photo cropping, and Alchemists uploading their own photos.** Today an admin uploads for them, after the person has agreed.
 - **Enquiries, bookings, reviews, favourites, Seeker accounts.**
 - **Images.** No photographs yet.
 
@@ -72,6 +73,6 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 ```bash
 npm install
 npm run dev     # http://localhost:3000
-npm test        # 87 tests: matching, content, directory, validation, storage (file, memory, Supabase), sessions, passwords, rate limits, accounts and roles, retention, applications, features
+npm test        # 101 tests: photos (checks, metadata stripping, storage, list rules), matching, content, directory, validation, storage (file, memory, Supabase), sessions, passwords, rate limits, accounts and roles, retention, applications, features
 npm run build   # also runs lint
 ```

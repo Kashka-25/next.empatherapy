@@ -18,3 +18,9 @@ alter table public.records enable row level security;
 revoke all on public.records from anon, authenticated;
 
 create index if not exists records_collection_idx on public.records (collection, created_at desc);
+
+-- Photos of Alchemists. A PRIVATE bucket: nothing is readable by the public or by signed-in Supabase users.
+-- The server reads it with the service-role key and serves photos through /media, only for public profiles.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('alchemist-photos', 'alchemist-photos', false, 5242880, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do nothing;

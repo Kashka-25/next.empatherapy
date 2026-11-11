@@ -40,6 +40,11 @@ export default function PrivacyPage() {
             </div>
 
             <div className="stack">
+              <h2>Photos</h2>
+              <p>If you become an Alchemist, we publish photos of you only with your agreement, and you can ask us to remove or replace any of them at any time. A profile can show up to five. We remove hidden details such as location and camera information from every photo before it is stored, so only the picture itself is kept.</p>
+            </div>
+
+            <div className="stack">
               <h2>Your choices</h2>
               <p>You can ask to see, correct or delete your application at any time. Email <a href="mailto:hello@empatherapy.co">hello@empatherapy.co</a> and we will do it, usually within a few days. Deleting is permanent.</p>
             </div>
