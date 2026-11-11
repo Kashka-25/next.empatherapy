@@ -56,10 +56,10 @@ Budget is soft (flagged, not hidden). Crisis phrases short-circuit to support-fi
 Known limits: keyword rules do not understand negation ("not anxious") or nuance. That is what an AI interpretation layer would improve later, server-side, with keys never in the browser.
 
 ## Plan for what is next
-1. **Data layer.** Choose the store (Supabase is already a placeholder). Tables for alchemists, modalities, features, applications. Row-level security from day one.
-2. **Auth and roles.** Admin and Alchemist roles before any management screen.
-3. **Admin MVP.** Review applications, edit modalities, schedule weekly features, manage featured Alchemists. Not exposed publicly.
-4. **Applications and enquiries** with server validation, rate limiting, consent records, deletion pathway.
+1. ~~Storage layer, auth, admin MVP, applications, weekly features~~ **Done (Phase 6a)**, see `docs/ADMIN.md`.
+2. **Production database driver** (Supabase planned) behind `lib/store`, with row-level security from day one.
+3. **Admin content editing:** Alchemist profiles, modality pages, homepage content, images.
+4. **Individual admin accounts and roles**, shared rate limiting, enquiries.
 5. **Real content and photography.** Verification workflow before any profile is listed.
 6. **IntoTheLighthouse** as a separate product behind its safeguards, linked from here.
 7. **Optional AI interpretation** feeding theme weights, behind a server route.

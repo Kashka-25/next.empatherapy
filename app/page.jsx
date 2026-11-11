@@ -5,7 +5,8 @@ import Eyebrow from '@/components/ui/Eyebrow';
 import AlchemistCard from '@/components/alchemists/AlchemistCard';
 import ModalityCard from '@/components/modalities/ModalityCard';
 import { TeaScene, Lighthouse, HoneyDrip, Sprig } from '@/components/art/Botanicals';
-import { alchemists, curatedOrder, activeFeatures, getModalityBySlug, modalities } from '@/lib/content.mjs';
+import { alchemists, curatedOrder, modalities } from '@/lib/content.mjs';
+import { currentFeatures } from '@/lib/features.mjs';
 
 export const revalidate = 3600; // refresh hourly so the weekly feature rolls over without a redeploy
 
@@ -18,8 +19,8 @@ const beliefs = [
   { t: 'There are many pathways', p: 'No single practice or person is right for everyone.' },
 ];
 
-export default function HomePage() {
-  const features = activeFeatures(new Date());
+export default async function HomePage() {
+  const features = await currentFeatures(new Date());
   const featured = curatedOrder(alchemists.filter((a) => a.featured_status && a.publication_status === 'published')).slice(0, 3);
   const modalityById = (id) => modalities.find((m) => m.id === id);
 
