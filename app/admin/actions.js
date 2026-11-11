@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { requireAdmin, adminConfigured } from '@/lib/admin-auth.mjs';
 import { createAccount, authenticate, updateAccount, activeOwnerCount, normaliseEmail } from '@/lib/accounts.mjs';
 import { purgeExpired } from '@/lib/retention.mjs';
+import { draftFromApplication } from '@/lib/application-to-profile.mjs';
+import { can } from '@/lib/accounts.mjs';
 import { getBlobStore, newImageId } from '@/lib/images/blobs.mjs';
 import { inspectImage, IMAGE_MESSAGES, MAX_BYTES } from '@/lib/images/inspect.mjs';
 import { MAX_PHOTOS, addPhoto, updatePhoto, makePrimary, movePhoto, removePhoto, canHavePhotos, photosOf, cleanAlt, cleanCaption, altError } from '@/lib/photos.mjs';
@@ -134,7 +136,19 @@ export async function reviewApplicationAction(formData) {
 
 export async function deleteApplicationAction(formData) {
   await requireAdmin('applications');
-  await removeApplication(needStore(), text(formData, 'id'));
+  const store = needStore();
+  const id = text(formData, 'id');
+  // A deletion request covers a draft profile made from the application too. A published profile is kept (remove it separately).
+  const app = await store.get('applications', id);
+  if (app?.profile_id) {
+    const draft = await store.get('alchemists', app.profile_id);
+    if (draft && draft.publication_status !== 'published' && draft.source) {
+      await store.remove('alchemists', draft.id);
+      const blobs = getBlobStore();
+      if (blobs) for (const p of photosOf(draft)) await blobs.remove(p.id).catch(() => {});
+    }
+  }
+  await removeApplication(store, id);
   revalidatePath('/admin/applications');
   redirect('/admin/applications?deleted=1');
 }
@@ -313,4 +327,32 @@ export async function photoAction(formData) {
   if (intent === 'remove') { const blobs = getBlobStore(); if (blobs) await blobs.remove(photoId).catch(() => {}); }
   refreshAll();
   photoBack(id, 'photo_saved=1');
+}
+
+/* ---------- application to draft profile ---------- */
+/**
+ * Creates a hidden, unverified DRAFT profile from an approved application, for a person to finish and check.
+ * It never publishes anything. Needs access to both applications and profiles, so in practice owners.
+ */
+export async function createDraftProfileAction(formData) {
+  const me = await requireAdmin('applications');
+  if (!can(me.role, 'content')) redirect('/admin?e=forbidden');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const app = await store.get('applications', id);
+  const back = (q) => redirect(`/admin/applications/${encodeURIComponent(id)}?${q}`);
+  if (!app) redirect('/admin/applications?e=missing');
+  if (app.status !== 'approved') back('draft_error=' + encodeURIComponent('Approve the application first.'));
+
+  const content = await loadContent(store);
+  if (app.profile_id && content.alchemists.some((a) => a.id === app.profile_id)) redirect(`/admin/alchemists/${encodeURIComponent(app.profile_id)}`); // already made: never a duplicate
+
+  const { form, source } = draftFromApplication(app.data, content.modalities);
+  const v = validateAlchemist(form, null, { alchemists: content.alchemists, modalities: content.modalities });
+  if (!v.valid) back('draft_error=' + encodeURIComponent(Object.values(v.errors)[0]));
+  const record = { ...v.record, source: { ...source, application_id: app.id } };
+  await store.put('alchemists', record);
+  await store.put('applications', { ...app, profile_id: record.id });
+  refreshAll();
+  redirect(`/admin/alchemists/${encodeURIComponent(record.id)}?created=1`);
 }

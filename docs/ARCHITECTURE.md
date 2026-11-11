@@ -35,7 +35,7 @@ app/
   become-an-alchemist/        application
 components/  art/ ui/ layout/ alchemists/ modalities/ discover/ apply/
 data/        alchemists.mjs  modalities.mjs  features.mjs   (replace with a database later)
-lib/         content.mjs  directory.mjs  validation.mjs  matching/{index,vocabulary}.mjs
+lib/         application-to-profile.mjs  content.mjs  directory.mjs  validation.mjs  matching/{index,vocabulary}.mjs
              store/{index,supabase}.mjs  accounts.mjs  admin-auth.mjs  session.mjs  ratelimit.mjs  retention.mjs
 tests/       matching.test.mjs  content.test.mjs
 ```

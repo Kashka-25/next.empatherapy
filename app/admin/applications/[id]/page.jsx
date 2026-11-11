@@ -3,7 +3,9 @@ import { notFound } from 'next/navigation';
 import { requireAdmin } from '@/lib/admin-auth.mjs';
 import { getStore } from '@/lib/store/index.mjs';
 import { STATUS_LABEL } from '@/lib/applications.mjs';
-import { reviewApplicationAction, deleteApplicationAction } from '../../actions';
+import { can } from '@/lib/accounts.mjs';
+import { loadContent } from '@/lib/content-store.mjs';
+import { reviewApplicationAction, deleteApplicationAction, createDraftProfileAction } from '../../actions';
 
 export const metadata = { title: 'Application' };
 
@@ -13,12 +15,14 @@ const FIELDS = [
 ];
 
 export default async function ApplicationPage({ params, searchParams }) {
-  await requireAdmin('applications');
+  const me = await requireAdmin('applications');
   const store = getStore();
   if (!store) notFound();
   const app = await store.get('applications', params.id);
   if (!app) notFound();
   const d = app.data;
+  const canCreate = can(me.role, 'content');
+  const existingProfile = app.profile_id ? (await loadContent(store)).alchemists.find((a) => a.id === app.profile_id) : null;
 
   return (
     <div className="stack" style={{ gap: '1.6rem' }}>
@@ -28,6 +32,7 @@ export default async function ApplicationPage({ params, searchParams }) {
         <span className={`status status--${app.status}`}>{STATUS_LABEL[app.status]}</span>
       </div>
       {searchParams?.saved ? <p className="admin-flash" role="status">Saved.</p> : null}
+      {searchParams?.draft_error ? <p className="error" role="alert">{searchParams.draft_error}</p> : null}
 
       <div className="admin-two">
         <section className="admin-card stack" aria-label="Application">
@@ -62,10 +67,28 @@ export default async function ApplicationPage({ params, searchParams }) {
             </div>
           </div>
 
+          {app.status === 'approved' && canCreate ? (
+            <div className="admin-card stack">
+              <h2 style={{ fontSize: '1.15rem' }}>Create the profile</h2>
+              {existingProfile ? (
+                <>
+                  <p style={{ fontSize: '0.92rem', color: 'var(--muted)' }}>A draft profile was already made from this application.</p>
+                  <Link href={`/admin/alchemists/${existingProfile.id}`} className="btn btn--honey btn--sm" style={{ justifySelf: 'start' }}>Open {existingProfile.name}</Link>
+                </>
+              ) : (
+                <form action={createDraftProfileAction} className="stack">
+                  <input type="hidden" name="id" value={app.id} />
+                  <p style={{ fontSize: '0.92rem', color: 'var(--muted)' }}>Starts a hidden draft from their answers. Everything they claimed is marked to confirm, their email is not copied, and nothing is published until you finish and verify it.</p>
+                  <button type="submit" className="btn btn--honey btn--sm" style={{ justifySelf: 'start' }}>Create draft profile</button>
+                </form>
+              )}
+            </div>
+          ) : null}
+
           <form action={deleteApplicationAction} className="admin-card stack">
             <input type="hidden" name="id" value={app.id} />
             <h2 style={{ fontSize: '1.15rem' }}>Delete permanently</h2>
-            <p style={{ fontSize: '0.92rem', color: 'var(--muted)' }}>For data-deletion requests. This cannot be undone.</p>
+            <p style={{ fontSize: '0.92rem', color: 'var(--muted)' }}>For data-deletion requests. This cannot be undone. A draft profile made from this application is deleted too. A published profile is kept, so remove it separately if asked.</p>
             <label className="check"><input type="checkbox" name="confirm" required /><span>Yes, delete this application and all its details.</span></label>
             <button type="submit" className="btn btn--soft btn--sm" style={{ borderColor: '#9B3B22', color: '#9B3B22' }}>Delete</button>
           </form>
