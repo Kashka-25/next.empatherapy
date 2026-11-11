@@ -4,13 +4,13 @@ import Link from 'next/link';
 import AlchemistAvatar from '@/components/alchemists/AlchemistAvatar';
 import { matchSeeker } from '@/lib/matching/index.mjs';
 import { INTENTS, STYLES } from '@/lib/matching/vocabulary.mjs';
-import { alchemists, modalities, modalitiesOf, BASIS_LABEL, placeAndFormat, priceFrom } from '@/lib/content.mjs';
+import { modalitiesOf, BASIS_LABEL, placeAndFormat, priceFrom } from '@/lib/content.mjs';
 
 const STEPS = 4; // questions before results
 
 const empty = { experience: '', intention: '', intents: [], styles: [], format: '', location: '', budget: '' };
 
-export default function DiscoverFlow() {
+export default function DiscoverFlow({ alchemists, modalities }) {
   const [step, setStep] = useState(0); // 0 = welcome, 1..4 = questions, 5 = results
   const [s, setS] = useState(empty);
   const [result, setResult] = useState(null);
@@ -118,13 +118,13 @@ export default function DiscoverFlow() {
           </div>
         )}
 
-        {step === 5 && result && <Results r={result} restart={restart} back={() => go(4)} />}
+        {step === 5 && result && <Results r={result} restart={restart} back={() => go(4)} modalities={modalities} />}
       </div>
     </div>
   );
 }
 
-function Results({ r, restart, back }) {
+function Results({ r, restart, back, modalities }) {
   if (r.safety.crisis) {
     return (
       <div className="stack">
@@ -160,7 +160,7 @@ function Results({ r, restart, back }) {
 
       {r.alchemists.length ? (
         <div className="stack" style={{ gap: '1.2rem' }}>
-          {r.alchemists.map((x) => <AlchemistResult key={x.alchemist.id} x={x} />)}
+          {r.alchemists.map((x) => <AlchemistResult key={x.alchemist.id} x={x} modalities={modalities} />)}
         </div>
       ) : (
         <p>We couldn&rsquo;t find an Alchemist who matches your practical needs just yet. Here are some practices you might still enjoy learning about.</p>
@@ -201,9 +201,9 @@ function Results({ r, restart, back }) {
   );
 }
 
-function AlchemistResult({ x }) {
+function AlchemistResult({ x, modalities }) {
   const a = x.alchemist;
-  const training = modalitiesOf(a).find((m) => m.slug === x.primaryModality.slug);
+  const training = modalitiesOf(a, modalities).find((m) => m.slug === x.primaryModality.slug);
   const firstSteps = a.session_steps.slice(0, 2).map((s) => s.title.toLowerCase()).join(', then ');
   return (
     <article className="result-card" aria-label={a.name}>

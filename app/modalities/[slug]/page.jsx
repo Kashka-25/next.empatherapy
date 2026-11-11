@@ -5,14 +5,17 @@ import Button from '@/components/ui/Button';
 import AlchemistCard from '@/components/alchemists/AlchemistCard';
 import ModalityCard from '@/components/modalities/ModalityCard';
 import { Icon } from '@/components/art/Botanicals';
-import { modalities, getModalityBySlug, alchemistsFor } from '@/lib/content.mjs';
+import { bySlug, alchemistsFor } from '@/lib/content.mjs';
+import { publicContent } from '@/lib/content-store.mjs';
 
-export function generateStaticParams() {
-  return modalities.filter((m) => m.publication_status === 'published').map((m) => ({ slug: m.slug }));
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  return (await publicContent()).modalities.map((m) => ({ slug: m.slug }));
 }
 
-export function generateMetadata({ params }) {
-  const m = getModalityBySlug(params.slug);
+export async function generateMetadata({ params }) {
+  const m = bySlug((await publicContent()).modalities, params.slug);
   return m ? { title: m.name, description: m.short_description } : {};
 }
 
@@ -23,11 +26,12 @@ const KIND = {
   established: 'Established evidence',
 };
 
-export default function ModalityPage({ params }) {
-  const m = getModalityBySlug(params.slug);
-  if (!m || m.publication_status !== 'published') notFound();
-  const who = alchemistsFor(m);
-  const related = m.related_modalities.map(getModalityBySlug).filter(Boolean);
+export default async function ModalityPage({ params }) {
+  const { alchemists, modalities } = await publicContent();
+  const m = bySlug(modalities, params.slug);
+  if (!m) notFound();
+  const who = alchemistsFor(m, alchemists);
+  const related = m.related_modalities.map((s) => bySlug(modalities, s)).filter(Boolean);
 
   return (
     <>
@@ -83,7 +87,7 @@ export default function ModalityPage({ params }) {
             <h2>People who offer {m.name.toLowerCase()}</h2>
           </div>
           {who.length ? (
-            <div className="grid-cards">{who.map((a) => <AlchemistCard key={a.id} alchemist={a} />)}</div>
+            <div className="grid-cards">{who.map((a) => <AlchemistCard key={a.id} alchemist={a} modalities={modalities} />)}</div>
           ) : (
             <div className="empty"><p>No Alchemists offer this yet.</p><Button href="/become-an-alchemist" variant="soft">Become an Alchemist</Button></div>
           )}

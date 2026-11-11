@@ -1,16 +1,15 @@
 import { requireAdmin } from '@/lib/admin-auth.mjs';
 import { getStore } from '@/lib/store/index.mjs';
 import { loadFeatures } from '@/lib/features.mjs';
-import { modalities } from '@/data/modalities.mjs';
+import { loadContent } from '@/lib/content-store.mjs';
 import { addFeatureAction, setFeatureStatusAction, deleteFeatureAction, seedFeaturesAction } from '../actions';
 
 export const metadata = { title: 'Weekly features' };
 
-const name = (id) => modalities.find((m) => m.id === id)?.name ?? id;
 const fmt = (d) => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 const today = () => new Date().toISOString().slice(0, 10);
 
-function Row({ f, editable }) {
+function Row({ f, editable, name }) {
   return (
     <tr>
       <th scope="row">{name(f.modality_id)}<br /><small style={{ fontWeight: 400, color: 'var(--muted)' }}>{f.editorial_introduction}</small></th>
@@ -34,6 +33,8 @@ function Row({ f, editable }) {
 export default async function FeaturesPage({ searchParams }) {
   await requireAdmin();
   const store = getStore();
+  const { modalities } = await loadContent(store);
+  const name = (id) => modalities.find((m) => m.id === id)?.name ?? id;
   const stored = store ? await store.list('features') : [];
   const features = await loadFeatures(store);
   const usingSample = !stored.length;
@@ -43,7 +44,7 @@ export default async function FeaturesPage({ searchParams }) {
   const past = features.filter((f) => f.publication_status === 'archived' || (f.publication_status === 'published' && f.feature_end < t)).sort((a, b) => b.feature_start.localeCompare(a.feature_start));
 
   const Table = ({ rows, empty }) => rows.length ? (
-    <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th scope="col">Modality</th><th scope="col">When</th><th scope="col">Position</th><th scope="col">Status</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead><tbody>{rows.map((f) => <Row key={f.id} f={f} editable={!usingSample} />)}</tbody></table></div>
+    <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th scope="col">Modality</th><th scope="col">When</th><th scope="col">Position</th><th scope="col">Status</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead><tbody>{rows.map((f) => <Row key={f.id} f={f} editable={!usingSample} name={name} />)}</tbody></table></div>
   ) : <p style={{ color: 'var(--muted)' }}>{empty}</p>;
 
   return (

@@ -1,7 +1,7 @@
 import FadeIn from '@/components/ui/FadeIn';
 import Eyebrow from '@/components/ui/Eyebrow';
 import ModalityCard from '@/components/modalities/ModalityCard';
-import { modalities } from '@/lib/content.mjs';
+import { publicContent } from '@/lib/content-store.mjs';
 import { currentFeatures } from '@/lib/features.mjs';
 
 export const revalidate = 3600; // refresh hourly so the weekly feature rolls over without a redeploy
@@ -12,6 +12,7 @@ export const metadata = {
 };
 
 export default async function ModalitiesPage() {
+  const { modalities } = await publicContent();
   const features = await currentFeatures(new Date());
   const byId = (id) => modalities.find((m) => m.id === id);
   const featuredIds = new Set(features.map((f) => f.modality_id));
