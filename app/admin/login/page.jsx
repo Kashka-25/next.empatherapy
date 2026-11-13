@@ -9,6 +9,7 @@ const MESSAGES = {
   bad: 'That email or password did not work.',
   wait: 'Too many attempts. Please wait a few minutes and try again.',
   config: 'Admin is not set up yet.',
+  expired: 'That took too long. Please sign in again.',
 };
 
 export default async function LoginPage({ searchParams }) {

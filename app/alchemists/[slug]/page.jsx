@@ -2,12 +2,17 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AlchemistPortrait from '@/components/alchemists/AlchemistPortrait';
 import PhotoCarousel from '@/components/alchemists/PhotoCarousel';
-import { photosOf } from '@/lib/photos.mjs';
-import Button from '@/components/ui/Button';
+import EnquiryForm from '@/components/alchemists/EnquiryForm';
+import { publicPhotos } from '@/lib/photos.mjs';
 import Eyebrow from '@/components/ui/Eyebrow';
 import DevNote from '@/components/ui/DevNote';
 import { bySlug, modalitiesOf, BASIS_LABEL, placeAndFormat } from '@/lib/content.mjs';
 import { publicContent } from '@/lib/content-store.mjs';
+import { getStore } from '@/lib/store/index.mjs';
+import { hasPortal } from '@/lib/accounts.mjs';
+import { loadPublicPosts } from '@/lib/posts-store.mjs';
+import { postsBy } from '@/lib/posts.mjs';
+import PostCard from '@/components/knowledge/PostCard';
 
 export const revalidate = 60;
 
@@ -33,9 +38,11 @@ export default async function AlchemistPage({ params }) {
   const drawn = mods.filter((m) => m.basis === 'confirm');
   const needsConfirm = [...a.qualifications, ...a.experience, ...a.pricing.sessions].filter((x) => x.confirm).length;
   const founder = !a.demo;
-  const photos = photosOf(a);
+  const photos = publicPhotos(a);
+  const writing = postsBy(await loadPublicPosts(), a.id).slice(0, 3);
   const first = a.name.split(' ')[0];
-  const enquiry = a.enquiry_email ? `mailto:${a.enquiry_email}?subject=${encodeURIComponent(`Enquiry about ${a.offering_name || a.name}`)}` : null;
+  const store = getStore();
+  const canEnquire = !a.demo && (Boolean(a.enquiry_email) || (store ? await hasPortal(store, a.id) : false));
 
   return (
     <>
@@ -91,6 +98,14 @@ export default async function AlchemistPage({ params }) {
             <blockquote className="pull" style={{ marginBottom: '1.2rem' }}>{a.pull_quote}</blockquote>
             <p>{a.philosophy}</p>
           </section>
+
+          {writing.length ? (
+            <section className="profile-section" aria-labelledby="writing-h">
+              <Eyebrow>Writing by {first}</Eyebrow>
+              <h2 id="writing-h">Learn a little before you reach out</h2>
+              <div className="post-grid">{writing.map((p) => <PostCard key={p.id} post={p} />)}</div>
+            </section>
+          ) : null}
 
           <section className="profile-section" aria-labelledby="prac-h">
             <Eyebrow>Practices</Eyebrow>
@@ -195,11 +210,8 @@ export default async function AlchemistPage({ params }) {
               <div><dt>Format</dt><dd>{a.delivery_formats.map((f) => (f === 'online' ? 'Online' : 'In person')).join(' and ')}</dd></div>
               <div><dt>Sessions</dt><dd>from ${a.pricing.from} {a.pricing.currency}</dd></div>
             </dl>
-            {enquiry ? (
-              <>
-                <Button href={enquiry} size="lg">Send an enquiry</Button>
-                <p style={{ fontSize: '0.88rem', color: 'var(--muted)' }}>This opens your email app. Online booking is not available yet.</p>
-              </>
+            {canEnquire ? (
+              <EnquiryForm alchemistId={a.id} firstName={first} fallbackEmail={a.enquiry_email} />
             ) : (
               <>
                 <button type="button" className="btn btn--soft btn--lg" disabled>{a.demo ? 'Enquiries open at launch' : 'Enquiries not open yet'}</button>

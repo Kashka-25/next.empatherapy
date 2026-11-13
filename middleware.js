@@ -7,7 +7,7 @@ import { SESSION_COOKIE, verifySession } from '@/lib/session.mjs';
  */
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
-  const open = pathname === '/admin/login';
+  const open = pathname === '/admin/login' || pathname === '/admin/login/code';
   const secret = process.env.ADMIN_SESSION_SECRET;
   const ok = !open && secret ? await verifySession(request.cookies.get(SESSION_COOKIE)?.value, secret) : open;
 

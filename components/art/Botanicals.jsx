@@ -142,3 +142,26 @@ export function Icon({ name = 'nature' }) {
     </svg>
   );
 }
+
+/**
+ * The Empatherapy mark: the cup of lemon and honey tea from the home page, small enough for the header.
+ * Decorative, because the word "Empatherapy" always sits beside it.
+ */
+export function TeaMark({ size = 36 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <circle cx="32" cy="32" r="32" fill="#FFF1B8" />
+      <ellipse cx="32" cy="47.5" rx="21" ry="3.2" fill="#FFFDF7" stroke="#D9C9A0" strokeWidth="1.5" />
+      <path d="M49 33.5c8-1.5 8.5 9.5 0 10.5" fill="none" stroke="#D9C9A0" strokeWidth="3" strokeLinecap="round" />
+      <path d="M15 30h34v6c0 8.5-7.6 13.5-17 13.5S15 44.5 15 36Z" fill="#FFFDF7" stroke="#D9C9A0" strokeWidth="2" />
+      <ellipse cx="32" cy="30" rx="17" ry="3.3" fill="#F0C65C" />
+      <circle cx="38.5" cy="30" r="4.4" fill="#FAF3CE" stroke="#E8BE67" strokeWidth="1.2" />
+      <path d="M38.5 26.5v7M35 30h7" stroke="#E8BE67" strokeWidth="0.8" />
+      <g fill="none" stroke="#B9823E" strokeWidth="1.8" strokeLinecap="round">
+        <path d="M24.5 24c-3-3 3-5 0-9" />
+        <path d="M32 22c-3-3 3-6 0-11" />
+        <path d="M39.5 24c-3-3 3-5 0-9" />
+      </g>
+    </svg>
+  );
+}

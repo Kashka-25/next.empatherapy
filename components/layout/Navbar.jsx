@@ -9,6 +9,7 @@ const links = [
   { href: '/', label: 'Home' },
   { href: '/alchemists', label: 'Discover Alchemists' },
   { href: '/modalities', label: 'Explore Modalities' },
+  { href: '/knowledge', label: 'Knowledge' },
   { href: '/lighthouse', label: 'IntoTheLighthouse' },
   { href: '/about', label: 'About' },
 ];

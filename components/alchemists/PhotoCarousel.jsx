@@ -1,6 +1,6 @@
 'use client';
 import { useRef, useState } from 'react';
-import { photoUrl } from '@/lib/photos.mjs';
+import { photoUrl, focusStyle } from '@/lib/photos.mjs';
 
 /**
  * "Meet them": up to five photos in a swipeable row. Works by scrolling and by the buttons, with no autoplay.
@@ -31,7 +31,7 @@ export default function PhotoCarousel({ name, photos }) {
         {photos.map((p, i) => (
           <li key={p.id} className="carousel__slide" role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${photos.length}`}>
             <figure>
-              <img src={photoUrl(p.id)} alt={p.alt} width={p.w} height={p.h} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+              <img src={photoUrl(p.id)} alt={p.alt} width={p.w} height={p.h} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" style={focusStyle(p)} />
               {p.caption ? <figcaption>{p.caption}</figcaption> : null}
             </figure>
           </li>

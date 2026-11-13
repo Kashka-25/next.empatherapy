@@ -2,7 +2,7 @@
 import { useFormState } from 'react-dom';
 import { Text, Area, Select, Checks, Check, Section } from './fields';
 
-export default function AlchemistEditor({ action, initial, id, locked, modalityOptions }) {
+export default function AlchemistEditor({ action, initial, id, locked, modalityOptions, portal = false }) {
   const [result, formAction] = useFormState(action, { errors: {}, values: null, attempt: 0 });
   // After a successful save the action redirects and the state is briefly empty, so never assume it is set.
   const state = result ?? { errors: {}, values: null, attempt: 0 };
@@ -70,7 +70,7 @@ export default function AlchemistEditor({ action, initial, id, locked, modalityO
         </div>
       </Section>
 
-      <Section title="Visibility" intro="A profile appears to the public only when it is published and verified.">
+      {portal ? null : <Section title="Visibility" intro="A profile appears to the public only when it is published and verified.">
         <div className="filters__row">
           <Select id="publication_status" label="Publication" value={v.publication_status} error={e.publication_status} options={[['draft', 'Draft (hidden)'], ['published', 'Published']]} />
           {locked ? (
@@ -83,10 +83,10 @@ export default function AlchemistEditor({ action, initial, id, locked, modalityO
           <Check id="featured_status" label="Feature on the homepage" checked={Boolean(v.featured_status)} />
           <Text id="featured_rank" label="Featured order (1 first)" value={v.featured_rank} error={e.featured_rank} type="number" maxLength={2} />
         </div>
-      </Section>
+      </Section>}
 
       <div className="row" style={{ position: 'sticky', bottom: '1rem', zIndex: 5 }}>
-        <button type="submit" className="btn btn--honey btn--lg">Save changes</button>
+        <button type="submit" className="btn btn--honey btn--lg">{portal ? 'Send changes for review' : 'Save changes'}</button>
       </div>
     </form>
   );

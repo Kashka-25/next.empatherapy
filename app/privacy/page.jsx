@@ -41,6 +41,21 @@ export default function PrivacyPage() {
             </div>
 
             <div className="stack">
+              <h2>If you send an enquiry to an Alchemist</h2>
+              <p><strong>What we collect.</strong> Your name, your email and your message, and the time you agreed to this notice. Nothing else about your device or where you are.</p>
+              <p><strong>Who sees it.</strong> The Alchemist you wrote to, who replies to you directly by email, and Empatherapy&rsquo;s small team, only to keep things safe and to understand how introductions go. We do not sell it or use it for marketing.</p>
+              <p><strong>Emails.</strong> We send the Alchemist your message, send you a confirmation, and let the Empatherapy team know that an Alchemist was reached (without your message).</p>
+              <p><strong>How long we keep it.</strong> Six months after we last touched it, then it is deleted. You can ask us to delete it sooner. Once the Alchemist has your message by email, what they do with it is between you and them.</p>
+              <p><strong>Referral codes.</strong> If you type a referral code, we note which Alchemist's code it was and the agreed discount, so your Alchemist can apply it. The Alchemist who gave you the code is told only how many people have used it, never who.</p>
+              <p><strong>If you are struggling.</strong> Empatherapy is not crisis care. In an emergency call 000, or Lifeline on 13 11 14.</p>
+            </div>
+
+            <div className="stack">
+              <h2>If you write for the knowledge feed</h2>
+              <p>Writing for the feed is entirely your choice. A post is published with your name and profile, and the team reads it first. Posts are shared under a Creative Commons Attribution licence, so anyone may copy and adapt them with credit to you. You can ask us to take a post down at any time. Copies others have already made under the licence are theirs to keep.</p>
+            </div>
+
+            <div className="stack">
               <h2>Photos</h2>
               <p>If you become an Alchemist, we publish photos of you only with your agreement, and you can ask us to remove or replace any of them at any time. A profile can show up to five. We remove hidden details such as location and camera information from every photo before it is stored, so only the picture itself is kept.</p>
             </div>

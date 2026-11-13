@@ -4,6 +4,11 @@ const nextConfig = {
   experimental: { serverActions: { bodySizeLimit: '6mb' } },
   // The old "guides/therapists" site became the Alchemists directory.
   // Old links keep working instead of landing on a 404.
+  // Security headers on every response, and a noindex until launch. See lib/site.mjs.
+  async headers() {
+    const { securityHeaders, indexingOn } = await import('./lib/site.mjs');
+    return [{ source: '/:path*', headers: securityHeaders({ production: process.env.NODE_ENV === 'production', indexing: indexingOn() }) }];
+  },
   async redirects() {
     return [
       { source: '/therapists', destination: '/alchemists', permanent: true },

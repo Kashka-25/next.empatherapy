@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { requireAdmin } from '@/lib/admin-auth.mjs';
 import { getStore } from '@/lib/store/index.mjs';
 import { loadContent } from '@/lib/content-store.mjs';
+import { waitingPhotos } from '@/lib/photos.mjs';
 
 export const metadata = { title: 'Alchemists' };
 
@@ -29,7 +30,7 @@ export default async function AlchemistsAdminPage({ searchParams }) {
                 <td>{a.demo ? 'Fictional example' : a.verification_status === 'founder' ? 'Founder' : 'Alchemist'}</td>
                 <td><span className={`status status--${a.publication_status === 'published' ? 'approved' : 'in_review'}`}>{a.publication_status === 'published' ? 'Published' : 'Draft'}</span></td>
                 <td>{a.verification_status}</td>
-                <td>{edited.alchemists.has(a.id) ? 'Edited here' : 'Built-in'}</td>
+                <td>{edited.alchemists.has(a.id) ? 'Edited here' : 'Built-in'}{a.pending ? <><br /><span className="tag tag--honey">Changes to review</span></> : null}{waitingPhotos(a).length ? <><br /><span className="tag tag--honey">{waitingPhotos(a).length} photo{waitingPhotos(a).length === 1 ? '' : 's'} to review</span></> : null}</td>
               </tr>
             ))}
           </tbody>

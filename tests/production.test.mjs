@@ -149,7 +149,10 @@ test('accounts: validation, unique emails, sign in, and no hash in what is liste
 });
 
 test('accounts: roles limit what each person can reach', () => {
-  assert.deepEqual(ROLES, ['owner', 'editor', 'reviewer']);
+  assert.deepEqual(ROLES, ['owner', 'editor', 'reviewer', 'alchemist']);
+  assert.equal(can('alchemist', 'portal'), true);
+  for (const area of ['applications', 'content', 'accounts', 'retention', 'activity', 'enquiries']) assert.equal(can('alchemist', area), false, `alchemists never reach ${area}`);
+  for (const role of ['owner', 'editor', 'reviewer']) assert.equal(can(role, 'portal'), false, 'the portal is only for Alchemists');
   for (const area of ['applications', 'content', 'accounts', 'retention']) assert.equal(can('owner', area), true);
   assert.equal(can('editor', 'content'), true);
   assert.equal(can('editor', 'applications'), false, 'editors never see applicant details');
@@ -196,6 +199,6 @@ test('retention: declined after 90 days, everything else after a year, counters 
   assert.deepEqual(found.applications.map((a) => a.id).sort(), ['declined-old', 'new-old']);
   assert.deepEqual(found.counters.map((c) => c.id), ['old-counter']);
   assert.equal((await store.list('applications')).length, 4, 'finding does not delete');
-  assert.deepEqual(await purgeExpired(store, now), { applications: 2, counters: 1 });
+  assert.deepEqual(await purgeExpired(store, now), { applications: 2, counters: 1, audit: 0, enquiries: 0 });
   assert.deepEqual((await store.list('applications')).map((a) => a.id).sort(), ['approved-recent', 'declined-recent']);
 });
