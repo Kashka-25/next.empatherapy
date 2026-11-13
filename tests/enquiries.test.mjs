@@ -67,6 +67,7 @@ test('outcomes: status, notes and the first-session amount follow the rules', as
   const { id } = await submitEnquiry(store, live, good);
   assert.equal((await updateEnquiry(store, id, { status: 'nonsense' })).reason, 'bad_status');
   assert.equal((await updateEnquiry(store, id, { fee: 90 })).reason, 'fee_needs_booked', 'no amount until it is booked');
+  assert.equal((await updateEnquiry(store, id, { status: 'replied', fee: 90 })).reason, 'fee_needs_booked', 'and not by sending it together with a non-booked status either');
   assert.equal((await updateEnquiry(store, 'missing', { status: 'replied' })).reason, 'not_found');
   assert.equal((await updateEnquiry(store, id, { status: 'replied', note: '<b>called</b> back' })).record.note, 'bcalled/b back');
   const booked = await updateEnquiry(store, id, { status: 'booked', fee: '90.456' }, new Date('2026-11-20T00:00:00Z'));
@@ -74,6 +75,10 @@ test('outcomes: status, notes and the first-session amount follow the rules', as
   assert.equal(booked.record.booked_at, '2026-11-20T00:00:00.000Z');
   assert.equal((await updateEnquiry(store, id, { fee: -5 })).reason, 'bad_fee');
   assert.equal((await updateEnquiry(store, id, { fee: 99999 })).reason, 'bad_fee');
+  const sentAgain = await updateEnquiry(store, id, { status: 'closed', fee: '90.46' }); // the form always sends the amount it holds
+  assert.equal(sentAgain.ok, true, 'moving a booking back to another status works even when the old amount is sent');
+  assert.equal('first_session_fee' in sentAgain.record, false);
+  await updateEnquiry(store, id, { status: 'booked', fee: '90.456' });
   const undone = await updateEnquiry(store, id, { status: 'closed' });
   assert.equal('first_session_fee' in undone.record, false, 'moving away from booked clears the amount');
   assert.equal('booked_at' in undone.record, false);

@@ -5,6 +5,7 @@ import { loadContent } from '@/lib/content-store.mjs';
 import { canReceiveEnquiries } from '@/lib/enquiries.mjs';
 import { agreementsFor, AGREEMENT_LABEL, MIN_DISCOUNT, MAX_DISCOUNT } from '@/lib/referrals.mjs';
 import { summarise } from '@/lib/summary.mjs';
+import { ledgerFor, balanceOf, effectiveStatus, getCreditValue, COOLING_DAYS, MONTHLY_CAP } from '@/lib/credits.mjs';
 import { createReferralCodeAction, offerDiscountAction, respondToOfferAction, endAgreementPortalAction } from '../../actions';
 
 export const metadata = { title: 'Referral circle' };
@@ -21,6 +22,9 @@ export default async function CirclePage({ searchParams }) {
   const code = store ? await store.get('referral_codes', me.profile_id) : null;
   const { asReferrer, asPartner } = store ? await agreementsFor(store, me.profile_id) : { asReferrer: [], asPartner: [] };
   const used = store ? summarise(await store.list('enquiries'), me.profile_id, { period: 'all' }).myCodeUsed : { enquiries: 0, booked: 0 };
+  const ledger = store ? await ledgerFor(store, me.profile_id) : [];
+  const balance = balanceOf(ledger, me.profile_id);
+  const creditValue = await getCreditValue(store);
   const waiting = asReferrer.filter((a) => a.status === 'offered');
   const partners = asReferrer.filter((a) => a.status === 'active');
   const candidates = alchemists.filter((a) => a.id !== me.profile_id && canReceiveEnquiries(a) && !asPartner.some((x) => x.referrer_id === a.id && ['offered', 'active'].includes(x.status)));
@@ -49,6 +53,26 @@ export default async function CirclePage({ searchParams }) {
             ) : (
               <form action={createReferralCodeAction} className="stack"><p>Make a code you can share with clients you bring to Empatherapy.</p><div><button type="submit" className="btn btn--honey">Get my code</button></div></form>
             )}
+          </section>
+
+          <section className="admin-card stack" aria-labelledby="credits-h">
+            <h2 id="credits-h" style={{ fontSize: '1.3rem' }}>Your credits</h2>
+            <p>You earn <strong>1 credit</strong> when someone who used your code books their <strong>first session</strong> with an Alchemist in your circle, as that Alchemist reports it. Credits are for thanking you for bringing people to Empatherapy.</p>
+            <div className="admin-grid">
+              <div className="admin-card"><span className="eyebrow">Confirmed</span><strong className="admin-stat">{balance.confirmed}</strong><span>{creditValue ? `about $${(balance.confirmed * creditValue).toLocaleString('en-AU')} when spending opens` : 'credits earned'}</span></div>
+              <div className="admin-card"><span className="eyebrow">Pending</span><strong className="admin-stat">{balance.pending}</strong><span>confirmed after {COOLING_DAYS} days</span></div>
+            </div>
+            <p className="demo-note" role="note"><strong>Spending credits on cheaper sessions opens later.</strong> We are still working out the details, and your credits are safely recorded until then. Credits are confirmed after a {COOLING_DAYS}-day cooling-off period, you can earn up to {MONTHLY_CAP} a month, only a client&rsquo;s first booked session counts, and the team may void a credit that does not look right.</p>
+            {ledger.length ? (
+              <ul className="stack" style={{ listStyle: 'none', padding: 0, gap: '0.5rem' }}>
+                {ledger.map((c) => (
+                  <li key={c.id} className="row" style={{ justifyContent: 'space-between' }}>
+                    <span>{new Date(c.created_at).toLocaleDateString('en-AU')}: a client booked a first session with {c.partner_name}</span>
+                    <span className="tag">{{ confirmed: 'Confirmed', pending: 'Pending', voided: 'Not counted' }[effectiveStatus(c)]}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : <p style={{ color: 'var(--muted)' }}>No credits yet. They appear when someone who used your code books a first session.</p>}
           </section>
 
           {waiting.length ? (

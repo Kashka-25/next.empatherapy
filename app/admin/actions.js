@@ -10,6 +10,7 @@ import { can } from '@/lib/accounts.mjs';
 import { recordAudit, describeSave, PHOTO_INTENT } from '@/lib/audit.mjs';
 import { updateEnquiry, setRatePercent, ENQUIRY_LABEL } from '@/lib/enquiries.mjs';
 import { propose, approve, reject } from '@/lib/proposals.mjs';
+import { syncCredit, voidEntry, setCreditValue } from '@/lib/credits.mjs';
 import { ensureCode, offerDiscount, respondToOffer, endAgreement, removeProfileReferrals, MAX_DISCOUNT, MIN_DISCOUNT } from '@/lib/referrals.mjs';
 import { validatePost, STATUS_LABEL as POST_STATUS_LABEL, POST_STATUSES, MAX_POSTS_PER_PROFILE } from '@/lib/posts.mjs';
 import { getBlobStore, newImageId } from '@/lib/images/blobs.mjs';
@@ -264,6 +265,7 @@ export async function resetAlchemistAction(formData) {
   if (blobs) for (const p of photosOf(stored)) await blobs.remove(p.id).catch(() => {}); // photo files go with the profile
   for (const post of (await store.list('posts')).filter((x) => x.profile_id === id)) await store.remove('posts', post.id); // and so does their writing
   await removeProfileReferrals(store, id); // and their referral code and agreements
+  for (const c of (await store.list('credit_entries')).filter((x) => x.profile_id === id)) await store.remove('credit_entries', c.id); // and credits they earned
   await audit(me, 'alchemist_removed', id, `Reset or deleted profile ${stored?.name ?? id}`);
   refreshAll();
   redirect('/admin/alchemists?reset=1');
@@ -502,6 +504,8 @@ export async function updateEnquiryAction(formData) {
     back('error=' + encodeURIComponent(msg));
   }
   await audit(me, 'enquiry_updated', id, `Marked an enquiry for ${r.record.alchemist_name} as ${ENQUIRY_LABEL[r.record.status]}`);
+  const credit = await syncCredit(store, r.record);
+  if (credit.changed) await audit(me, 'credit_changed', id, credit.awarded ? 'A referral credit was earned from a booked first session' : 'A pending referral credit was undone because a booking was undone');
   revalidatePath('/admin/enquiries');
   back('saved=1');
 }
@@ -605,6 +609,8 @@ export async function portalUpdateEnquiryAction(formData) {
   const r = await updateEnquiry(store, id, { status: text(formData, 'status'), fee: text(formData, 'fee'), alchemistNote: text(formData, 'alchemist_note') });
   if (!r.ok) back('error=' + encodeURIComponent({ bad_status: 'Choose a valid status.', bad_fee: 'Enter an amount from 0 to 5000.', fee_needs_booked: 'An amount can only be added once the status is "Booked a session".' }[r.reason] ?? 'That did not work.'));
   await audit(me, 'enquiry_updated', id, `Marked an enquiry for ${r.record.alchemist_name} as ${ENQUIRY_LABEL[r.record.status]}`);
+  const credit = await syncCredit(store, r.record);
+  if (credit.changed) await audit(me, 'credit_changed', id, credit.awarded ? 'A referral credit was earned from a booked first session' : 'A pending referral credit was undone because a booking was undone');
   revalidatePath('/admin', 'layout');
   back('saved=1');
 }
@@ -770,6 +776,26 @@ export async function endAgreementTeamAction(formData) {
   const id = text(formData, 'id');
   const r = await endAgreement(store, id);
   if (r.ok) await audit(me, 'referral_changed', id, 'Ended a referral agreement');
+  revalidatePath('/admin/referrals');
+  redirect('/admin/referrals?saved=1');
+}
+
+/* ---------- referral credits (team) ---------- */
+export async function voidCreditAction(formData) {
+  const me = await requireAdmin('enquiries');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const r = await voidEntry(store, id, { reason: 'team' });
+  if (r.ok) await audit(me, 'credit_changed', id, 'Voided a referral credit');
+  revalidatePath('/admin/referrals');
+  redirect('/admin/referrals?saved=1');
+}
+
+export async function setCreditValueAction(formData) {
+  const me = await requireAdmin('enquiries');
+  const r = await setCreditValue(needStore(), text(formData, 'value'));
+  if (!r.ok) redirect('/admin/referrals?error=' + encodeURIComponent('Enter an amount from 0 to 100.'));
+  await audit(me, 'credit_changed', 'credits', `Set the illustrative value of a credit to $${r.value}`);
   revalidatePath('/admin/referrals');
   redirect('/admin/referrals?saved=1');
 }
