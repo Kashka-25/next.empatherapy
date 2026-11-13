@@ -6,7 +6,8 @@ import { canReceiveEnquiries } from '@/lib/enquiries.mjs';
 import { agreementsFor, AGREEMENT_LABEL, MIN_DISCOUNT, MAX_DISCOUNT } from '@/lib/referrals.mjs';
 import { summarise } from '@/lib/summary.mjs';
 import { ledgerFor, balanceOf, effectiveStatus, getCreditValue, COOLING_DAYS, MONTHLY_CAP } from '@/lib/credits.mjs';
-import { createReferralCodeAction, offerDiscountAction, respondToOfferAction, endAgreementPortalAction } from '../../actions';
+import { getOffer, acceptingAlchemists, availableCredits, spendsFor, SPEND_LABEL, EXPIRY_DAYS, MAX_CREDITS_PER_SESSION } from '@/lib/credit-spend.mjs';
+import { createReferralCodeAction, offerDiscountAction, respondToOfferAction, endAgreementPortalAction, saveCreditOfferAction, requestSpendAction, respondToSpendAction } from '../../actions';
 
 export const metadata = { title: 'Referral circle' };
 
@@ -25,6 +26,10 @@ export default async function CirclePage({ searchParams }) {
   const ledger = store ? await ledgerFor(store, me.profile_id) : [];
   const balance = balanceOf(ledger, me.profile_id);
   const creditValue = await getCreditValue(store);
+  const avail = store ? await availableCredits(store, me.profile_id) : { available: 0, held: 0, used: 0, expired: 0 };
+  const myOffer = await getOffer(store, me.profile_id);
+  const takers = store ? (await acceptingAlchemists(store, alchemists)).filter((x) => x.alchemist.id !== me.profile_id) : [];
+  const { made, received } = store ? await spendsFor(store, me.profile_id) : { made: [], received: [] };
   const waiting = asReferrer.filter((a) => a.status === 'offered');
   const partners = asReferrer.filter((a) => a.status === 'active');
   const candidates = alchemists.filter((a) => a.id !== me.profile_id && canReceiveEnquiries(a) && !asPartner.some((x) => x.referrer_id === a.id && ['offered', 'active'].includes(x.status)));
@@ -62,7 +67,7 @@ export default async function CirclePage({ searchParams }) {
               <div className="admin-card"><span className="eyebrow">Confirmed</span><strong className="admin-stat">{balance.confirmed}</strong><span>{creditValue ? `about $${(balance.confirmed * creditValue).toLocaleString('en-AU')} when spending opens` : 'credits earned'}</span></div>
               <div className="admin-card"><span className="eyebrow">Pending</span><strong className="admin-stat">{balance.pending}</strong><span>confirmed after {COOLING_DAYS} days</span></div>
             </div>
-            <p className="demo-note" role="note"><strong>Spending credits on cheaper sessions opens later.</strong> We are still working out the details, and your credits are safely recorded until then. Credits are confirmed after a {COOLING_DAYS}-day cooling-off period, you can earn up to {MONTHLY_CAP} a month, only a client&rsquo;s first booked session counts, and the team may void a credit that does not look right.</p>
+            <p className="demo-note" role="note"><strong>You can spend credits on cheaper sessions with Alchemists who take them</strong> (see below). The Alchemist gives the discount themselves. Credits expire {EXPIRY_DAYS} days after you earn them, and are confirmed after a {COOLING_DAYS}-day cooling-off period, you can earn up to {MONTHLY_CAP} a month, only a client&rsquo;s first booked session counts, and the team may void a credit that does not look right.</p>
             {ledger.length ? (
               <ul className="stack" style={{ listStyle: 'none', padding: 0, gap: '0.5rem' }}>
                 {ledger.map((c) => (
@@ -73,6 +78,64 @@ export default async function CirclePage({ searchParams }) {
                 ))}
               </ul>
             ) : <p style={{ color: 'var(--muted)' }}>No credits yet. They appear when someone who used your code books a first session.</p>}
+          </section>
+
+          <section className="admin-card stack" aria-labelledby="spend-h">
+            <h2 id="spend-h" style={{ fontSize: '1.3rem' }}>Spend your credits</h2>
+            <p>You have <strong>{avail.available}</strong> {avail.available === 1 ? 'credit' : 'credits'} to spend{avail.held ? `, with ${avail.held} held for open requests` : ''}{avail.expired ? ` (${avail.expired} expired)` : ''}. Pick an Alchemist who takes credits and ask. They give the discount themselves when you see them, then mark it used. Empatherapy never handles the money.</p>
+            {takers.length ? (
+              <form action={requestSpendAction} className="stack" style={{ gap: '1rem' }}>
+                <div className="filters__row">
+                  <div className="field"><label htmlFor="partner_id">With</label><select id="partner_id" name="partner_id" required defaultValue=""><option value="" disabled>Choose an Alchemist</option>{takers.map((x) => <option key={x.alchemist.id} value={x.alchemist.id}>{x.alchemist.name}: ${x.offer.value} a credit, up to {x.offer.max_credits}</option>)}</select></div>
+                  <div className="field"><label htmlFor="credits">Credits to spend</label><input id="credits" name="credits" type="number" min="1" max={MAX_CREDITS_PER_SESSION} defaultValue="1" /></div>
+                </div>
+                <div><button type="submit" className="btn btn--honey" disabled={!avail.available}>Ask to spend</button></div>
+              </form>
+            ) : <p style={{ color: 'var(--muted)' }}>No one is taking credits yet. As more Alchemists switch it on, they will appear here.</p>}
+            {made.length ? (
+              <ul className="stack" style={{ listStyle: 'none', padding: 0, gap: '0.6rem' }}>
+                {made.map((s) => (
+                  <li key={s.id}>
+                    <form action={respondToSpendAction} className="row" style={{ justifyContent: 'space-between' }}>
+                      <input type="hidden" name="id" value={s.id} />
+                      <span>{new Date(s.created_at).toLocaleDateString('en-AU')}: {s.credits} {s.credits === 1 ? 'credit' : 'credits'} (${s.discount} off) with <strong>{s.partner_name}</strong></span>
+                      <span className="row"><span className="tag">{SPEND_LABEL[s.status]}</span>{s.status === 'requested' ? <button type="submit" name="intent" value="withdraw" className="btn btn--soft btn--sm">Withdraw</button> : null}</span>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </section>
+
+          <section className="admin-card stack" aria-labelledby="take-h">
+            <h2 id="take-h" style={{ fontSize: '1.3rem' }}>Take credits from other Alchemists</h2>
+            <p style={{ color: 'var(--muted)' }}>If you switch this on, Alchemists who have earned credits can ask to spend them on a session with you. You choose what one credit takes off and the most you will take for a single session. You give the discount yourself and mark it used afterwards. You can pause this any time. It brings you people who found you through the network.</p>
+            <form action={saveCreditOfferAction} className="stack" style={{ gap: '1rem' }}>
+              <div className="filters__row">
+                <div className="field"><label htmlFor="accepts">Take credits</label><select id="accepts" name="accepts" defaultValue={myOffer.accepts ? 'yes' : 'no'}><option value="no">Not at the moment</option><option value="yes">Yes, I take credits</option></select></div>
+                <div className="field"><label htmlFor="value">One credit takes off (AUD)</label><input id="value" name="value" type="number" min="1" max="100" step="0.5" defaultValue={myOffer.value} /></div>
+                <div className="field"><label htmlFor="max_credits">Most credits for one session</label><input id="max_credits" name="max_credits" type="number" min="1" max={MAX_CREDITS_PER_SESSION} defaultValue={myOffer.max_credits} /></div>
+              </div>
+              <div><button type="submit" className="btn btn--honey">Save</button></div>
+            </form>
+            {received.length ? (
+              <>
+                <h3 style={{ fontSize: '1.1rem' }}>Requests to spend credits with you</h3>
+                <ul className="stack" style={{ listStyle: 'none', padding: 0, gap: '0.6rem' }}>
+                  {received.map((s) => (
+                    <li key={s.id}>
+                      <form action={respondToSpendAction} className="row" style={{ justifyContent: 'space-between' }}>
+                        <input type="hidden" name="id" value={s.id} />
+                        <span>{new Date(s.created_at).toLocaleDateString('en-AU')}: <strong>{s.profile_name}</strong> would like ${s.discount} off ({s.credits} {s.credits === 1 ? 'credit' : 'credits'})</span>
+                        {s.status === 'requested'
+                          ? <span className="row"><button type="submit" name="intent" value="used" className="btn btn--honey btn--sm">I gave the discount</button><button type="submit" name="intent" value="decline" className="btn btn--soft btn--sm">Decline</button></span>
+                          : <span className="tag">{SPEND_LABEL[s.status]}</span>}
+                      </form>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
           </section>
 
           {waiting.length ? (

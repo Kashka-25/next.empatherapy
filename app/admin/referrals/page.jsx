@@ -4,7 +4,8 @@ import { loadContent } from '@/lib/content-store.mjs';
 import { AGREEMENT_LABEL } from '@/lib/referrals.mjs';
 import { effectiveStatus, economics, getCreditValue, COOLING_DAYS, MONTHLY_CAP, MAX_CREDIT_VALUE } from '@/lib/credits.mjs';
 import { getRate } from '@/lib/enquiries.mjs';
-import { endAgreementTeamAction, voidCreditAction, setCreditValueAction } from '../actions';
+import { SPEND_LABEL } from '@/lib/credit-spend.mjs';
+import { endAgreementTeamAction, voidCreditAction, setCreditValueAction, voidSpendAction } from '../actions';
 
 export const metadata = { title: 'Referral circles' };
 
@@ -18,6 +19,7 @@ export default async function ReferralsAdmin({ searchParams }) {
   const enquiries = store ? await store.list('enquiries') : [];
   const viaCode = enquiries.filter((e) => e.referral);
   const entries = store ? (await store.list('credit_entries')).sort((a, b) => b.created_at.localeCompare(a.created_at)) : [];
+  const spends = store ? (await store.list('credit_spends')).sort((a, b) => b.created_at.localeCompare(a.created_at)) : [];
   const rate = store ? await getRate(store) : 0;
   const creditValue = store ? await getCreditValue(store) : 0;
   const eco = economics(enquiries, entries, { rate, creditValue });
@@ -56,7 +58,7 @@ export default async function ReferralsAdmin({ searchParams }) {
       {store ? (
         <section className="admin-card stack" aria-labelledby="credits-h">
           <h2 id="credits-h" style={{ fontSize: '1.4rem' }}>Referral credits</h2>
-          <p style={{ color: 'var(--muted)' }}>A referrer earns 1 credit when a client who used their code books a first session, as the partner reports it. One per client per referrer, up to {MONTHLY_CAP} a month, pending for {COOLING_DAYS} days before it counts. Spending credits on cheaper sessions is not open yet, so these are records only. Void any that look wrong.</p>
+          <p style={{ color: 'var(--muted)' }}>A referrer earns 1 credit when a client who used their code books a first session, as the partner reports it. One per client per referrer, up to {MONTHLY_CAP} a month, pending for {COOLING_DAYS} days before it counts. Referrers can spend confirmed credits with Alchemists who take them (credits expire after a year). Void any earned credit that looks wrong.</p>
           {entries.length ? (
             <div className="admin-table-wrap">
               <table className="admin-table">
@@ -73,6 +75,26 @@ export default async function ReferralsAdmin({ searchParams }) {
               </table>
             </div>
           ) : <p style={{ color: 'var(--muted)' }}>No credits earned yet.</p>}
+        </section>
+      ) : null}
+
+      {spends.length ? (
+        <section className="admin-card stack" aria-labelledby="spend-h">
+          <h2 id="spend-h" style={{ fontSize: '1.4rem' }}>Credits spent</h2>
+          <p style={{ color: 'var(--muted)' }}>The accepting Alchemist gives each discount themselves. Voiding a spend puts the credits back with the referrer.</p>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead><tr><th scope="col">Asked</th><th scope="col">Referrer</th><th scope="col">With</th><th scope="col">Credits</th><th scope="col">Status</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
+              <tbody>
+                {spends.map((s) => (
+                  <tr key={s.id}>
+                    <td>{new Date(s.created_at).toLocaleDateString('en-AU')}</td><th scope="row">{s.profile_name}</th><td>{s.partner_name}</td><td>{s.credits} (${s.discount})</td><td>{SPEND_LABEL[s.status]}</td>
+                    <td>{['requested', 'used'].includes(s.status) ? <form action={voidSpendAction}><input type="hidden" name="id" value={s.id} /><button type="submit" className="btn btn--soft btn--sm">Void</button></form> : null}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       ) : null}
 
