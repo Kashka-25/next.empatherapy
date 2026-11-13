@@ -202,8 +202,8 @@ export default async function AlchemistPage({ params }) {
               </>
             ) : (
               <>
-                <button type="button" className="btn btn--soft btn--lg" disabled>Enquiries open at launch</button>
-                <p style={{ fontSize: '0.88rem', color: 'var(--muted)' }}>This is an example profile, so there is nobody to contact.</p>
+                <button type="button" className="btn btn--soft btn--lg" disabled>{a.demo ? 'Enquiries open at launch' : 'Enquiries not open yet'}</button>
+                <p style={{ fontSize: '0.88rem', color: 'var(--muted)' }}>{a.demo ? 'This is an example profile, so there is nobody to contact.' : `${first} has not added a way to enquire yet.`}</p>
               </>
             )}
           </div>
