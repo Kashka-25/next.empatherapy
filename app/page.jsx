@@ -1,139 +1,141 @@
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import FadeIn from '@/components/ui/FadeIn';
-import Label from '@/components/ui/Label';
-import TherapistCard from '@/components/therapists/TherapistCard';
-import { therapists } from '@/data/therapists';
+import Eyebrow from '@/components/ui/Eyebrow';
+import AlchemistCard from '@/components/alchemists/AlchemistCard';
+import ModalityCard from '@/components/modalities/ModalityCard';
+import { TeaScene, Lighthouse, HoneyDrip, Sprig } from '@/components/art/Botanicals';
+import { alchemists, curatedOrder, activeFeatures, getModalityBySlug, modalities } from '@/lib/content.mjs';
 
-export const metadata = {
-  title: 'Empatherapy | Where Humanity is Our Medicine',
-};
+export const revalidate = 3600; // refresh hourly so the weekly feature rolls over without a redeploy
+
+export const metadata = { title: { absolute: 'Empatherapy | Discover new pathways to yourself' } };
+
+const beliefs = [
+  { t: 'You are not broken', p: 'You do not need to be fixed to deserve support.' },
+  { t: 'Emotions are messengers', p: 'Difficult experiences can open the door to awareness and growth.' },
+  { t: 'You are your own greatest healer', p: 'Practitioners help you rediscover your own capabilities.' },
+  { t: 'There are many pathways', p: 'No single practice or person is right for everyone.' },
+];
 
 export default function HomePage() {
+  const features = activeFeatures(new Date());
+  const featured = curatedOrder(alchemists.filter((a) => a.featured_status && a.publication_status === 'published')).slice(0, 3);
+  const modalityById = (id) => modalities.find((m) => m.id === id);
+
   return (
-    <div>
-      {/* ── HERO ── */}
-      <section style={{
-        minHeight: '100vh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-        background: 'linear-gradient(155deg, #152B22 0%, #1E3A2F 40%, #2D5241 75%, #3D6654 100%)',
-        position: 'relative', overflow: 'hidden', padding: '120px 2rem 80px',
-      }}>
-        <div style={{ position: 'absolute', top: '20%', right: '-5%', width: '55vw', height: '55vw', borderRadius: '50%', background: 'radial-gradient(circle, rgba(184,124,76,0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 'min(700px,90vw)', height: 'min(700px,90vw)', borderRadius: '50%', border: '1px solid rgba(212,165,116,0.07)', pointerEvents: 'none' }} />
-
-        <div style={{ position: 'relative', maxWidth: '760px' }}>
-          <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.68rem', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(212,165,116,0.7)', marginBottom: '2.2rem' }}>
-            Holistic Healing · Sydney & Online
-          </p>
-          <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(3.2rem,7.5vw,6rem)', lineHeight: 1.05, color: '#F7F3ED', marginBottom: '2rem' }}>
-            Where humanity<br />
-            <em style={{ fontStyle: 'italic', color: 'var(--amber-light)' }}>is our medicine</em>
-          </h1>
-          <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '1.05rem', lineHeight: 1.85, color: 'rgba(247,243,237,0.68)', maxWidth: '520px', margin: '0 auto 3.5rem', fontWeight: 300 }}>
-            Empatherapy connects you with guides who meet you where you are — in your emotions, in your body, in your becoming.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button href="/therapists" variant="amber" size="lg">Find Your Guide</Button>
-            <Button href="/about" variant="ghost" size="lg">Our Philosophy</Button>
-          </div>
-        </div>
-
-        <div style={{ position: 'absolute', bottom: '2.5rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-          <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.6rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(247,243,237,0.3)' }}>Scroll</p>
-          <div style={{ width: '1px', height: '44px', background: 'linear-gradient(to bottom, rgba(247,243,237,0.3), transparent)' }} />
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ── */}
-      <section style={{ padding: 'var(--section-pad)', background: 'var(--cream)' }}>
-        <div style={{ maxWidth: 'var(--max-w)', margin: '0 auto' }}>
-          <FadeIn style={{ textAlign: 'center', marginBottom: '5rem' }}>
-            <Label>How It Works</Label>
-            <h2 style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: 'var(--green-deep)' }}>Your path to finding the right guide</h2>
-          </FadeIn>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem' }}>
-            {[
-              { n: '01', t: 'Explore', b: 'Browse our guides and read about their approach, style, and areas of focus. There is no right or wrong — only resonance.' },
-              { n: '02', t: 'Try a Session', b: 'Book a trial session before committing. Experience the presence of your guide and see what unfolds naturally.' },
-              { n: '03', t: 'Come Home', b: 'Find someone whose presence supports your unfolding. Return as often as you need — on your terms.' },
-            ].map((step, i) => (
-              <FadeIn key={step.n} delay={i + 1} style={{ padding: '2.5rem', background: 'var(--card)', borderTop: '2px solid var(--amber)', position: 'relative' }}>
-                <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '3.8rem', fontWeight: 300, color: 'var(--linen)', lineHeight: 1, position: 'absolute', top: '1.2rem', right: '1.5rem' }}>{step.n}</p>
-                <h3 style={{ fontSize: '1.65rem', color: 'var(--green-deep)', marginBottom: '1rem' }}>{step.t}</h3>
-                <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.92rem', color: 'var(--muted)', fontWeight: 300, lineHeight: 1.85 }}>{step.b}</p>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── GUIDES PREVIEW ── */}
-      <section style={{ padding: 'var(--section-pad)', background: 'var(--linen)' }}>
-        <div style={{ maxWidth: 'var(--max-w)', margin: '0 auto' }}>
-          <FadeIn style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
-            <div>
-              <Label>Our Guides</Label>
-              <h2 style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: 'var(--green-deep)' }}>Find someone who resonates</h2>
+    <>
+      {/* Warm welcome first. The directory comes after. */}
+      <section className="hero" aria-labelledby="hero-title">
+        <div className="container hero__grid">
+          <div className="hero__copy">
+            <span className="hand">welcome, come on in</span>
+            <h1 id="hero-title">Your journey starts <em>somewhere.</em></h1>
+            <p className="lede">Discover new pathways, meet people who care, and explore what resonates with you.</p>
+            <div className="row">
+              <Button href="/discover" size="lg">Begin your discovery</Button>
+              <Button href="/alchemists" variant="outline" size="lg">Explore Alchemists</Button>
             </div>
-            <Button href="/therapists" variant="outline">View All Guides</Button>
-          </FadeIn>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
-            {therapists.map((t) => <TherapistCard key={t.slug} therapist={t} />)}
-            {[1, 2].map((i) => (
-              <FadeIn key={i} delay={i} style={{ background: 'var(--card)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '420px', opacity: 0.45 }}>
-                <div style={{ width: '64px', height: '64px', borderRadius: '50%', border: '1px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.2rem', fontSize: '1.5rem', color: 'var(--border)' }}>+</div>
-                <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.72rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--muted)' }}>Guide Coming Soon</p>
-              </FadeIn>
-            ))}
+            <p style={{ fontSize: '0.95rem', color: 'var(--muted)' }}>A few gentle questions. No sign-up needed.</p>
           </div>
+          <div className="hero__art"><TeaScene /></div>
         </div>
       </section>
 
-      {/* ── QUOTE ── */}
-      <section style={{ padding: '9rem 2rem', background: 'var(--green-deep)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(184,124,76,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <FadeIn style={{ maxWidth: '700px', margin: '0 auto', position: 'relative' }}>
-          <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(1.5rem,3vw,2.2rem)', fontStyle: 'italic', fontWeight: 300, color: 'rgba(247,243,237,0.9)', lineHeight: 1.65, marginBottom: '2rem' }}>
-            "You don't need to be fixed. You just need a space where you can feel held — and be met in it."
-          </p>
-          <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.72rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(212,165,116,0.65)' }}>— Cassidy Dugan, Founder</p>
-        </FadeIn>
-      </section>
-
-      {/* ── FUND TEASER ── */}
-      <section style={{ padding: 'var(--section-pad)', background: 'var(--cream)' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '5rem', alignItems: 'center' }}>
+      {/* The signature invitation */}
+      <section className="section section--lemon" style={{ paddingTop: 'calc(var(--section-pad) * 0.6)' }}>
+        <div className="container">
           <FadeIn>
-            <Label>Community Healing Fund</Label>
-            <h2 style={{ fontSize: 'clamp(1.9rem,3.5vw,2.8rem)', color: 'var(--green-deep)', marginBottom: '1.5rem' }}>Healing shouldn't depend on wealth</h2>
-            <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.93rem', color: 'var(--muted)', fontWeight: 300, lineHeight: 1.9, marginBottom: '2rem' }}>
-              Every session at Empatherapy includes a 10% contribution to our Community Healing Fund — supporting those who cannot afford therapeutic support.
-            </p>
-            <Button href="/fund" variant="amber_outline">Learn More</Button>
-          </FadeIn>
-          <FadeIn delay={1}>
-            <div style={{ background: 'var(--green-deep)', padding: '3.5rem', textAlign: 'center' }}>
-              <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '5rem', fontWeight: 300, color: 'var(--amber)', lineHeight: 1, marginBottom: '0.75rem' }}>10%</p>
-              <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(247,243,237,0.5)', lineHeight: 1.8 }}>of every session<br />funds community healing</p>
+            <div className="invite">
+              <div className="stack">
+                <Eyebrow>Alchemist Discovery</Eyebrow>
+                <h2>You don&rsquo;t need to know exactly what you&rsquo;re looking for.</h2>
+                <p className="invite__prompt">Start wherever you are. Tell us a little about what&rsquo;s on your mind, and we&rsquo;ll help you explore some possibilities.</p>
+                <div className="row"><Button href="/discover">Begin your discovery</Button></div>
+              </div>
+              <div className="stack" aria-hidden="true">
+                <span className="hand">for example&hellip;</span>
+                <div className="invite__mock">I&rsquo;ve been feeling a bit disconnected from myself lately, and I&rsquo;m curious about trying something new.</div>
+              </div>
             </div>
           </FadeIn>
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section style={{ padding: 'var(--section-pad)', background: 'var(--linen)', textAlign: 'center' }}>
-        <FadeIn style={{ maxWidth: '580px', margin: '0 auto' }}>
-          <Label>Begin Here</Label>
-          <h2 style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: 'var(--green-deep)', marginBottom: '1.5rem', lineHeight: 1.2 }}>
-            You are more powerful than<br /><em style={{ fontStyle: 'italic' }}>you've been taught to believe</em>
-          </h2>
-          <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.93rem', color: 'var(--muted)', fontWeight: 300, lineHeight: 1.9, marginBottom: '2.5rem' }}>
-            Explore our guides and try a session. No pressure. No long-term commitment. Just a space to be met.
-          </p>
-          <Button href="/therapists" variant="amber" size="lg">Find Your Guide</Button>
-        </FadeIn>
+      {/* Weekly modalities */}
+      <section className="section">
+        <div className="container">
+          <div className="section-head">
+            <Eyebrow>This week in Explore Modalities</Eyebrow>
+            <h2>Something you may never have come across</h2>
+            <p>Each week we introduce a few approaches to wellbeing in plain language: where they come from, what a session is like, what research says, and who offers them.</p>
+          </div>
+          <div className="feature-grid">
+            {features.map((f, i) => {
+              const m = modalityById(f.modality_id);
+              return m ? <FadeIn key={f.id} delay={i + 1}><ModalityCard modality={m} intro={f.editorial_introduction} /></FadeIn> : null;
+            })}
+          </div>
+          <p style={{ marginTop: '2rem' }}><Link href="/modalities" className="link-arrow">See the whole library</Link></p>
+        </div>
       </section>
-    </div>
+
+      {/* Featured Alchemists */}
+      <section className="section section--linen">
+        <div className="container">
+          <div className="section-head">
+            <Eyebrow>Discover Alchemists</Eyebrow>
+            <h2>People who turned their own journeys into something to share</h2>
+            <p>Every Alchemist tells their story, their philosophy and the training and experience behind their work, so you can see not only what they offer but why.</p>
+          </div>
+          <div className="grid-cards">
+            {featured.map((a, i) => <FadeIn key={a.id} delay={i + 1}><AlchemistCard alchemist={a} /></FadeIn>)}
+          </div>
+          <p style={{ marginTop: '2rem' }}><Link href="/alchemists" className="link-arrow">Meet all Alchemists</Link></p>
+        </div>
+      </section>
+
+      {/* IntoTheLighthouse */}
+      <HoneyDrip fill="var(--linen)" className="drip" />
+      <section className="band-night section" style={{ marginTop: '-1px' }}>
+        <div className="glow" style={{ width: 520, height: 520, right: -120, top: -80 }} />
+        <div className="container lighthouse-split" style={{ position: 'relative' }}>
+          <div className="stack">
+            <Eyebrow>IntoTheLighthouse</Eyebrow>
+            <h2>Sometimes you don&rsquo;t need a session. You just need someone to care.</h2>
+            <p className="lede" style={{ color: 'rgba(238,243,238,.85)' }}>IntoTheLighthouse is a space for human connection and peer support. You don&rsquo;t have to navigate everything alone, and you can always find a little light.</p>
+            <div className="row"><Button href="/lighthouse" variant="outline">Visit the lighthouse</Button></div>
+          </div>
+          <div className="lighthouse-split__art"><Lighthouse size={190} /></div>
+        </div>
+      </section>
+
+      {/* Philosophy */}
+      <section className="section">
+        <div className="container">
+          <div className="section-head section-head--center">
+            <Sprig size={34} color="var(--botanical)" />
+            <h2>We don&rsquo;t believe people need to be fixed</h2>
+            <p>We believe they deserve to be seen, understood and supported to find their own way forward.</p>
+          </div>
+          <div className="beliefs">
+            {beliefs.map((b) => <div className="belief" key={b.t}><h3>{b.t}</h3><p>{b.p}</p></div>)}
+          </div>
+          <p style={{ marginTop: '2rem', textAlign: 'center', marginInline: 'auto' }}><Link href="/about" className="link-arrow">Read our philosophy</Link></p>
+        </div>
+      </section>
+
+      {/* Become an Alchemist */}
+      <section className="section section--sage">
+        <div className="container container--narrow" style={{ textAlign: 'center' }}>
+          <div className="stack" style={{ justifyItems: 'center' }}>
+            <span className="hand">turning shadows into beacons</span>
+            <h2>Have you turned your own experience into something others can learn from?</h2>
+            <p className="lede">Whether you are a trained therapist, a holistic practitioner or someone who has built a practice from lived experience, we would love to hear your story.</p>
+            <Button href="/become-an-alchemist">Become an Alchemist</Button>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

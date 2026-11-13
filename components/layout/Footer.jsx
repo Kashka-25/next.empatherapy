@@ -1,71 +1,51 @@
 import Link from 'next/link';
-
-const cols = [
-  {
-    heading: 'Navigate',
-    links: [
-      { href: '/',            label: 'Home' },
-      { href: '/therapists',  label: 'Find a Guide' },
-      { href: '/about',       label: 'Philosophy' },
-      { href: '/fund',        label: 'Community Fund' },
-      { href: '/contact',     label: 'Contact' },
-    ],
-  },
-  {
-    heading: 'Guides',
-    links: [
-      { href: '/therapists/cass-dugan', label: 'Cassidy Dugan' },
-    ],
-  },
-];
+import { Sprig } from '@/components/art/Botanicals';
 
 export default function Footer() {
   return (
-    <footer style={{ background: '#111B16', padding: '4.5rem 2.5rem 2.5rem' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '3rem', marginBottom: '3.5rem' }}>
-        {/* Brand */}
-        <div>
-          <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.5rem', color: 'rgba(247,243,237,0.9)', marginBottom: '0.8rem' }}>
-            Empatherapy
-          </p>
-          <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.82rem', fontWeight: 300, color: 'rgba(247,243,237,0.4)', lineHeight: 1.85, maxWidth: '240px' }}>
-            A soul-rooted healing platform. Where humanity is our medicine.
-          </p>
-        </div>
-
-        {/* Nav cols */}
-        {cols.map((col) => (
-          <div key={col.heading}>
-            <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(247,243,237,0.28)', marginBottom: '1.2rem' }}>
-              {col.heading}
-            </p>
-            {col.links.map((l) => (
-              <Link key={l.href} href={l.href} style={{ display: 'block', padding: '0.3rem 0', fontFamily: 'Lato, sans-serif', fontSize: '0.83rem', fontWeight: 300, color: 'rgba(247,243,237,0.5)', transition: 'color 0.2s' }}>
-                {l.label}
-              </Link>
-            ))}
+    <footer className="site-footer">
+      <div className="container">
+        <div className="footer-grid">
+          <div className="footer-brand">
+            <p className="wordmark"><Sprig color="#E8BE67" />Empatherapy</p>
+            <p>Discover new pathways to yourself.</p>
           </div>
-        ))}
-
-        {/* Contact */}
-        <div>
-          <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(247,243,237,0.28)', marginBottom: '1.2rem' }}>
-            Contact
-          </p>
-          <a href="mailto:hello@empatherapy.co" style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.83rem', fontWeight: 300, color: 'var(--amber-light)' }}>
-            hello@empatherapy.co
-          </a>
+          <div>
+            <h4>Explore</h4>
+            <ul>
+              <li><Link href="/discover">Begin your discovery</Link></li>
+              <li><Link href="/alchemists">Discover Alchemists</Link></li>
+              <li><Link href="/modalities">Explore Modalities</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Connect</h4>
+            <ul>
+              <li><Link href="/lighthouse">IntoTheLighthouse</Link></li>
+              <li><Link href="/become-an-alchemist">Become an Alchemist</Link></li>
+              <li><a href="mailto:hello@empatherapy.co">hello@empatherapy.co</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>About</h4>
+            <ul>
+              <li><Link href="/about">Our philosophy</Link></li>
+              <li><Link href="/about#how-we-work">How we work</Link></li>
+              <li><Link href="/about#safety">Safety and privacy</Link></li>
+            </ul>
+          </div>
         </div>
-      </div>
-
-      {/* Bottom bar */}
-      <div style={{ maxWidth: '1100px', margin: '0 auto', paddingTop: '2rem', borderTop: '1px solid rgba(247,243,237,0.07)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.73rem', fontWeight: 300, color: 'rgba(247,243,237,0.3)' }}>
-          © 2026 Empatherapy. All rights reserved.
-        </p>
-        <p style={{ fontFamily: 'Lato, sans-serif', fontSize: '0.73rem', fontWeight: 300, color: 'rgba(247,243,237,0.3)' }}>
-          AHHCA Registered · CPAT-Therapist Certified
-        </p>
+        <div className="footer-bar">
+          <p>
+            <strong>This site is a work in progress.</strong> Profiles marked &ldquo;Example&rdquo; are fictional people
+            created to show how Empatherapy will work. Nothing here can be booked yet.
+          </p>
+          <p>
+            Empatherapy offers exploration and connection. It is not emergency or crisis care. If you are in danger
+            or need urgent help in Australia, call 000, or Lifeline on 13 11 14.
+          </p>
+          <p>&copy; 2026 Empatherapy</p>
+        </div>
       </div>
     </footer>
   );

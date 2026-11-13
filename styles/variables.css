@@ -1,24 +1,52 @@
+/* Empatherapy design tokens: the Lemon & Honey palette.
+   Mostly warm parchment, with honey and lemon used sparingly and botanical greens for calm. */
 :root {
-  --cream: #F7F3ED;
-  --linen: #EFE9DF;
-  --green-deep: #1E3A2F;
-  --green-mid: #2D5241;
-  --green-soft: #4A7A62;
-  --amber: #B87C4C;
-  --amber-light: #D4A574;
-  --charcoal: #2C2C27;
-  --muted: #6B6456;
-  --border: #D4C9B8;
-  --card: #FAF7F2;
-  --dark: #111B16;
+  /* Surfaces */
+  --parchment: #FBF7EE;
+  --surface: #FFFDF7;
+  --linen: #F5EEDC;
+  --sage-soft: #E8EEDF;
+  --lemon-soft: #FAF3CE;
 
-  --font-display: 'Cormorant Garamond', serif;
-  --font-body: 'Lato', sans-serif;
+  /* Honey and lemon */
+  --honey: #D9A441;
+  --honey-light: #E8BE67;
+  --lemon: #F3E6A6;
+  --amber: #B9823E;
+  --amber-text: #8A5C1E;   /* amber that is dark enough for small text on parchment */
 
-  --radius: 2px;
-  --transition: 0.2s ease;
+  /* Botanicals */
+  --sage: #A6B59A;
+  --botanical: #667D62;
+  --botanical-deep: #44583F;
+  --teal: #5FA8A3;
+  --blue: #2E75B6;
 
-  --section-pad: 7rem 2rem;
-  --max-w: 1100px;
-  --max-w-narrow: 820px;
+  /* Text and lines */
+  --ink: #38352F;
+  --muted: #6B6355;
+  --border: #E7DCC4;
+  --wood: #B58A5A;
+  --forest: #2D3A2B;       /* footer ground */
+
+  /* IntoTheLighthouse: its own evening palette */
+  --night: #1F333B;
+  --night-soft: #2A4550;
+  --lantern: #F6D98B;
+
+  /* Type */
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Nunito Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-hand: 'Caveat', 'Segoe Print', cursive;
+
+  /* Shape and layout */
+  --radius: 14px;
+  --radius-lg: 26px;
+  --radius-pill: 999px;
+  --shadow-soft: 0 10px 30px -14px rgba(90, 64, 20, 0.28);
+  --shadow-lift: 0 22px 48px -20px rgba(90, 64, 20, 0.35);
+  --max-w: 1120px;
+  --max-w-narrow: 760px;
+  --gutter: clamp(1.1rem, 4vw, 2rem);
+  --section-pad: clamp(3.5rem, 8vw, 6.5rem);
 }
