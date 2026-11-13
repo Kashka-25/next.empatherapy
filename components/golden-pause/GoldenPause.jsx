@@ -105,11 +105,11 @@ export default function GoldenPause({ skipTo }) {
               </div>
             </div>
 
-            {/* The welcome: the name in the honey's own script, solid brown, rides the camera tilt up above the teacup;
-                the tagline settles under the cup. */}
+            {/* The welcome: the honey script melts into Cassidy's title artwork, which rides the camera tilt up above
+                the teacup; the tagline settles under the cup. */}
             <div className="gp__welcome" aria-hidden="true">
               <div className="gp__wm-track" data-gp="wordmark-track">
-                <img className="gp__wordmark" data-gp="wordmark" src="/golden-pause/wordmark-script.webp" alt="Empatherapy" width="2620" height="612" decoding="async" />
+                <img className="gp__wordmark" data-gp="wordmark" src="/golden-pause/wordmark.webp" alt="Empatherapy" width="1854" height="364" decoding="async" />
               </div>
               <p className="gp__tagline" data-gp="tagline">Discover new pathways to yourself.</p>
             </div>

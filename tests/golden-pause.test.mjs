@@ -13,7 +13,7 @@ const previewCss = read('film/golden-pause/preview/player.css');
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim();
 
 test('every media file the player can ask for is in public/golden-pause, at a sensible size', () => {
-  const files = ['golden-pause.m4a', 'golden-pause.webm', 'wordmark-script.webp'];
+  const files = ['golden-pause.m4a', 'golden-pause.webm', 'wordmark.webp'];
   for (const f of ['wide', 'square']) files.push(`film-${f}.mp4`, `poster-${f}.jpg`, `still-${f}.jpg`, `end-${f}.jpg`);
   for (const name of files) {
     const { size } = statSync(new URL(`../public/golden-pause/${name}`, import.meta.url));
@@ -173,6 +173,67 @@ test('the player loads in Node for its timing, and starts in the browser only wh
   assert.equal(end.wordmark.y, cues.layout.wide.wordmark.centerPost);
   const src = read('film/golden-pause/preview/player.js');
   assert.match(src, /hasAttribute\('data-gp-manual'\)/, "the preview's self-start leaves the site's stage alone");
+});
+
+/** a WebP file's width and height (lossy VP8, lossless VP8L or extended VP8X) */
+function webpSize(p) {
+  const b = readFileSync(new URL(`../${p}`, import.meta.url));
+  assert.equal(b.toString('ascii', 0, 4) + b.toString('ascii', 8, 12), 'RIFFWEBP', `${p} is a WebP`);
+  const kind = b.toString('ascii', 12, 16);
+  if (kind === 'VP8X') return [1 + b.readUIntLE(24, 3), 1 + b.readUIntLE(27, 3)];
+  if (kind === 'VP8L') { const v = b.readUInt32LE(21); return [1 + (v & 0x3fff), 1 + ((v >> 14) & 0x3fff)]; }
+  return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
+}
+
+test('the logo is the teacup beside Cassidy\'s title artwork, in the header and the footer, and the film\'s title is the same artwork', () => {
+  for (const file of ['components/layout/Navbar.jsx', 'components/layout/Footer.jsx']) {
+    const src = read(file);
+    assert.match(src, /<Logo \/>/, `${file} shows the logo`);
+    assert.doesNotMatch(src, /Sprig|TeaMark/, `${file} shows neither the leaf nor the small simplified cup`);
+  }
+  const logo = read('components/layout/Logo.jsx');
+  assert.match(logo, /src="\/brand\/teacup\.svg" alt=""/, 'the teacup, decorative (the name is read once)');
+  assert.match(logo, /<span className="sr-only">Empatherapy<\/span>/, 'screen readers hear the name');
+  assert.match(logo, /<span className="logo__name" aria-hidden="true">/, 'the artwork itself is hidden from screen readers');
+  assert.match(logo, /src="\/brand\/name-flower\.webp" alt=""/);
+  // the teacup is the film's symbol, unchanged
+  assert.equal(read('public/brand/teacup.svg'), read('film/golden-pause/source/symbol.svg'));
+
+  // the name's two layers (letters as a mask in the text colour, daisy in colour) come from Cassidy's artwork, same size
+  const letters = webpSize('public/brand/name-letters.webp'), flower = webpSize('public/brand/name-flower.webp');
+  assert.deepEqual(letters, flower, 'the letters and the daisy line up');
+  const css = read('app/globals.css');
+  assert.match(css, new RegExp(`\\.logo__name \\{[^}]*aspect-ratio: ${letters[0]} / ${letters[1]};`), 'the name box has the layers\' proportions');
+  assert.match(css, /mask: url\("\/brand\/name-letters\.webp"\)/);
+  assert.match(css, /\.logo__letters \{[^}]*background-color: currentColor;[^}]*forced-color-adjust: none;/, 'letters in the text colour');
+  assert.match(css, /@media \(forced-colors: active\) \{ \.logo__letters \{ background-color: CanvasText; \} \}/, 'and the system text colour in high contrast');
+  assert.match(logo, new RegExp(`width="${letters[0]}" height="${letters[1]}"`));
+
+  // the film's title is the same artwork, in its own brown, at its own proportions
+  const title = webpSize('public/golden-pause/wordmark.webp');
+  for (const f of ['wide', 'square']) {
+    const wm = cues.layout[f].wordmark;
+    assert.equal(wm.image, 'wordmark.webp');
+    assert.ok(Math.abs(title[0] / title[1] - wm.aspect) < 0.001, `${f}: cues aspect ${wm.aspect} is the image's`);
+    // it takes over as wide as the honey name
+    assert.ok(Math.abs(wm.widthFrac * wm.scalePre - cues.layout[f].script.widthFrac) < 0.001, `${f}: as wide as the honey name`);
+  }
+  assert.match(read('components/golden-pause/GoldenPause.jsx'), new RegExp(`src="/golden-pause/wordmark\\.webp" alt="Empatherapy" width="${title[0]}" height="${title[1]}"`));
+  assert.deepEqual(readFileSync(new URL('../public/golden-pause/wordmark.webp', import.meta.url)),
+    readFileSync(new URL('../film/golden-pause/preview/wordmark.webp', import.meta.url)), 'the preview has the same title');
+  assert.match(read('film/golden-pause/wordmark_layers.py'), /SRC = os\.path\.join\(HERE, 'source', 'wordmark\.png'\)/, 'made from Cassidy\'s artwork');
+});
+
+test('the header fits: the logo never gives way, links stay on one line, and the Menu takes over before they would not fit', () => {
+  const css = read('app/globals.css');
+  assert.match(css, /\.site-nav \.wordmark \{ flex: none; \}/, 'the logo keeps its size');
+  assert.match(css, /\.nav-links a\.nav-link, \.nav-links \.btn \{ white-space: nowrap; \}/, 'no label breaks onto two lines');
+  // Logo (about 258px) + 16px + seven items (about 746px) + six 1.5rem gaps + two 32px gutters is about 1,230px.
+  assert.match(css, /\.nav-links \{ display: flex; align-items: center; gap: 1\.5rem; \}/);
+  const breakpoint = Number(css.match(/@media \(max-width: (\d+)px\) \{\s*\.nav-toggle \{ display: inline-block; \}/)[1]);
+  assert.ok(breakpoint >= 1230, `the Menu button shows below ${breakpoint}px`);
+  const links = read('components/layout/Navbar.jsx').match(/\{ href: '[^']+', label: '[^']+' \}/g);
+  assert.equal(links.length, 6, 'six links plus "Become an Alchemist": add a link and the header needs measuring again');
 });
 
 test('the homepage hero shows the film, with a way past it, and the privacy notice mentions it', () => {

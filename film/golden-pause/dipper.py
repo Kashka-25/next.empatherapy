@@ -31,6 +31,14 @@ FRAMING = {   # camera distance (units) and where the tip sits on screen (fracti
     'wide': {'distance': 7.3, 'tip_y': 0.45},
     'square': {'distance': 5.2, 'tip_y': 0.41},
 }[VARIANT]
+# the honey coat, after the reference Cassidy shared (13 Nov 2026, a dipper with a translucent golden drip): clear gold
+# you can see the wood through, amber where it pools, glowing where light passes through it
+HONEY_TINT = (0.88, 0.52, 0.08, 1)        # multiplied over the wood: the grain shows through, golden
+HONEY_BODY = (0.86, 0.42, 0.03, 1)       # a little of honey's own colour, for depth
+HONEY_BODY_MIX = 0.15
+HONEY_POOL = (0.42, 0.17, 0.04, 1)       # multiplied in where it pools in the grooves: deeper amber
+HONEY_SSS = 0.28
+HONEY_GLOW_STRENGTH = 0.04
 CUT_Z = -0.30                       # trim the modelled drip here (its thread is narrowest around -0.40)
 TIP = mathutils.Vector((0.654, 0.0, CUT_Z))
 
@@ -90,16 +98,25 @@ def honey_coat(mat):
     mask = N.new('ShaderNodeMath'); mask.operation = 'MULTIPLY'; mask.use_clamp = True
     Lk.new(along.outputs['Result'], mask.inputs[0]); Lk.new(vary.outputs['Result'], mask.inputs[1])
     m = mask.outputs['Value']
-    # colour: the wood seen through golden honey
+    # colour (after Cassidy's reference): the wood seen through clear golden honey, thin over the ridges so the grain
+    # shows, deepening to amber where the honey pools in the grooves
     wood_link = pb.inputs['Base Color'].links[0].from_socket
     gold = N.new('ShaderNodeMix'); gold.data_type = 'RGBA'; gold.blend_type = 'MULTIPLY'
     gold.inputs['Factor'].default_value = 1.0
-    Lk.new(wood_link, inp(gold, 'A', 'RGBA')); inp(gold, 'B', 'RGBA').default_value = (0.92, 0.46, 0.07, 1)
+    Lk.new(wood_link, inp(gold, 'A', 'RGBA')); inp(gold, 'B', 'RGBA').default_value = HONEY_TINT
     bright = N.new('ShaderNodeMix'); bright.data_type = 'RGBA'; bright.blend_type = 'MIX'
-    Lk.new(out(gold, 'Result', 'RGBA'), inp(bright, 'A', 'RGBA')); inp(bright, 'B', 'RGBA').default_value = (0.66, 0.26, 0.015, 1)
-    bright.inputs['Factor'].default_value = 0.35
+    Lk.new(out(gold, 'Result', 'RGBA'), inp(bright, 'A', 'RGBA')); inp(bright, 'B', 'RGBA').default_value = HONEY_BODY
+    bright.inputs['Factor'].default_value = HONEY_BODY_MIX
+    # pooled in the grooves (ambient occlusion): deeper amber, as honey is where it lies thick
+    ao = N.new('ShaderNodeAmbientOcclusion'); ao.inputs['Distance'].default_value = 0.12
+    pool = N.new('ShaderNodeMapRange'); Lk.new(out(ao, 'AO', 'VALUE'), pool.inputs['Value'])
+    pool.inputs['From Min'].default_value = 0.55; pool.inputs['From Max'].default_value = 1.0
+    pool.inputs['To Min'].default_value = 1.0; pool.inputs['To Max'].default_value = 0.0
+    deep = N.new('ShaderNodeMix'); deep.data_type = 'RGBA'; deep.blend_type = 'MULTIPLY'
+    Lk.new(pool.outputs['Result'], deep.inputs['Factor'])
+    Lk.new(out(bright, 'Result', 'RGBA'), inp(deep, 'A', 'RGBA')); inp(deep, 'B', 'RGBA').default_value = HONEY_POOL
     final = N.new('ShaderNodeMix'); final.data_type = 'RGBA'; final.blend_type = 'MIX'
-    Lk.new(m, final.inputs['Factor']); Lk.new(wood_link, inp(final, 'A', 'RGBA')); Lk.new(out(bright, 'Result', 'RGBA'), inp(final, 'B', 'RGBA'))
+    Lk.new(m, final.inputs['Factor']); Lk.new(wood_link, inp(final, 'A', 'RGBA')); Lk.new(out(deep, 'Result', 'RGBA'), inp(final, 'B', 'RGBA'))
     Lk.new(out(final, 'Result', 'RGBA'), pb.inputs['Base Color'])
     # roughness: mirror-smooth where coated
     rough_link = pb.inputs['Roughness'].links[0].from_socket
@@ -115,14 +132,15 @@ def honey_coat(mat):
     Lk.new(m, pb.inputs['Coat Weight'])
     pb.inputs['Coat Roughness'].default_value = 0.01
     pb.inputs['Coat IOR'].default_value = 1.5
-    pb.inputs['Coat Tint'].default_value = (1.0, 0.82, 0.45, 1)
+    pb.inputs['Coat Tint'].default_value = (1.0, 0.88, 0.58, 1)
     pb.inputs['Specular IOR Level'].default_value = 0.8
-    ssw = N.new('ShaderNodeMath'); ssw.operation = 'MULTIPLY'; ssw.inputs[1].default_value = 0.12
+    # light passing through the honey: a golden glow from within
+    ssw = N.new('ShaderNodeMath'); ssw.operation = 'MULTIPLY'; ssw.inputs[1].default_value = HONEY_SSS
     Lk.new(m, ssw.inputs[0]); Lk.new(ssw.outputs['Value'], pb.inputs['Subsurface Weight'])
-    pb.inputs['Subsurface Radius'].default_value = (1.0, 0.45, 0.12); pb.inputs['Subsurface Scale'].default_value = 0.06
-    em = N.new('ShaderNodeMath'); em.operation = 'MULTIPLY'; em.inputs[1].default_value = 0.035
+    pb.inputs['Subsurface Radius'].default_value = (1.0, 0.58, 0.16); pb.inputs['Subsurface Scale'].default_value = 0.08
+    em = N.new('ShaderNodeMath'); em.operation = 'MULTIPLY'; em.inputs[1].default_value = HONEY_GLOW_STRENGTH
     Lk.new(m, em.inputs[0]); Lk.new(em.outputs['Value'], pb.inputs['Emission Strength'])
-    pb.inputs['Emission Color'].default_value = (1.0, 0.6, 0.15, 1)
+    pb.inputs['Emission Color'].default_value = (1.0, 0.70, 0.22, 1)
 honey_coat(mat_wood)
 
 # pivot at the tip, so sway and lift happen around where the honey leaves the dipper
@@ -153,9 +171,9 @@ def glint(name, energy, size, loc, target=(0.55, 0.0, 0.12)):
     ld = bpy.data.lights.new(name, 'AREA'); ld.energy = energy; ld.size = size; ld.color = (1.0, 0.93, 0.78)
     ob = bpy.data.objects.new(name, ld); sc.collection.objects.link(ob); ob.location = loc
     ob.rotation_euler = (mathutils.Vector(target) - mathutils.Vector(loc)).to_track_quat('-Z', 'Y').to_euler()
-glint('glint_a', 70, 0.18, (-0.9, -2.6, 1.9))
-glint('glint_b', 30, 0.12, (2.0, -2.2, 0.5))
-glint('glint_c', 18, 0.3, (0.6, -2.8, -1.2))
+glint('glint_a', 120, 0.32, (-0.9, -2.6, 1.9))    # larger soft-boxes than before: broad glossy highlights, as in the reference
+glint('glint_b', 50, 0.2, (2.0, -2.2, 0.5))
+glint('glint_c', 30, 0.4, (0.6, -2.8, -1.2))
 
 cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); sc.collection.objects.link(cam); sc.camera = cam
 cam.data.lens = 70; cam.data.sensor_fit = 'HORIZONTAL'; cam.data.sensor_width = 36

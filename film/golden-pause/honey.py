@@ -38,8 +38,15 @@ def lin_to_srgb(c):
 def hexlin(h): return srgb_to_lin(np.array([int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)], np.float32))
 PARCHMENT, LEMON_SOFT, HONEY_LIGHT = hexlin('#FBF7EE'), hexlin('#FAF3CE'), hexlin('#E8BE67')
 WARM_WHITE = srgb_to_lin(np.array([1.0, 0.95, 0.84], np.float32))
-HONEY_GLOW = srgb_to_lin(np.array([1.0, 0.62, 0.16], np.float32))
-SIGMA = np.array([0.14, 0.66, 2.4], np.float32)
+# Translucent gold, after the reference Cassidy shared (13 Nov 2026): clear golden where the honey is thin, amber
+# where it is thick or seen edge-on, a bright core where light gathers through it, and broad glossy highlights.
+HONEY_GLOW = srgb_to_lin(np.array([1.0, 0.72, 0.20], np.float32))
+CORE_GOLD = srgb_to_lin(np.array([1.0, 0.78, 0.12], np.float32))
+CORE = 0.17             # how bright the lit core is
+HONEY_GAIN = 1.0       # how much light comes through (1.12 was overexposed: the red clipped, washing it pale)
+EDGE_DEPTH = 1.0        # how much further light travels through the honey near its edges (deeper amber rim)
+EDGE_DARK = 0.30        # and how much light the edges lose to reflection (darker there, but still gold)
+SIGMA = np.array([0.22, 0.85, 4.0], np.float32)   # absorption: blue strongly, green a little, red least (golden)
 GRAD_DEPTH = 0.35       # how much deeper the honey reads where it leaves the dipper
 GRAD_LEN = 0.85         # over what share of the fall the colour eases from the dipper's amber to gold        # honey absorbs blue strongly, red least
 
@@ -459,20 +466,25 @@ class Film:
         R = 9.0 + self.stroke * 0.25
         refr = sample(bg, X - nx * R * (0.3 + h), Y - ny * R * (0.3 + h))
         scat = bg_soft[a0:a1, b0:b1]
-        thick = (0.30 + 2.2 * h ** 1.3)[..., None]
+        thick = (0.45 + 1.7 * h ** 1.3)[..., None]
+        thick = thick * (1 + EDGE_DEPTH * (1 - nz))[..., None]       # edge-on, light crosses more honey
         if depth is not None: thick = thick * depth[a0:a1, b0:b1, None]
         T = np.exp(-SIGMA * thick)
         lum = (scat * np.array([0.2126, 0.7152, 0.0722], np.float32)).sum(axis=2, keepdims=True)
-        body = (0.62 * refr + 0.38 * scat) * T * 1.12 + HONEY_GLOW * (0.07 + 0.20 * h[..., None]) * (0.45 + 1.6 * lum)
-        body = body * (0.58 + 0.42 * smooth(h / 0.3))[..., None]
+        body = (0.62 * refr + 0.38 * scat) * T * HONEY_GAIN + HONEY_GLOW * (0.07 + 0.20 * h[..., None]) * (0.45 + 1.6 * lum)
+        body = body * (0.70 + 0.30 * smooth(h / 0.3))[..., None]
+        body = body * (1 - EDGE_DARK * (1 - nz) ** 2)[..., None]       # light glances off the edges
+        # the lit core: light passing through the honey gathers along its middle (it works like a lens)
+        core = clamp01(nz) ** 8 * smooth(h / 0.35)
+        body = body + CORE_GOLD * (CORE * core)[..., None] * (0.4 + 1.2 * lum)
         Lk = np.array([-0.35, -0.72, 0.6], np.float32); Lk /= np.linalg.norm(Lk)
         Hk = Lk + np.array([0, 0, 1], np.float32); Hk /= np.linalg.norm(Hk)
         ndh = clamp01(nx * Hk[0] + ny * Hk[1] + nz * Hk[2])
         L2 = np.array([0.55, 0.45, 0.7], np.float32); L2 /= np.linalg.norm(L2)
         H2 = L2 + np.array([0, 0, 1], np.float32); H2 /= np.linalg.norm(H2)
         ndh2 = clamp01(nx * H2[0] + ny * H2[1] + nz * H2[2])
-        spec = ndh ** 90 * 1.5 + ndh ** 14 * 0.10 + ndh2 ** 60 * 0.3
-        fres = (1 - nz) ** 4 * 0.45
+        spec = ndh ** 70 * 1.9 + ndh ** 12 * 0.14 + ndh2 ** 50 * 0.4     # broad, glossy
+        fres = (1 - nz) ** 4 * 0.22
         g0, g1 = CUES['glint']
         if g0 <= t <= g1 + 0.2:
             gp = (t - g0) / (g1 - g0)

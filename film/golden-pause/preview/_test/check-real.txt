@@ -1,4 +1,4 @@
-(media under test: the real media in the preview folder; screenshots in C:\Users\cassi\Projects\Empatherapy\next.empatherapy\.worktrees\golden-pause\film\golden-pause\preview\_test\shots\real)
+﻿(media under test: the real media in the preview folder; screenshots in C:\Users\cassi\Projects\Empatherapy\next.empatherapy\.worktrees\golden-pause\film\golden-pause\preview\_test\shots\real)
 (fonts: ok italic 400 20px Fraunces, ok italic 300 20px Fraunces, ok 400 20px Fraunces, ok 500 20px Fraunces, ok 400 20px "Nunito Sans", ok 600 20px "Nunito Sans", ok 700 20px "Nunito Sans", ok 500 20px Caveat, 5 Google Fonts responses cached for the run)
 PASS  wide: film autoplays muted
 PASS  wide: uses film-wide.mp4 (muted, playsinline, aria-hidden), poster-wide.jpg as its poster  {"src":"http://127.0.0.1:8765/film-wide.mp4","muted":true,"playsInline":true,"ariaHidden":"true","fmt":"wide","vfc":true,"poster":"poster-wide.jpg"}
@@ -6,9 +6,9 @@ PASS  the page switches from no-js to js only once the player is running  js
 PASS  wide: clock sampled with requestVideoFrameCallback
 PASS  stage is a labelled region  {"tag":"SECTION","label":"The Golden Pause, a short optional breathing moment"}
 PASS  no breathing ring and no provisional mark on the page (the film has its own picture and the teacup symbol)  {"ring":0,"mark":0,"welcomeBacking":0}
-PASS  wide: the player sets the stage positions from cues.js (breath line, wordmark width, tagline)  {"bl":"0.93","wm":"0.38","tag":"0.865"}
-PASS  the wordmark is the title image (<img src="wordmark-script.webp" alt="Empatherapy">), loaded at its own size and proportions (4.281), in its track, hidden from assistive technology with the rest of the picture, no filter  {"tag":"IMG","alt":"Empatherapy","src":"wordmark-script.webp","loaded":true,"natural":[2620,612],"attrs":[2620,612],"hiddenFromAT":true,"inTrack":true,"filter":"none"}
-PASS  playback: rendered overlay time stays within ~1.5 frames of video.currentTime  max |video - rendered| = 30.2 ms over 30 samples (0.07s to 3.08s)
+PASS  wide: the player sets the stage positions from cues.js (breath line, wordmark width, tagline)  {"bl":"0.93","wm":"0.4","tag":"0.865"}
+PASS  the wordmark is the title image (<img src="wordmark.webp" alt="Empatherapy">), loaded at its own size and proportions (5.0934), in its track, hidden from assistive technology with the rest of the picture, no filter  {"tag":"IMG","alt":"Empatherapy","src":"wordmark.webp","loaded":true,"natural":[1854,364],"attrs":[1854,364],"hiddenFromAT":true,"inTrack":true,"filter":"none"}
+PASS  playback: rendered overlay time stays within ~1.5 frames of video.currentTime  max |video - rendered| = 22.2 ms over 30 samples (0.05s to 2.84s)
 PASS  playback: DOM matches stateAt(rendered time)  []
 PASS  screen readers: no live announcements (nothing is spoken on a timer)  0
 PASS  screen readers: one static, visually hidden description of the v2 film in the stage, with all three lines and the welcome  {"missing":[],"exposed":[],"visuallyHidden":true}
@@ -18,15 +18,15 @@ PASS  hero button focusable, scrolled into view and not covered, while the film 
 PASS  keyboard: Enter on Pause pauses the film and the button reads Play  {"mode":"paused","paused":true,"label":"Play"}
 PASS  paused: the clock and every overlay hold still
 PASS  seeking: DOM matches stateAt(t) at 27 times (opacities, wordmark y and scale)  []
-PASS  wide wordmark image at the same 27 times: width widthFrac (0.38) x stage width x scale within 1%, its own proportions, centred on x 0.5 and on stateAt's y within 0.006  {"worstDy":0.0006,"worstWidthErr":"0%"}
+PASS  wide wordmark image at the same 27 times: width widthFrac (0.4) x stage width x scale within 1%, its own proportions, centred on x 0.5 and on stateAt's y within 0.006  {"worstDy":0.0006,"worstWidthErr":"0%"}
 PASS  cue: "Take a gentle breath in" fades in 0.3 to 1.0 and out 2.7 to 3.2
 PASS  cue: "And slowly let it go" fades in 3.2 to 3.9 and out 6.8 to 7.4
 PASS  cue: permission line in 0.6 to 1.4, out 6.8 to 7.4
 PASS  cue: the backing is in with the first line and out with the last (full at 1.0, 3.2 and 6.8, gone by 7.4)
 PASS  cue: nothing over the picture while the honey name is written and melts (7.9 and 8.5)
 PASS  cue: wordmark fades in 8.9 to 9.7 (half at 9.3), tagline 11.0 to 11.8 (half at 11.4)
-PASS  cue: wordmark before the tilt (8.8) sits where the honey wrote the name (y 0.716) at scale 1.7895  {"y":0.7154,"scale":1.7895}
-PASS  cue: wordmark halfway through the tilt (9.7) at y 0.473 (halfway to centerPost), scale 1.395 (smoothstep 0.5)  {"y":0.4726,"scale":1.3948}
+PASS  cue: wordmark before the tilt (8.8) sits where the honey wrote the name (y 0.716) at scale 1.7  {"y":0.7154,"scale":1.7}
+PASS  cue: wordmark halfway through the tilt (9.7) at y 0.473 (halfway to centerPost), scale 1.350 (smoothstep 0.5)  {"y":0.4726,"scale":1.35}
 PASS  cue: wordmark after the tilt (10.6 on) at y 0.23, scale 1  {"y":0.2298,"scale":1}
 PASS  cue: the wordmark only rises and shrinks
 PASS  wide band at 1.6s: the breathing line is centred at breathLines.center (0.93) of the height, or lifted only to keep the permission line in the frame  {"format":"wide","frame":[1014,570],"cue":0.93,"breathCentre":0.9292,"offPx":-0.5,"permTop":0.956,"permBottom":0.9872,"slotBottom":0.9514,"roomBelowPx":7.3,"wordsTop":0.9069,"nameBottom":0.857,"overName":0,"backingAtTips":{"p1":0,"p2":0,"y":0},"backingAtFoot":0,"centred":true,"lifted":false}
@@ -38,31 +38,31 @@ PASS  wide band at 5s: no word covers the honey name (all below 0.857 of the hei
 PASS  contrast (wide) lineIn: >= 4.5:1 over the worst case (black under the backing)  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.589,"backingAlphaAtWorstCorner":0.674,"ratioOverBlack":5.06,"ratioOverDarkHoney":6.53}
 PASS  contrast (wide) permission: >= 4.5:1 over the worst case (black under the backing)  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.595,"backingAlphaAtWorstCorner":0.665,"ratioOverBlack":4.92,"ratioOverDarkHoney":6.41}
 PASS  contrast (wide) lineOut: >= 4.5:1 over the worst case (black under the backing)  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.574,"backingAlphaAtWorstCorner":0.697,"ratioOverBlack":5.41,"ratioOverDarkHoney":6.82}
-PASS  contrast (wide) wordmark at 9.7s, when fully in: >= 4.5:1 on parchment and on the film under it  {"text":"letters of wordmark-script.webp: rgb(79, 54, 24)","darkestUnder":[249,183,49],"ratioOverDarkest":6.32,"ratioOverParchment":10.48}
-PASS  wide wordmark at 9.7s: the image is drawn (its ink, from a screenshot) centred on stateAt's y (0.473) within 0.006, and on x 0.5  {"inkCentreY":0.4728,"expectedInkCentreY":0.4726,"inkCentreX":0.4995,"inkHeight":0.2193,"inkWidth":0.5296,"expectedInkWidth":0.53}
-PASS  contrast (wide) wordmark and tagline in the lockup: >= 4.5:1 on parchment and on the film under them  {"wordmark":{"text":"letters of wordmark-script.webp: rgb(79, 54, 24)","darkestUnder":[246,192,127],"ratioOverDarkest":6.81,"ratioOverParchment":10.48},"tagline":{"text":"rgb(79, 73, 62)","darkestUnder":[251,217,161],"ratioOverDarkest":6.6,"ratioOverParchment":8.34}}
-PASS  wide wordmark in the lockup: the image's ink centred on y 0.23 within 0.006, as wide as the image's ink at widthFrac (0.38) within 2%, drawn 1.3948x as tall at 9.7s  {"inkCentreY":0.2298,"expectedInkCentreY":0.2298,"inkWidth":0.3797,"expectedInkWidth":0.38,"inkHeight":0.1579,"heightRatio97":1.389}
-PASS  wide wordmark in the lockup: widthFrac (0.38) of the stage width within 1%, its height from the image's proportions (4.281)  {"width":0.38,"aspect":4.281}
-PASS  wide lockup: the wordmark's box ends above the teacup symbol's box (symbol.topPost 0.33)  {"wordmarkBottom":0.3087,"symbolTop":0.33,"gapPx":12}
+PASS  contrast (wide) wordmark at 9.7s, when fully in: >= 4.5:1 on parchment and on the film under it  {"text":"letters of wordmark.webp: rgb(75, 51, 26)","darkestUnder":[225,163,78],"ratioOverDarkest":5.34,"ratioOverParchment":10.99}
+PASS  wide wordmark at 9.7s: the image is drawn (its ink, from a screenshot) centred on stateAt's y (0.473) within 0.006, and on x 0.5  {"inkCentreY":0.4728,"expectedInkCentreY":0.4717,"inkCentreX":0.4892,"inkHeight":0.1737,"inkWidth":0.5089,"expectedInkWidth":0.5085}
+PASS  contrast (wide) wordmark and tagline in the lockup: >= 4.5:1 on parchment and on the film under them  {"wordmark":{"text":"letters of wordmark.webp: rgb(75, 51, 26)","darkestUnder":[245,201,143],"ratioOverDarkest":7.63,"ratioOverParchment":10.99},"tagline":{"text":"rgb(79, 73, 62)","darkestUnder":[251,217,161],"ratioOverDarkest":6.6,"ratioOverParchment":8.34}}
+PASS  wide wordmark in the lockup: the image's ink centred on y 0.23 within 0.006, as wide as the image's ink at widthFrac (0.4) within 2%, drawn 1.35x as tall at 9.7s  {"inkCentreY":0.2289,"expectedInkCentreY":0.2289,"inkWidth":0.3767,"expectedInkWidth":0.3754,"inkHeight":0.1281,"heightRatio97":1.356}
+PASS  wide wordmark in the lockup: widthFrac (0.4) of the stage width within 1%, its height from the image's proportions (5.0934)  {"width":0.4,"aspect":5.094}
+PASS  wide lockup: the wordmark's box ends above the teacup symbol's box (symbol.topPost 0.33)  {"wordmarkBottom":0.2996,"symbolTop":0.33,"gapPx":17}
 PASS  wide tagline centred at tagline.centerPost (0.865), in Nunito Sans  {"centre":0.8642,"font":"\"Nunito Sans\", \"Segoe UI\", system-ui, sans-serif"}
 PASS  keyboard: Enter on Play resumes  Pause
-PASS  sound: Space turns it on; silent until on the film clock, then fades up (Web Audio gain)  {"pressed":"true","src":"golden-pause.webm","paused":false,"gain":1,"webaudio":true,"drift":0.004,"learnedLead":0.007,"msToAudible":1011}
-PASS  sound: stays within ~50 ms of the film over 1.5 s  {"maxDriftMs":4}
-PASS  sound: a 400 ms drift is re-seated to within 50 ms (with a short fade)  {"drift":0.003,"fixes":2,"gain":0.964}
-PASS  sound: a small drift (under 120 ms) is nudged back by speed, never more than 2% (no dip, no seek)  {"secs":"2.3","maxDriftMs":49,"minGain":1,"maxRate":1.02}
+PASS  sound: Space turns it on; silent until on the film clock, then fades up (Web Audio gain)  {"pressed":"true","src":"golden-pause.webm","paused":false,"gain":0.978,"webaudio":true,"drift":0.038,"learnedLead":0.036,"msToAudible":956}
+PASS  sound: stays within ~50 ms of the film over 1.5 s  {"maxDriftMs":39}
+PASS  sound: a 400 ms drift is re-seated to within 50 ms (with a short fade)  {"drift":0.038,"fixes":1,"gain":1}
+PASS  sound: a small drift (under 120 ms) is nudged back by speed, never more than 2% (no dip, no seek)  {"secs":"2.2","maxDriftMs":52,"minGain":1,"maxRate":1.02}
 PASS  sound: a stall (video "waiting") fades the sound out and stops it; "playing" brings it back in sync  {"stalled":{"paused":true,"gain":0,"wanted":true},"back":true}
 PASS  sound: Pause fades the sound out and stops it  {"paused":true,"gain":0}
-PASS  sound: Play resumes the sound in sync  {"paused":false,"gain":0.977,"drift":0.006}
+PASS  sound: Play resumes the sound in sync  {"paused":false,"gain":1,"drift":0.034}
 PASS  sound: off again fades out and stops, and the audio context is suspended  {"paused":true,"pressed":"false","gain":0,"context":"suspended"}
-PASS  sound: on again wakes the audio context and comes back in sync  {"context":"running","gain":0.942,"drift":-0.023}
+PASS  sound: on again wakes the audio context and comes back in sync  {"context":"running","gain":1,"drift":0.003}
 PASS  keyboard: Skip jumps to the settled lockup within one frame (wordmark at its place at scale 1, tagline; no breathing words)  {"mode":"ended","focus":"skip","wordmark":{"opacity":1,"y":0.2297982456140351,"scale":1},"tagline":1,"backing":0,"lineIn":0,"lineOut":0,"permission":0,"imgs":{"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":true,"loaded":true,"src":"end-wide.jpg"}},"videoPaused":true}
 PASS  Skip: the wordmark and tagline sit on the lockup frame (end-wide.jpg), never on the honey-name still  {"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":true,"loaded":true,"src":"end-wide.jpg"}}
 PASS  Skip turns into Replay without moving focus  {"label":"Replay","focus":"skip"}
-PASS  contrast (wide) on the lockup image: the wordmark's letters and the tagline >= 4.5:1 against the darkest pixel under them  {"wordmark":{"text":"letters of wordmark-script.webp: rgb(79, 54, 24)","darkestUnder":[244,193,127],"ratioOverDarkest":6.82,"ratioOverParchment":10.48},"tagline":{"text":"rgb(79, 73, 62)","darkestUnder":[250,217,163],"ratioOverDarkest":6.59,"ratioOverParchment":8.34}}
+PASS  contrast (wide) on the lockup image: the wordmark's letters and the tagline >= 4.5:1 against the darkest pixel under them  {"wordmark":{"text":"letters of wordmark.webp: rgb(75, 51, 26)","darkestUnder":[245,199,140],"ratioOverDarkest":7.51,"ratioOverParchment":10.99},"tagline":{"text":"rgb(79, 73, 62)","darkestUnder":[250,217,163],"ratioOverDarkest":6.59,"ratioOverParchment":8.34}}
 PASS  sound: Skip fades the sound out and stops it  {"paused":true,"gain":0}
 PASS  ended: Pause is hidden, Replay and Sound remain
-PASS  keyboard: Replay plays again from the start, focus stays, button reads Skip  {"t":0.0329,"focus":"skip","imgs":{"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":false,"loaded":true,"src":"end-wide.jpg"}}}
-PASS  sound: Replay restarts the sound with the film  {"paused":false,"drift":-0.009}
+PASS  keyboard: Replay plays again from the start, focus stays, button reads Skip  {"t":0.0326,"focus":"skip","imgs":{"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":false,"loaded":true,"src":"end-wide.jpg"}}}
+PASS  sound: Replay restarts the sound with the film  {"paused":false,"drift":0.003}
 PASS  Esc inside the stage skips (focus moves from the hidden Pause to Replay)  {"mode":"ended","focus":"skip"}
 PASS  Esc outside the stage does nothing to the film
 PASS  natural end: settles on the lockup (wordmark at its place, scale 1, and the tagline), offers Replay, plays once (no loop)  {"ended":true,"videoEnded":true,"wordmark":{"opacity":1,"y":0.2297982456140351,"scale":1},"tagline":{"opacity":1},"endLabel":"Replay","mode":"ended"}
@@ -84,18 +84,18 @@ PASS  narrow band at 1.6s: no word covers the honey name (all below 0.775 of the
 PASS  narrow band at 5s: the breathing line is centred at breathLines.center (0.9) of the height, or lifted only to keep the permission line in the frame  {"format":"square","frame":[356,356],"cue":0.9,"breathCentre":0.9,"offPx":0,"permTop":0.9351,"permBottom":0.983,"slotBottom":0.928,"roomBelowPx":6,"wordsTop":0.8691,"nameBottom":0.775,"overName":0,"backingAtTips":{"p1":0,"p2":0,"y":0},"backingAtFoot":0,"centred":true,"lifted":false}
 PASS  narrow band at 5s: the permission line sits just under the breathing line, inside the frame  {"slotBottom":0.928,"permTop":0.9351,"roomBelowPx":6}
 PASS  narrow band at 5s: no word covers the honey name (all below 0.775 of the height); the backing barely reaches its descenders  {"wordsTop":0.8691,"nameBottom":0.775,"backingAtTips":{"p1":0,"p2":0,"y":0},"backingAtFoot":0}
-PASS  narrow wordmark image at 9.7s: width widthFrac (0.56) x stage width x scale (1.2679) within 1%, its own proportions, centred on stateAt's y (0.4275) within 0.006  {"dy":0,"widthErr":"0%","width":0.71,"wantWidth":0.71,"aspect":4.282}
-PASS  contrast (narrow) wordmark at 9.7s: >= 4.5:1 on parchment and on the film under it  {"text":"letters of wordmark-script.webp: rgb(79, 54, 24)","darkestUnder":[251,180,47],"ratioOverDarkest":6.23,"ratioOverParchment":10.48}
+PASS  narrow wordmark image at 9.7s: width widthFrac (0.62) x stage width x scale (1.1936) within 1%, its own proportions, centred on stateAt's y (0.4275) within 0.006  {"dy":0,"widthErr":"0%","width":0.74,"wantWidth":0.74,"aspect":5.094}
+PASS  contrast (narrow) wordmark at 9.7s: >= 4.5:1 on parchment and on the film under it  {"text":"letters of wordmark.webp: rgb(75, 51, 26)","darkestUnder":[224,160,68],"ratioOverDarkest":5.19,"ratioOverParchment":10.99}
 PASS  narrow: DOM matches stateAt(12.9, 'square')  {"wordmark":{"opacity":1,"y":0.18,"scale":1}}
-PASS  narrow wordmark image at 12.9s: width widthFrac (0.56) x stage width x scale (1) within 1%, its own proportions, centred on stateAt's y (0.18) within 0.006  {"dy":0,"widthErr":"0%","width":0.56,"wantWidth":0.56,"aspect":4.282}
-PASS  narrow wordmark in the lockup: the image's ink centred on y 0.18 within 0.006, as wide as expected within 2%, inside the frame  {"inkCentreY":0.1812,"expectedInkCentreY":0.18,"inkWidth":0.559,"expectedInkWidth":0.56}
-PASS  narrow lockup: the wordmark's box ends above the teacup symbol's box (symbol.topPost 0.28)  {"wordmarkBottom":0.2454,"symbolTop":0.28,"gapPx":12}
-PASS  narrow: at its starting size (x1.5357) the wordmark still fits the frame, as wide as the honey name (script.widthFrac 0.86)  {"widthAtScalePre":0.86,"aspect":4.282}
+PASS  narrow wordmark image at 12.9s: width widthFrac (0.62) x stage width x scale (1) within 1%, its own proportions, centred on stateAt's y (0.18) within 0.006  {"dy":0,"widthErr":"0%","width":0.62,"wantWidth":0.62,"aspect":5.094}
+PASS  narrow wordmark in the lockup: the image's ink centred on y 0.18 within 0.006, as wide as expected within 2%, inside the frame  {"inkCentreY":0.1791,"expectedInkCentreY":0.1793,"inkWidth":0.5843,"expectedInkWidth":0.5834}
+PASS  narrow lockup: the wordmark's box ends above the teacup symbol's box (symbol.topPost 0.28)  {"wordmarkBottom":0.2409,"symbolTop":0.28,"gapPx":14}
+PASS  narrow: at its starting size (x1.3871) the wordmark still fits the frame, as wide as the honey name (script.widthFrac 0.86)  {"widthAtScalePre":0.86,"aspect":5.094}
 PASS  contrast (narrow) lineIn: >= 4.5:1 over the worst case  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.598,"backingAlphaAtWorstCorner":0.66,"ratioOverBlack":4.85,"ratioOverDarkHoney":6.36}
 PASS  contrast (narrow) permission: >= 4.5:1 over the worst case  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.595,"backingAlphaAtWorstCorner":0.665,"ratioOverBlack":4.93,"ratioOverDarkHoney":6.42}
 PASS  contrast (narrow) lineOut: >= 4.5:1 over the worst case  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.588,"backingAlphaAtWorstCorner":0.676,"ratioOverBlack":5.08,"ratioOverDarkHoney":6.55}
 PASS  touch: Skip shows the lockup (end-square.jpg) with the wordmark at the square centerPost, Replay offered  {"imgs":{"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":true,"loaded":true,"src":"end-square.jpg"}},"wordmark":{"opacity":1,"y":0.18,"scale":1}}
-PASS  contrast (narrow) on the lockup image: the wordmark's letters >= 4.5:1 against the darkest pixel under the image  {"text":"letters of wordmark-script.webp: rgb(79, 54, 24)","darkestUnder":[238,198,146],"ratioOverDarkest":7.01,"ratioOverParchment":10.48}
+PASS  contrast (narrow) on the lockup image: the wordmark's letters >= 4.5:1 against the darkest pixel under the image  {"text":"letters of wordmark.webp: rgb(75, 51, 26)","darkestUnder":[237,198,147],"ratioOverDarkest":7.33,"ratioOverParchment":10.99}
 PASS  contrast (narrow) on the lockup image: the tagline >= 4.5:1 against the darkest pixel under it  {"text":"rgb(79, 73, 62)","darkestUnder":[238,207,153],"ratioOverDarkest":5.95,"ratioOverParchment":8.34}
 PASS  narrow: nothing stored (localStorage, sessionStorage, cookies, IndexedDB)  {"localStorage":0,"sessionStorage":0,"cookie":"","indexedDB":0,"contextCookies":0}
 PASS  narrow: no network calls beyond the page, its media and Google Fonts  13 requests
@@ -123,7 +123,7 @@ PASS  calm (wide): both breathing lines and the permission line are measured  ["
 PASS  contrast (calm) permission: >= 4.5:1 over the worst case  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.519,"backingAlphaAtWorstCorner":0.738,"ratioOverBlack":6.05,"ratioOverDarkHoney":7.35}
 PASS  contrast (calm) calm0: >= 4.5:1 over the worst case  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.552,"backingAlphaAtWorstCorner":0.723,"ratioOverBlack":5.82,"ratioOverDarkHoney":7.16}
 PASS  contrast (calm) calm1: >= 4.5:1 over the worst case  {"text":"rgb(56, 53, 47)","worstEllipseRadius":0.552,"backingAlphaAtWorstCorner":0.723,"ratioOverBlack":5.82,"ratioOverDarkHoney":7.16}
-PASS  reduced motion: Play starts the film when asked (the still and the static lines go; Sound comes back)  {"imgs":{"still":{"shown":false,"loaded":true,"src":"still-wide.jpg"},"end":{"shown":false,"loaded":false,"src":"end-wide.jpg"}},"permission":"0","calm":"none"}
+PASS  reduced motion: Play starts the film when asked (the still and the static lines go; Sound comes back)  {"imgs":{"still":{"shown":false,"loaded":true,"src":"still-wide.jpg"},"end":{"shown":false,"loaded":true,"src":"end-wide.jpg"}},"permission":"0","calm":"none"}
 PASS  reduced motion: nothing stored (localStorage, sessionStorage, cookies, IndexedDB)  {"localStorage":0,"sessionStorage":0,"cookie":"","indexedDB":0,"contextCookies":0}
 PASS  reduced motion: no network calls beyond the page, its media and Google Fonts  14 requests
 PASS  reduced motion: no console errors
@@ -133,12 +133,12 @@ PASS  calm (phone) band: the permission line sits just under the breathing line,
 PASS  calm (phone) band: no word covers the honey name (all below 0.775 of the height); the backing barely reaches its descenders  {"wordsTop":0.8691,"nameBottom":0.775,"backingAtTips":{"p1":0,"p2":0,"y":0},"backingAtFoot":0}
 PASS  contrast (calm, phone): both lines and the permission line >= 4.5:1 over the worst case  {"permission":{"text":"rgb(56, 53, 47)","worstEllipseRadius":0.55,"backingAlphaAtWorstCorner":0.724,"ratioOverBlack":5.84,"ratioOverDarkHoney":7.18},"calm0":{"text":"rgb(56, 53, 47)","worstEllipseRadius":0.555,"backingAlphaAtWorstCorner":0.722,"ratioOverBlack":5.8,"ratioOverDarkHoney":7.15},"calm1":{"text":"rgb(56, 53, 47)","worstEllipseRadius":0.555,"backingAlphaAtWorstCorner":0.722,"ratioOverBlack":5.8,"ratioOverDarkHoney":7.15}}
 PASS  reduced motion (phone): no console errors
-PASS  broken video: falls back to the calm still within ~1.5 s  {"msAfterPlayerStart":156,"reason":"error","calm":"flex"}
+PASS  broken video: falls back to the calm still within ~1.5 s  {"msAfterPlayerStart":100,"reason":"error","calm":"flex"}
 PASS  broken video: no Play and no Sound offered (nothing to play), page still usable
 PASS  broken video (404s expected): no console errors
 PASS  default page: plays the real film from the preview folder (film-wide.mp4, poster, still, end)  {"src":"http://127.0.0.1:8765/film-wide.mp4","poster":"poster-wide.jpg","media":{"webm":"golden-pause.webm","m4a":"golden-pause.m4a","film":"film-wide.mp4","poster":"poster-wide.jpg","still":"still-wide.jpg","end":"end-wide.jpg"}}
 PASS  default page: no console errors
-PASS  slow video: calm still after ~1.5 s  {"msAfterPlayerStart":1505}
+PASS  slow video: calm still after ~1.5 s  {"msAfterPlayerStart":1509}
 PASS  slow video: Play offered, Sound hidden
 PASS  slow video: Play starts it once it arrives
 PASS  slow video: no console errors
@@ -175,7 +175,7 @@ PASS  rotate while the film plays: it keeps playing the film it started with  {"
 PASS  ...and takes the square film at the next Replay  {"afterSkip":{"fmt":"wide","imgs":{"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":true,"loaded":true,"src":"end-wide.jpg"}}},"afterReplay":{"fmt":"square","src":"http://127.0.0.1:8765/film-square.mp4"}}
 PASS  rotate at the end: back to the wide film at once, on the wide lockup, the wordmark moved to the wide centerPost  {"squareEnd":{"opacity":1,"y":0.18,"scale":1},"fmt":"wide","mode":"ended","imgs":{"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":true,"loaded":true,"src":"end-wide.jpg"}},"wordmark":{"opacity":1,"y":0.2297982456140351,"scale":1}}
 PASS  rotation: no console errors
-PASS  sound: with 200 ms of output latency, the sound runs 200 ms ahead of the picture so you hear it in sync  {"aheadMs":[202,206,208,203,201,207,200,205],"worstDriftMs":8}
+PASS  sound: with 200 ms of output latency, the sound runs 200 ms ahead of the picture so you hear it in sync  {"aheadMs":[211,210,211,211,205,206,208,211],"worstDriftMs":11}
 PASS  output latency: no console errors
 
 177/177 checks passed
