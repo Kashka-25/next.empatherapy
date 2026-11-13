@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { STEPS, ROUNDS, REST, DURATION, SMALL, REDUCED, breathAt, lookOf, spokenOf } from '../components/golden-pause/breathe.mjs';
+import { STEPS, ROUNDS, REST, DURATION, SMALL, REDUCED, INTRO, breathAt, lookOf, leaveOf, revealOf, filmStartOf, durationOf, spokenOf } from '../components/golden-pause/breathe.mjs';
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 const cues = JSON.parse(read('film/golden-pause/cues.json'));
@@ -77,6 +77,30 @@ test("the breathing space follows Cassidy's four steps: Prepare once, then round
   assert.equal(breathAt(NaN).step, 'prepare');
 });
 
+test('the homepage opens on one breath, and on the breath out hands over to the film, so its breath in follows', () => {
+  const seq = [];
+  for (let t = 0; t < durationOf(INTRO) + 2; t += 0.05) { const b = breathAt(t, INTRO); if (seq[seq.length - 1] !== b.step) seq.push(b.step); }
+  assert.deepEqual(seq, ['prepare', 'in', 'hold', 'out'], 'one breath, no rest');
+  assert.equal(durationOf(INTRO), 3 + 4 + 2 + 6);
+  const outStart = 3 + 4 + 2;
+  // the space's own words and orb dissolve during the breath out, and are gone before the film comes into view
+  assert.equal(leaveOf(breathAt(outStart + 0.5, INTRO), INTRO), 0);
+  assert.ok(leaveOf(breathAt(outStart + 4, INTRO), INTRO) > 0.3);
+  assert.equal(leaveOf(breathAt(outStart + 5.6, INTRO), INTRO), 1);
+  // the film is asked to start during the breath out, early enough that it comes into view (at its own revealFrom)
+  // as the out ends: its "Take a gentle breath in…" (from 0.3 s) is then waiting
+  const start = filmStartOf(INTRO);
+  assert.ok(start > outStart + 3 && start < durationOf(INTRO), 'started during the breath out');
+  const cues = JSON.parse(read('film/golden-pause/cues.json'));
+  const inLine = cues.text.find((x) => x.id === 'in');
+  assert.ok(Math.abs(start + INTRO.revealFrom - durationOf(INTRO)) <= 0.2, 'the film comes into view as the out ends (allowing for the start)');
+  assert.ok(INTRO.revealFrom >= cues.fadeIn[1] * 0.7 && INTRO.revealFrom >= inLine.fadeIn[0], 'the film has nearly faded up from parchment, and its breath-in line has begun');
+  assert.equal(revealOf(0), 0);
+  assert.equal(revealOf(INTRO.revealFrom + INTRO.revealFor), 1);
+  // the breathing space proper still has its rest, and its words leave only at the very end
+  assert.equal(leaveOf(breathAt(outStart + 4)), 0);
+});
+
 test('the hold is short and gentle, and the orb fills and empties smoothly with the breath', () => {
   const hold = STEPS.find((s) => s.id === 'hold');
   assert.ok(hold.seconds <= 2, 'a pause at the top of the breath, never a long hold');
@@ -124,4 +148,6 @@ test('the homepage hero shows the film, with a way past it, and the privacy noti
   assert.match(read('app/privacy/page.jsx'), /The Golden Pause/);
   assert.match(component, /Breathe with us/);
   assert.match(component, /<BreathingSpace /);
+  assert.match(component, /intro: true/, 'the page opens on the breath');
+  assert.match(read('film/golden-pause/preview/player.js'), /opts\.intro/);
 });

@@ -26,7 +26,7 @@ export default function PrivacyPage() {
             <div className="stack">
               <h2>If you are a Seeker</h2>
               <p>When you explore, browse Alchemists or use the discovery tool, what you type stays in your own browser. It is not sent to us, not saved, and not used to build a profile of you. We do not use advertising or analytics trackers, and the site sets no cookies for visitors.</p>
-              <p>The short film at the top of the homepage, The Golden Pause, is just a moment to breathe, and you can pause or skip it. It plays silently unless you turn the sound on, comes from our own site, and records and remembers nothing, which is why it plays again on your next visit. If your device asks for reduced motion or to save data, you see a still picture instead. The breathing space you can open beside it works the same way: it runs in your browser and records nothing about you or your breathing.</p>
+              <p>The Golden Pause at the top of the homepage is just a moment to breathe: one breath with a golden light, then a short film. You can skip it at any time. It plays silently unless you turn the sound on, comes from our own site, and records and remembers nothing about you or your breathing, which is why it begins again on your next visit. If your device asks for reduced motion or to save data, you see a still picture instead, and you can still open the breathing space yourself.</p>
               <p>One thing to know: the site&rsquo;s fonts are loaded from Google Fonts, so your browser contacts Google to fetch them, as it does on many websites. We plan to host the fonts ourselves.</p>
             </div>
 

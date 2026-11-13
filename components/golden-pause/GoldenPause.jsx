@@ -15,27 +15,35 @@ const useBeforePaint = typeof window !== 'undefined' ? useLayoutEffect : useEffe
 const HOLD_STILL = "(function(s){if(!s||!s.classList)return;s.classList.add('gp--wait');function lift(){setTimeout(function(){s.classList.remove('gp--wait')},2500)}if(document.readyState==='complete')lift();else window.addEventListener('load',lift)})(document.currentScript&&document.currentScript.parentNode)";
 
 /**
- * The Golden Pause: a 13-second optional breathing film at the top of the homepage. Never a gate: it can be paused
- * or skipped, it is silent unless the visitor turns the sound on, and it stores and measures nothing.
- * Reduced motion and Save-Data get a calm still instead; without JavaScript the same still shows by CSS alone.
- * All words on screen are live text; the picture itself is hidden from screen readers and described once instead.
- * When the film is not running, "Breathe with us" opens a gentle breathing space in the same frame (BreathingSpace).
+ * The Golden Pause at the top of the homepage. It opens with one breath in the breathing space (BreathingSpace, as
+ * Cassidy asked): Prepare, Breathe in, Hold, Breathe out, and on the breath out it dissolves into the 13-second honey
+ * film. Never a gate: Skip goes straight to the welcome at any time, the film can be paused, it is silent unless the
+ * visitor turns the sound on, and nothing is stored or measured.
+ * Reduced motion and Save-Data get a calm still instead (no opening breath); without JavaScript the same still shows by
+ * CSS alone. All words on screen are live text; the picture itself is hidden from screen readers and described once.
+ * When the film is not running, "Breathe with us" opens the breathing space again, for three easy rounds.
  */
 export default function GoldenPause({ skipTo }) {
   const stageRef = useRef(null);
-  const [breathing, setBreathing] = useState(false);
+  const playerRef = useRef(null);
+  // the breathing space: 'intro' (how the page opens), 'open' (Breathe with us), or closed
+  const [space, setSpace] = useState(null);
 
-  // the stage says when the breathing space is open (its own buttons step aside); React never sets this class itself
+  // the stage says when "Breathe with us" is open (the film's own buttons step aside); React never sets this class itself
   useEffect(() => {
-    stageRef.current?.classList.toggle('gp--breathing', breathing);
-  }, [breathing]);
+    stageRef.current?.classList.toggle('gp--breathing', space === 'open');
+  }, [space]);
 
   useBeforePaint(() => {
     const stage = stageRef.current;
     if (!stage) return undefined;
     let player;
     try {
-      player = GoldenPausePlayer.createPlayer(stage, cues);
+      player = GoldenPausePlayer.createPlayer(stage, cues, {
+        intro: true,
+        // Skip, Escape, a refused or failed start, or a pause while the film comes into view: the opening steps aside
+        onMode: (m) => { if (m !== 'intro' && m !== 'loading' && m !== 'playing') setSpace((s) => (s === 'intro' ? null : s)); },
+      });
     } catch {
       // the calm still stays, rather than controls that do nothing
       try { const v = stage.querySelector('[data-gp="video"]'); v.pause(); v.removeAttribute('src'); v.load(); } catch { /* ignore */ }
@@ -43,7 +51,10 @@ export default function GoldenPause({ skipTo }) {
       return undefined;
     }
     stage.classList.remove('gp--nojs', 'gp--wait');
+    playerRef.current = player;
+    if (player.mode === 'intro') setSpace('intro');     // before the first paint: the page opens on the breath
     return () => {
+      playerRef.current = null;
       player.destroy();
       stage.classList.add('gp--nojs');
     };
@@ -65,7 +76,7 @@ export default function GoldenPause({ skipTo }) {
       >
         <script dangerouslySetInnerHTML={{ __html: HOLD_STILL }} />
         <div className="gp__inner">
-          <p className="sr-only">About the film: a 13-second film, just if you like. A drop of honey gathers on a wooden honey dipper while the words &ldquo;Take a gentle breath in&hellip;&rdquo; appear. The drop falls, and as &ldquo;And slowly let it go&hellip;&rdquo; appears, the honey flows out and writes the name Empatherapy in joined, flowing golden script. Below, the words &ldquo;Breathe along if you like, or simply watch the honey.&rdquo; Then the honey script drips away, the scene turns to warm parchment, and honey drops fall into a teacup of chamomile tea with lemon and a chamomile flower; the cup fills, honey runs over the rim and steam rises. The name Empatherapy rests above the cup, with &ldquo;Discover new pathways to yourself.&rdquo; below it.</p>
+          <p className="sr-only">About the film: it opens with one breath, just if you like: a golden orb grows as you breathe in, rests for a moment, and settles as you breathe out, with the words Prepare, Breathe in, Hold and Breathe out. Then a 13-second film. A drop of honey gathers on a wooden honey dipper while the words &ldquo;Take a gentle breath in&hellip;&rdquo; appear. The drop falls, and as &ldquo;And slowly let it go&hellip;&rdquo; appears, the honey flows out and writes the name Empatherapy in joined, flowing golden script. Below, the words &ldquo;Breathe along if you like, or simply watch the honey.&rdquo; Then the honey script drips away, the scene turns to warm parchment, and honey drops fall into a teacup of chamomile tea with lemon and a chamomile flower; the cup fills, honey runs over the rim and steam rises. The name Empatherapy rests above the cup, with &ldquo;Discover new pathways to yourself.&rdquo; below it.</p>
           <div className="gp__frame" data-gp="frame">
             <video className="gp__video" data-gp="video" muted playsInline webkit-playsinline="true" preload="none"
               disablePictureInPicture disableRemotePlayback aria-hidden="true" tabIndex={-1} />
@@ -103,7 +114,10 @@ export default function GoldenPause({ skipTo }) {
               <p className="gp__tagline" data-gp="tagline">Discover new pathways to yourself.</p>
             </div>
 
-            {breathing ? <BreathingSpace onClose={() => setBreathing(false)} /> : null}
+            {space ? (
+              <BreathingSpace key={space} intro={space === 'intro'} onClose={() => setSpace(null)}
+                onFilm={() => playerRef.current?.start()} />
+            ) : null}
 
             <span className="gp__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false"><path d="M9 6.5v11l8.5-5.5z" fill="currentColor" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" /></svg>
@@ -111,11 +125,11 @@ export default function GoldenPause({ skipTo }) {
           </div>
 
           <div className="gp__bar">
-            <p className="gp__caption"><b>The Golden Pause</b> <span>{breathing ? 'breathe along if you like, or in your own way' : '13 seconds, just if you like'}</span></p>
+            <p className="gp__caption"><b>The Golden Pause</b> <span>{space === 'open' ? 'breathe along if you like, or in your own way' : space === 'intro' ? 'one breath, then the honey film, just if you like' : '13 seconds, just if you like'}</span></p>
             <div className="gp__controls" role="group" aria-label="Film controls">
-              <button type="button" className="gp-btn gp-btn--breathe" onClick={() => setBreathing((b) => !b)}>
+              <button type="button" className="gp-btn gp-btn--breathe" onClick={() => setSpace((s) => (s === 'open' ? null : 'open'))}>
                 <svg className="gp-ico gp-ico--orb" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="8.2" strokeDasharray="2.6 2.4" /></svg>
-                <span className="gp-btn__label">{breathing ? 'Finish' : 'Breathe with us'}</span>
+                <span className="gp-btn__label">{space === 'open' ? 'Finish' : 'Breathe with us'}</span>
               </button>
               <button type="button" className="gp-btn" data-gp="toggle" data-state="pause">
                 <svg className="gp-ico gp-ico--pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6.5v11M15 6.5v11" /></svg>

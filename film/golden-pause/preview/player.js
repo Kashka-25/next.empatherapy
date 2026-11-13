@@ -1,6 +1,9 @@
 /* The Golden Pause: the player (cue sheet version 2: the honey writes the name).
    Used by this preview (it starts itself on the page's [data-gp-stage]) and by the site's homepage hero
-   (components/golden-pause/GoldenPause.jsx calls createPlayer(stage, cues) and destroy() itself).
+   (components/golden-pause/GoldenPause.jsx calls createPlayer(stage, cues, opts) and destroy() itself).
+   opts.intro: the film loads but waits in mode "intro" (Skip and Sound offered, nothing plays) while the page shows
+   something first (the site opens with one breath in its breathing space); start() then plays it as autoplay would.
+   opts.onMode(mode): told whenever the mode changes.
    One clock: the video's currentTime. The breathing words, the wordmark, the tagline and the sound all follow it.
    stateAt(t) is a pure function of time, the cue numbers (cues.js) and the film format, so it can be unit-tested in Node:
      const cues = require('./cues.js'); const { stateAt } = require('./player.js'); stateAt(1.0, cues, 'wide')
@@ -153,7 +156,8 @@
     return v.charAt(v.length - 1) === '/' ? v : v + '/';
   }
 
-  function createPlayer(stage, cues) {
+  function createPlayer(stage, cues, opts) {
+    opts = opts || {};
     function q(name) {
       var el = stage.querySelector('[data-gp="' + name + '"]');
       if (!el) throw new Error('The Golden Pause: missing [data-gp="' + name + '"]');
@@ -362,7 +366,7 @@
       btnToggle.classList.toggle('gp-btn--primary', mode === 'poster' || mode === 'calm');
       var deadEnd = mode === 'ended' && videoFailed;   // the film broke after it ended: nothing left to replay
       var show = {
-        toggle: mode !== 'ended' && !(mode === 'calm' && videoFailed),
+        toggle: mode !== 'ended' && mode !== 'intro' && !(mode === 'calm' && videoFailed),
         skip: mode !== 'calm' && !deadEnd,
         sound: mode !== 'calm' && !deadEnd             // the calm still is silent: no Sound button that does nothing
       };
@@ -379,16 +383,21 @@
         p[0].hidden = true;
       });
     }
+    var reported = null;
     function setMode(next) {
       if (next !== mode) modeAt = now();
       mode = next;
       stage.setAttribute('data-gp-mode', next);
       updateControls();
+      if (reported !== mode && !dead) {
+        reported = mode;
+        if (typeof opts.onMode === 'function') { try { opts.onMode(mode); } catch (e) { /* the page's own problem */ } }
+      }
     }
 
     // ---------- film format on rotation / resize ----------
     function canReformat() {
-      return mode === 'poster' || mode === 'calm' || mode === 'ended' || (mode === 'loading' && !everPlayed);
+      return mode === 'intro' || mode === 'poster' || mode === 'calm' || mode === 'ended' || (mode === 'loading' && !everPlayed);
     }
     function applyFormat(reshow) {
       var next = wantFormat();
@@ -427,15 +436,17 @@
     listen(root, 'orientationchange', onResize);
 
     // ---------- states ----------
-    function armStartTimer() {
+    function armStartTimer(patience) {
       // An honest fallback: if the film has not started within 1.5 s, show the calm still instead of a blank frame.
+      // (From the intro the page still covers the frame, so it can wait longer: patience, in ms.)
       // A hidden page (a background tab) does not count: browsers hold its media back.
+      var wait = patience || 1500;
       clearTimeout(startTimer);
       startTimer = setTimeout(function () {
         if (mode !== 'loading') return;
-        if (isHidden()) { whenVisible(function () { if (mode === 'loading') armStartTimer(); }); return; }
+        if (isHidden()) { whenVisible(function () { if (mode === 'loading') armStartTimer(patience); }); return; }
         enterCalm('slow');
-      }, 1500);
+      }, wait);
     }
     function attemptAutoplay() {
       usePoster();
@@ -535,7 +546,7 @@
     // ---------- video events ----------
     listen(video, 'playing', function () {
       clearTimeout(startTimer);
-      if (mode === 'calm' || mode === 'ended' || mode === 'poster' || userPaused) { video.pause(); return; }
+      if (mode === 'intro' || mode === 'calm' || mode === 'ended' || mode === 'poster' || userPaused) { video.pause(); return; }
       everPlayed = true;
       setMode('playing');
       startClock();
@@ -562,6 +573,7 @@
       if (!srcSet) return;
       videoFailed = true;
       if (mode === 'ended') { updateControls(); return; }   // keep the welcome; Replay and Sound go away
+      if (mode === 'intro') { updateControls(); return; }   // the page's opening carries on; start() shows the calm still
       enterCalm('error');
     });
 
@@ -582,7 +594,7 @@
     listen(frame, 'click', function () { if (mode === 'poster') startFromTop(); });
     listen(stage, 'keydown', function (e) {
       if (e.key !== 'Escape' && e.key !== 'Esc') return;
-      if (mode === 'playing' || mode === 'loading' || mode === 'paused' || mode === 'poster') { e.preventDefault(); skip(); }
+      if (mode === 'intro' || mode === 'playing' || mode === 'loading' || mode === 'paused' || mode === 'poster') { e.preventDefault(); skip(); }
     });
 
     // ---------- sound ----------
@@ -798,12 +810,27 @@
     } else if (reduceMotion) {
       setSrc('none');
       enterCalm('reduced-motion');
+    } else if (opts.intro) {
+      setSrc('auto');                                 // load now, so the film is ready when the opening hands over
+      usePoster();
+      setMode('intro');
     } else {
       setSrc('auto');
       usePoster();
       setMode('loading');
       // A background tab: wait until the page is seen, then try to play (and only then start the 1.5 s fallback).
       whenVisible(function () { if (mode === 'loading' && !userPaused) attemptAutoplay(); });
+    }
+
+    /** Leave the intro: play the film from the top, as autoplay would (refused: the Play button; slow: the calm still). */
+    function startFilm() {
+      if (dead || mode !== 'intro') return;
+      if (formatStale) applyFormat(false);
+      if (videoFailed) { enterCalm('error'); return; }
+      usePoster();
+      setMode('loading');
+      armStartTimer(4000);                            // the page's opening still covers the frame while it starts
+      playVideo(true);
     }
 
     /** Take the player off the page: timers, listeners, media and the audio device. The markup stays as it is. */
@@ -829,6 +856,7 @@
     // A small read-only window for testing, and destroy(). Nothing here stores anything.
     return {
       destroy: destroy,
+      start: startFilm,
       stateAt: function (t, format) { return stateAt(t, cues, format || fmt); },
       get mode() { return mode; },
       get modeAt() { return modeAt; },

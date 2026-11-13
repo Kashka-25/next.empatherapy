@@ -1,18 +1,25 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { STEPS, REST, breathAt, lookOf, spokenOf } from './breathe.mjs';
+import { STEPS, REST, SPACE, INTRO, breathAt, lookOf, leaveOf, revealOf, filmStartOf, spokenOf } from './breathe.mjs';
 import './breathing-space.css';
 
 /**
  * The Golden Pause, a gentle breathing space (Cassidy's design): a golden orb that fills as you breathe in, rests full
- * for a moment, and empties as you let go, with the four steps under it. It opens over the film's own backdrop when
- * the visitor asks ("Breathe with us"), runs three easy rounds, rests, and closes by itself; Finish or Escape ends it
- * at any time. Purely visual and in this browser: nothing is measured, stored or sent.
+ * for a moment, and empties as you let go, with the four steps under it, over the film's own backdrop.
+ * Two ways in:
+ *   "Breathe with us" (when the film is not running): three easy rounds, a rest, and it closes by itself;
+ *     Finish or Escape ends it at any time.
+ *   intro (how the homepage opens): Prepare and one breath. On the breath out the orb and words dissolve into the
+ *     garden, onFilm() starts the film underneath, and the space clears as the film comes into view (read from the
+ *     film's own clock), then onClose(). Skip and Escape belong to the film then: they skip straight to the welcome.
+ * Purely visual and in this browser: nothing is measured, stored or sent.
  */
-export default function BreathingSpace({ onClose }) {
+export default function BreathingSpace({ onClose, onFilm, intro = false }) {
   const rootRef = useRef(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
+  const filmRef = useRef(onFilm);
+  filmRef.current = onFilm;
   const [shown, setShown] = useState(false);
   const [now, setNow] = useState({ step: 'prepare', index: 0 });
   const [spoken, setSpoken] = useState('');
@@ -20,8 +27,12 @@ export default function BreathingSpace({ onClose }) {
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return undefined;
+    const plan = intro ? INTRO : SPACE;
     const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    let t = 0, last = 0, raf = 0, running = false, closed = false, key = '', first = true;
+    const stage = el.closest('[data-gp-stage]');
+    const video = stage && stage.querySelector('[data-gp="video"]');
+    let t = 0, last = 0, raf = 0, running = false, closed = false, key = '', first = true, filmAsked = false, filmAskedAt = 0;
+    const close = () => { if (!closed) { closed = true; closeRef.current(); } };
 
     const apply = (b) => {
       const L = lookOf(b, reduced);
@@ -30,26 +41,37 @@ export default function BreathingSpace({ onClose }) {
       el.style.setProperty('--glow', L.glow.toFixed(4));
       el.style.setProperty('--ain', L.arrowsIn.toFixed(3));
       el.style.setProperty('--aout', L.arrowsOut.toFixed(3));
-      el.style.setProperty('--leave', b.step === 'rest' ? Math.max(0, (b.progress - 0.7) / 0.3).toFixed(3) : '0');
+      el.style.setProperty('--leave', leaveOf(b, plan).toFixed(3));
       const k = `${b.step}:${b.round}`;
-      if (k !== key) {
+      if (k !== key && !b.done) {
         key = k;
         setNow({ step: b.step, index: b.index });
-        setSpoken((first ? 'A gentle breathing space. ' : '') + spokenOf(b));
+        setSpoken((first ? (intro ? 'One breath before the film. ' : 'A gentle breathing space. ') : '') + spokenOf(b));
         first = false;
       }
-      if (b.done && !closed) { closed = true; closeRef.current(); }
+      if (!intro && b.done) close();
     };
-    apply(breathAt(0));
+    apply(breathAt(0, plan));
 
     const tick = (ms) => {
       if (!running) return;
       const dt = last ? Math.min((ms - last) / 1000, 0.1) : 0;   // a hidden tab pauses rather than racing ahead
       last = ms;
       t += dt;
-      const b = breathAt(t);
-      apply(b);
-      if (!b.done) raf = requestAnimationFrame(tick);
+      apply(breathAt(t, plan));
+      if (intro) {
+        // the film starts just before the breath out ends, and the space clears as the film comes into view
+        if (!filmAsked && t >= filmStartOf(plan)) { filmAsked = true; filmAskedAt = t; if (filmRef.current) filmRef.current(); }
+        if (filmAsked) {
+          const r = video && !video.paused ? revealOf(video.currentTime, plan) : 0;
+          el.style.transition = 'none';
+          el.style.opacity = String(1 - r);
+          if (r >= 1 || t - filmAskedAt > 6) { close(); return; }   // (the film never came: the page shows what it has)
+        }
+      } else if (breathAt(t, plan).done) {
+        return;
+      }
+      raf = requestAnimationFrame(tick);
     };
     // Begin once the orbs are ready (at most a second and a half), so the first breath is never missed.
     let cancelled = false;
@@ -61,19 +83,19 @@ export default function BreathingSpace({ onClose }) {
     });
     const showRaf = requestAnimationFrame(() => setShown(true));
 
-    // Escape finishes (before the film's own Escape, which would skip the film underneath),
-    // and clicks stay in here (a click must not start the film underneath).
-    const stage = el.closest('[data-gp-stage]');
+    // "Breathe with us": Escape finishes it (before the film's own Escape, which would skip the film underneath).
+    // The opening leaves Escape to the film, which skips to the welcome. Clicks stay in here either way
+    // (a click must not start the film underneath).
     const onKey = (e) => {
       if (e.key !== 'Escape' && e.key !== 'Esc') return;
       const a = document.activeElement;
       if (a && a !== document.body && stage && !stage.contains(a)) return;
       e.preventDefault();
       e.stopImmediatePropagation();
-      closeRef.current();
+      close();
     };
     const onClick = (e) => e.stopPropagation();
-    window.addEventListener('keydown', onKey, true);
+    if (!intro) window.addEventListener('keydown', onKey, true);
     el.addEventListener('click', onClick);
     return () => {
       cancelled = true;
@@ -83,10 +105,10 @@ export default function BreathingSpace({ onClose }) {
       window.removeEventListener('keydown', onKey, true);
       el.removeEventListener('click', onClick);
     };
-  }, []);
+  }, [intro]);
 
   return (
-    <div ref={rootRef} className="gp-breathe" data-shown={shown ? 'true' : 'false'} data-step={now.step}>
+    <div ref={rootRef} className="gp-breathe" data-shown={shown ? 'true' : 'false'} data-step={now.step} data-intro={intro ? 'true' : 'false'}>
       <p className="sr-only" role="status" aria-live="polite">{spoken}</p>
       <div className="gp-breathe__all" aria-hidden="true">
         <div className="gp-breathe__head">
