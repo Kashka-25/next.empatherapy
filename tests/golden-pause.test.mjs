@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { STEPS, ROUNDS, REST, DURATION, SMALL, REDUCED, INTRO, breathAt, lookOf, leaveOf, revealOf, filmStartOf, durationOf, spokenOf } from '../components/golden-pause/breathe.mjs';
+import { STEPS, ROUNDS, REST, DURATION, SMALL, REDUCED, INTRO, breathAt, lookOf, leaveOf, revealOf, filmStartOf, outStartOf, openingTimeOf, durationOf, spokenOf } from '../components/golden-pause/breathe.mjs';
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 const cues = JSON.parse(read('film/golden-pause/cues.json'));
@@ -77,28 +77,39 @@ test("the breathing space follows Cassidy's four steps: Prepare once, then round
   assert.equal(breathAt(NaN).step, 'prepare');
 });
 
-test('the homepage opens on one breath, and on the breath out hands over to the film, so its breath in follows', () => {
+test('the homepage opens on one breath whose breath out is the honey film\'s own: it fades into the drizzle', () => {
   const seq = [];
   for (let t = 0; t < durationOf(INTRO) + 2; t += 0.05) { const b = breathAt(t, INTRO); if (seq[seq.length - 1] !== b.step) seq.push(b.step); }
   assert.deepEqual(seq, ['prepare', 'in', 'hold', 'out'], 'one breath, no rest');
-  assert.equal(durationOf(INTRO), 3 + 4 + 2 + 6);
   const outStart = 3 + 4 + 2;
-  // the space's own words and orb dissolve during the breath out, and are gone before the film comes into view
-  assert.equal(leaveOf(breathAt(outStart + 0.5, INTRO), INTRO), 0);
-  assert.ok(leaveOf(breathAt(outStart + 4, INTRO), INTRO) > 0.3);
-  assert.equal(leaveOf(breathAt(outStart + 5.6, INTRO), INTRO), 1);
-  // the film is asked to start during the breath out, early enough that it comes into view (at its own revealFrom)
-  // as the out ends: its "Take a gentle breath in…" (from 0.3 s) is then waiting
-  const start = filmStartOf(INTRO);
-  assert.ok(start > outStart + 3 && start < durationOf(INTRO), 'started during the breath out');
+  assert.equal(outStartOf(INTRO), outStart);
   const cues = JSON.parse(read('film/golden-pause/cues.json'));
-  const inLine = cues.text.find((x) => x.id === 'in');
-  assert.ok(Math.abs(start + INTRO.revealFrom - durationOf(INTRO)) <= 0.2, 'the film comes into view as the out ends (allowing for the start)');
-  assert.ok(INTRO.revealFrom >= cues.fadeIn[1] * 0.7 && INTRO.revealFrom >= inLine.fadeIn[0], 'the film has nearly faded up from parchment, and its breath-in line has begun');
-  assert.equal(revealOf(0), 0);
-  assert.equal(revealOf(INTRO.revealFrom + INTRO.revealFor), 1);
-  // the breathing space proper still has its rest, and its words leave only at the very end
+  // the film starts unseen during Breathe in, so that its honey lands just as Hold turns to Breathe out
+  assert.equal(INTRO.land, cues.drop.land, 'the opening knows when the film\'s honey lands');
+  const start = filmStartOf(INTRO);
+  assert.equal(breathAt(start, INTRO).step, 'in', 'the film starts while you breathe in');
+  assert.ok(Math.abs(start + cues.drop.land - outStart) < 1e-9, 'the honey lands as the breath out begins');
+  assert.equal(breathAt(openingTimeOf(cues.drop.land - 0.05), INTRO).step, 'hold');
+  assert.equal(breathAt(openingTimeOf(cues.drop.land + 0.05), INTRO).step, 'out');
+  // the film's own breath out (the honey writing the name) lies inside the opening's breath out
+  assert.ok(openingTimeOf(cues.breath.exhale[0]) >= outStart - 0.05 && openingTimeOf(cues.breath.exhale[1]) <= durationOf(INTRO));
+  // the space cross-fades into the drizzle through the breath out: from just before the honey lands, and gone
+  // while the honey is still writing the name
+  assert.equal(revealOf(INTRO.revealFrom), 0);
+  assert.ok(INTRO.revealFrom <= cues.drop.land && INTRO.revealFrom >= cues.drop.fall[0]);
+  const clear = INTRO.revealFrom + INTRO.revealFor;
+  assert.equal(revealOf(clear), 1);
+  assert.ok(clear > cues.drop.land + 2 && clear < cues.write[1], 'a slow cross-fade, finished before the name is complete');
+  assert.ok(revealOf(cues.drop.land + 1.5) > 0.3 && revealOf(cues.drop.land + 1.5) < 0.7, 'half way while the honey writes');
+  // the opening fades as a whole; the breathing space proper still has its rest, its words leaving at the very end
+  assert.equal(leaveOf(breathAt(outStart + 3, INTRO), INTRO), 0);
   assert.equal(leaveOf(breathAt(outStart + 4)), 0);
+  assert.equal(durationOf(INTRO), 3 + 4 + 2 + 6);
+});
+
+test('the homepage film shows no breathing words of its own (they stay on the calm still)', () => {
+  const css = strip(read('components/golden-pause/breathing-space.css'));
+  assert.match(css, /\.gp:not\(\.gp--nojs\):not\(\[data-gp-mode="calm"\]\) \.gp__band \{ display: none; \}/);
 });
 
 test('the hold is short and gentle, and the orb fills and empties smoothly with the breath', () => {

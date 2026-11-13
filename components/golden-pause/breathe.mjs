@@ -4,8 +4,10 @@
 //
 // Two plans:
 //   SPACE  "Breathe with us": Prepare once, three rounds of in, hold and out, a moment of rest, then it closes.
-//   INTRO  how the homepage opens: Prepare and one breath; on the breath out the space dissolves into the honey film,
-//          which starts just before the out ends, so its own "Take a gentle breath in…" comes as the out finishes.
+//   INTRO  how the homepage opens: Prepare and one breath, then the breath out becomes the honey film's own breath out.
+//          The film starts unseen during Breathe in, so that its honey lands (cues.json drop.land) just as Hold turns
+//          to Breathe out; through the breath out the space cross-fades into the honey drizzling down and writing the
+//          name. (The page holds the opening's clock to the film's once it plays, so they stay together.)
 
 export const STEPS = [
   { id: 'prepare', label: 'Prepare', line: 'Settle in…', seconds: 3 },
@@ -16,8 +18,9 @@ export const STEPS = [
 export const ROUNDS = 3;
 export const REST = { label: 'Thank you for pausing.', seconds: 4 };
 export const SPACE = { rounds: ROUNDS, rest: REST.seconds };
-/** filmLead: how long before the breath out ends the film is started (it comes into view at its own 0.9 s) */
-export const INTRO = { rounds: 1, rest: 0, filmLead: 1.05, revealFrom: 0.9, revealFor: 0.6 };
+/** land: when the film's honey lands (cues.json drop.land; a test keeps them equal);
+ *  revealFrom, revealFor: the cross-fade into the film, in the film's own seconds (from just before the honey lands) */
+export const INTRO = { rounds: 1, rest: 0, land: 3.2, revealFrom: 3.0, revealFor: 3.0 };
 /** the orb's scale when the breath is empty (1 = full); with reduced motion it stays at REDUCED */
 export const SMALL = 0.58;
 export const REDUCED = 0.8;
@@ -26,8 +29,10 @@ const byId = Object.fromEntries(STEPS.map((s, i) => [s.id, { ...s, index: i }]))
 const ROUND = byId.in.seconds + byId.hold.seconds + byId.out.seconds;
 export const durationOf = (plan = SPACE) => byId.prepare.seconds + plan.rounds * ROUND + plan.rest;
 export const DURATION = durationOf(SPACE);
-/** when, in the opening, the film is asked to start */
-export const filmStartOf = (plan = INTRO) => durationOf(plan) - (plan.filmLead || 0);
+/** when the breath out begins, in the opening (Prepare, Breathe in and Hold come first) */
+export const outStartOf = (plan = INTRO) => byId.prepare.seconds + (plan.rounds - 1) * ROUND + byId.in.seconds + byId.hold.seconds;
+/** when, in the opening, the film is asked to start: so that its honey lands as the breath out begins */
+export const filmStartOf = (plan = INTRO) => outStartOf(plan) - plan.land;
 
 /** sine ease in and out: a breath speeds up gently and slows into its turn */
 export const ease = (p) => (1 - Math.cos(Math.PI * Math.min(Math.max(p, 0), 1))) / 2;
@@ -81,16 +86,18 @@ export function lookOf(b, reducedMotion = false) {
 }
 
 /**
- * How far the space's own words and orb have faded away (0 = all there, 1 = gone): at the end of the rest (SPACE),
- * or through the last breath out (INTRO), so the garden behind is all that is left when the film takes over.
+ * How far the space's own words and orb have faded away at the end of "Breathe with us" (0 = all there, 1 = gone).
+ * (The opening fades as a whole instead, into the film: revealOf.)
  */
 export function leaveOf(b, plan = SPACE) {
   if (plan.rest > 0) return b.step === 'rest' ? Math.max(0, (b.progress - 0.7) / 0.3) : 0;
-  if (b.done) return 1;
-  return b.step === 'out' && b.round === plan.rounds ? smooth((b.progress - 0.4) / 0.5) : 0;
+  return 0;
 }
 
-/** in the opening, how far the space has cleared to show the film, from the film's own clock (seconds) */
+/** where the opening should be, given the film's own clock, once the film plays */
+export const openingTimeOf = (filmTime, plan = INTRO) => filmStartOf(plan) + filmTime;
+
+/** in the opening, how far the space has cross-faded into the film, from the film's own clock (seconds) */
 export function revealOf(filmTime, plan = INTRO) {
   return smooth((filmTime - plan.revealFrom) / plan.revealFor);
 }

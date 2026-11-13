@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { STEPS, REST, SPACE, INTRO, breathAt, lookOf, leaveOf, revealOf, filmStartOf, spokenOf } from './breathe.mjs';
+import { STEPS, REST, SPACE, INTRO, breathAt, lookOf, leaveOf, revealOf, filmStartOf, openingTimeOf, spokenOf } from './breathe.mjs';
 import './breathing-space.css';
 
 /**
@@ -9,9 +9,10 @@ import './breathing-space.css';
  * Two ways in:
  *   "Breathe with us" (when the film is not running): three easy rounds, a rest, and it closes by itself;
  *     Finish or Escape ends it at any time.
- *   intro (how the homepage opens): Prepare and one breath. On the breath out the orb and words dissolve into the
- *     garden, onFilm() starts the film underneath, and the space clears as the film comes into view (read from the
- *     film's own clock), then onClose(). Skip and Escape belong to the film then: they skip straight to the welcome.
+ *   intro (how the homepage opens): Prepare and one breath. onFilm() starts the film unseen underneath during
+ *     Breathe in, so that its honey lands just as Hold turns to Breathe out; from then the opening keeps time with the
+ *     film, and through the breath out the whole space cross-fades into the drizzling honey (read from the film's own
+ *     clock), then onClose(). Skip and Escape belong to the film then: they skip straight to the welcome.
  * Purely visual and in this browser: nothing is measured, stored or sent.
  */
 export default function BreathingSpace({ onClose, onFilm, intro = false }) {
@@ -57,16 +58,23 @@ export default function BreathingSpace({ onClose, onFilm, intro = false }) {
       if (!running) return;
       const dt = last ? Math.min((ms - last) / 1000, 0.1) : 0;   // a hidden tab pauses rather than racing ahead
       last = ms;
-      t += dt;
+      let next = t + dt;
+      if (intro && filmAsked && video) {
+        // keep time with the film, so its honey lands as the breath out begins: the opening runs a little slower
+        // or faster (never less than 0.4x or more than 1.6x) until it is with the film's clock
+        const err = openingTimeOf(video.paused ? 0 : video.currentTime, plan) - next;
+        next += Math.max(-0.6 * dt, Math.min(0.6 * dt, err));
+      }
+      t = next;
       apply(breathAt(t, plan));
       if (intro) {
-        // the film starts just before the breath out ends, and the space clears as the film comes into view
         if (!filmAsked && t >= filmStartOf(plan)) { filmAsked = true; filmAskedAt = t; if (filmRef.current) filmRef.current(); }
         if (filmAsked) {
+          // through the breath out, the whole space cross-fades into the honey drizzling down and writing the name
           const r = video && !video.paused ? revealOf(video.currentTime, plan) : 0;
           el.style.transition = 'none';
           el.style.opacity = String(1 - r);
-          if (r >= 1 || t - filmAskedAt > 6) { close(); return; }   // (the film never came: the page shows what it has)
+          if (r >= 1 || t - filmAskedAt > 14) { close(); return; }  // (the film never came: the page shows what it has)
         }
       } else if (breathAt(t, plan).done) {
         return;

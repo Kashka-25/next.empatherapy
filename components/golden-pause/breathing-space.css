@@ -133,6 +133,11 @@
 .gp.gp--breathing .gp__controls .gp-btn[data-gp] { display: none; }
 .gp-ico--orb { stroke-width: 1.6; }
 
+/* On the homepage the breathing space guides the breath, so the honey film shows no breathing words of its own.
+   They stay on the calm still (reduced motion, Save-Data, a failed film, no JavaScript), where there is no opening
+   breath to guide it. */
+.gp:not(.gp--nojs):not([data-gp-mode="calm"]) .gp__band { display: none; }
+
 @media (prefers-reduced-motion: reduce) {
   .gp-breathe, .gp-breathe__steps, .gp-breathe__steps li, .gp-breathe__label, .gp-breathe__rest { transition: none; }
 }
