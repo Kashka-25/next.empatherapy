@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AlchemistPortrait from '@/components/alchemists/AlchemistPortrait';
 import PhotoCarousel from '@/components/alchemists/PhotoCarousel';
+import EnquiryForm from '@/components/alchemists/EnquiryForm';
 import { photosOf } from '@/lib/photos.mjs';
-import Button from '@/components/ui/Button';
 import Eyebrow from '@/components/ui/Eyebrow';
 import DevNote from '@/components/ui/DevNote';
 import { bySlug, modalitiesOf, BASIS_LABEL, placeAndFormat } from '@/lib/content.mjs';
@@ -35,7 +35,7 @@ export default async function AlchemistPage({ params }) {
   const founder = !a.demo;
   const photos = photosOf(a);
   const first = a.name.split(' ')[0];
-  const enquiry = a.enquiry_email ? `mailto:${a.enquiry_email}?subject=${encodeURIComponent(`Enquiry about ${a.offering_name || a.name}`)}` : null;
+  const canEnquire = !a.demo && Boolean(a.enquiry_email);
 
   return (
     <>
@@ -195,11 +195,8 @@ export default async function AlchemistPage({ params }) {
               <div><dt>Format</dt><dd>{a.delivery_formats.map((f) => (f === 'online' ? 'Online' : 'In person')).join(' and ')}</dd></div>
               <div><dt>Sessions</dt><dd>from ${a.pricing.from} {a.pricing.currency}</dd></div>
             </dl>
-            {enquiry ? (
-              <>
-                <Button href={enquiry} size="lg">Send an enquiry</Button>
-                <p style={{ fontSize: '0.88rem', color: 'var(--muted)' }}>This opens your email app. Online booking is not available yet.</p>
-              </>
+            {canEnquire ? (
+              <EnquiryForm alchemistId={a.id} firstName={first} fallbackEmail={a.enquiry_email} />
             ) : (
               <>
                 <button type="button" className="btn btn--soft btn--lg" disabled>{a.demo ? 'Enquiries open at launch' : 'Enquiries not open yet'}</button>

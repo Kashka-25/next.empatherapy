@@ -60,7 +60,7 @@ test('audit: entries are kept 12 months, then cleared by the owner clean-up', as
   await recordAudit(store, actor, 'sign_in', 'a', 'recent', at(AUDIT_DAYS - 1));
   const found = await findExpired(store, now);
   assert.deepEqual(found.audit.map((e) => e.summary), ['old']);
-  assert.deepEqual(await purgeExpired(store, now), { applications: 0, counters: 0, audit: 1 });
+  assert.deepEqual(await purgeExpired(store, now), { applications: 0, counters: 0, audit: 1, enquiries: 0 });
   assert.deepEqual((await listAudit(store)).map((e) => e.summary), ['recent']);
 });
 
