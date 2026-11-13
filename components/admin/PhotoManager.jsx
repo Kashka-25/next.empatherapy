@@ -1,4 +1,5 @@
-import { adminPhotoUrl, MAX_PHOTOS, photosOf, isApproved } from '@/lib/photos.mjs';
+import { adminPhotoUrl, MAX_PHOTOS, photosOf, isApproved, focusStyle, DEFAULT_FOCUS } from '@/lib/photos.mjs';
+import FocusFields from './FocusFields.jsx';
 import { MAX_BYTES, MIN_SIDE } from '@/lib/images/inspect.mjs';
 import CropPicker from './CropPicker.jsx';
 
@@ -34,7 +35,7 @@ export default function PhotoManager({ alchemist, enabled, error, saved, mode = 
             <ol className="photo-grid">
               {photos.map((p, i) => (
                 <li key={p.id} className="photo-card">
-                  <img src={adminPhotoUrl(p.id)} alt={p.alt} width={p.w} height={p.h} loading="lazy" />
+                  <img id={`pm-${p.id}`} src={adminPhotoUrl(p.id)} alt={p.alt} width={p.w} height={p.h} loading="lazy" style={focusStyle(p) ?? { objectPosition: `${DEFAULT_FOCUS.x}% ${DEFAULT_FOCUS.y}%` }} />
                   <div className="stack" style={{ gap: '0.6rem' }}>
                     <p className="small">
                       {i === 0 ? <strong>Profile picture</strong> : `Photo ${i + 1}`}
@@ -51,8 +52,9 @@ export default function PhotoManager({ alchemist, enabled, error, saved, mode = 
                         <label htmlFor={`cap-${p.id}`}>Caption (optional)</label>
                         <input id={`cap-${p.id}`} name="caption" defaultValue={p.caption ?? ''} maxLength={140} />
                       </div>
+                      <FocusFields imgId={`pm-${p.id}`} focus={p.focus} />
                       <div className="row">
-                        <button type="submit" name="intent" value="save" className="btn btn--soft btn--sm">Save text</button>
+                        <button type="submit" name="intent" value="save" className="btn btn--soft btn--sm">Save text and framing</button>
                         {!portal && !isApproved(p) ? <button type="submit" name="intent" value="approve" className="btn btn--honey btn--sm">Approve</button> : null}
                         {i > 0 ? <button type="submit" name="intent" value="primary" className="btn btn--soft btn--sm">Make profile picture</button> : null}
                         {i > 0 ? <button type="submit" name="intent" value="left" className="btn btn--soft btn--sm" aria-label={`Move photo ${i + 1} earlier`}>&larr;</button> : null}

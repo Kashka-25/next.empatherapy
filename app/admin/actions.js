@@ -17,7 +17,7 @@ import { ensureCode, offerDiscount, respondToOffer, endAgreement, removeProfileR
 import { validatePost, STATUS_LABEL as POST_STATUS_LABEL, POST_STATUSES, MAX_POSTS_PER_PROFILE } from '@/lib/posts.mjs';
 import { getBlobStore, newImageId } from '@/lib/images/blobs.mjs';
 import { inspectImage, IMAGE_MESSAGES, MAX_BYTES } from '@/lib/images/inspect.mjs';
-import { MAX_PHOTOS, addPhoto, updatePhoto, makePrimary, movePhoto, removePhoto, approvePhoto, canHavePhotos, photosOf, cleanAlt, cleanCaption, altError } from '@/lib/photos.mjs';
+import { MAX_PHOTOS, addPhoto, updatePhoto, makePrimary, movePhoto, removePhoto, approvePhoto, canHavePhotos, photosOf, cleanAlt, cleanCaption, altError, cleanFocus } from '@/lib/photos.mjs';
 import { SESSION_COOKIE, PENDING_COOKIE, pendingSecret, createSession, readSession } from '@/lib/session.mjs';
 import { verifyPassword } from '@/lib/password.mjs';
 import { createSharedLimiter, clientKey } from '@/lib/ratelimit.mjs';
@@ -362,7 +362,8 @@ async function photoChangeCore({ me, id, formData, nav, allowApprove }) {
     const alt = cleanAlt(text(formData, 'alt'));
     const problem = altError(alt);
     if (problem) nav.fail(problem);
-    r = updatePhoto(list, photoId, { alt, caption: cleanCaption(text(formData, 'caption')) });
+    const focus = cleanFocus(text(formData, 'focus_x'), text(formData, 'focus_y')); // null if the sliders were not sent: then it is left as it was
+    r = updatePhoto(list, photoId, { alt, caption: cleanCaption(text(formData, 'caption')), ...(focus ? { focus } : {}) });
   } else if (intent === 'primary') r = makePrimary(list, photoId);
   else if (intent === 'left' || intent === 'right') r = movePhoto(list, photoId, intent);
   else if (intent === 'remove') r = removePhoto(list, photoId);

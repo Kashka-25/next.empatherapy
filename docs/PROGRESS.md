@@ -78,7 +78,7 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 
 ## Not built yet (and why)
 - **A live database.** The Supabase driver and schema exist and are tested against a fake of the Supabase API, but no Supabase project has been created or connected yet (that needs Cassidy). See `docs/ADMIN.md`, "Going live".
-- **Photo focal point on photos already uploaded** (framing a new photo before upload is built: `components/admin/CropPicker.jsx`).
+- Re-cropping an uploaded photo itself (the focal point, below, only chooses which part of it shows in the portrait frame).
 - **Enquiries, bookings, reviews, favourites, Seeker accounts.**
 - **Images.** No photographs yet.
 
@@ -86,6 +86,6 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 ```bash
 npm install
 npm run dev     # http://localhost:3000
-npm test        # 229 tests: launch checklist, spending credits, referral credits, referral circles and the summary, knowledge feed, Alchemist portal, enquiries and mail, launch settings, two-step sign-in (RFC 6238 vectors), activity log, application to draft profile, photos (checks, metadata stripping, storage, list rules), matching, content, directory, validation, storage (file, memory, Supabase), sessions, passwords, rate limits, accounts and roles, retention, applications, features
+npm test        # 241 tests: launch checklist, spending credits, referral credits, referral circles and the summary, knowledge feed, Alchemist portal, enquiries and mail, launch settings, two-step sign-in (RFC 6238 vectors), activity log, application to draft profile, photos (checks, metadata stripping, storage, list rules), matching, content, directory, validation, storage (file, memory, Supabase), sessions, passwords, rate limits, accounts and roles, retention, applications, features
 npm run build   # also runs lint
 ```
