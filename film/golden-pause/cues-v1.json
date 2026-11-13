@@ -1,0 +1,39 @@
+{
+  "_about": "The Golden Pause cue sheet. One clock for the picture, the on-page text, the breathing ring and the sound. Times are seconds from the start of the film. Positions are fractions of the source image (0,0 top-left, 1,1 bottom-right).",
+  "fps": 24,
+  "duration": 12.0,
+  "settle": 11.5,
+  "shots": [
+    { "id": "a", "src": "source/a-cup.webp", "name": "Arrive: the cup",
+      "in": 0.0, "out": 2.9,
+      "from": { "scale": 1.0, "cx": 0.5, "cy": 0.5 }, "to": { "scale": 1.14, "cx": 0.53, "cy": 0.43 },
+      "stream": { "x": 0.532, "y0": 0.24, "y1": 0.47, "w": 0.034 } },
+    { "id": "b", "src": "source/b-dipper.webp", "name": "Let go: the dipper and the falling honey",
+      "in": 2.3, "out": 4.9,
+      "from": { "scale": 1.06, "cx": 0.49, "cy": 0.46 }, "to": { "scale": 1.16, "cx": 0.475, "cy": 0.66 },
+      "stream": { "x": 0.468, "y0": 0.52, "y1": 1.0, "w": 0.042 } },
+    { "id": "c", "src": "source/c-inside-honey.webp", "name": "Let go: inside the honey",
+      "in": 4.3, "out": 7.9,
+      "from": { "scale": 1.05, "cx": 0.5, "cy": 0.5, "rot": 0.0 }, "to": { "scale": 1.15, "cx": 0.53, "cy": 0.47, "rot": -2.0 } },
+    { "id": "d", "src": "source/d-meeting.webp", "name": "The meeting: honey touches the lemon",
+      "in": 7.2, "out": 9.9,
+      "from": { "scale": 1.16, "cx": 0.55, "cy": 0.46 }, "to": { "scale": 1.04, "cx": 0.52, "cy": 0.52 },
+      "stream": { "x": 0.552, "y0": 0.0, "y1": 0.47, "w": 0.05 },
+      "ripple": { "x": 0.55, "y": 0.5, "squash": 0.36 } },
+    { "id": "e", "src": "source/e-lemon.webp", "name": "The transition: ripples around the lemon",
+      "in": 9.1, "out": 10.6,
+      "from": { "scale": 1.06, "cx": 0.48, "cy": 0.5 }, "to": { "scale": 1.0, "cx": 0.48, "cy": 0.5 },
+      "ripple": { "x": 0.47, "y": 0.5, "squash": 0.42 } },
+    { "id": "plate", "src": null, "name": "The welcome: warm parchment, ripples settling",
+      "in": 9.6, "out": 12.0 }
+  ],
+  "contact": 8.25,
+  "breath": { "inhale": [0.3, 3.0], "exhale": [3.2, 8.0] },
+  "text": [
+    { "id": "in", "words": "Take a gentle breath in…", "fadeIn": [0.3, 1.0], "fadeOut": [2.7, 3.2] },
+    { "id": "out", "words": "And slowly let it go…", "fadeIn": [3.2, 3.9], "fadeOut": [7.6, 8.4] },
+    { "id": "permission", "words": "Breathe along if you like, or simply watch the honey.", "fadeIn": [0.6, 1.4], "fadeOut": [7.6, 8.4] }
+  ],
+  "welcome": { "mark": [10.0, 11.0], "wordmark": [10.1, 11.1], "tagline": [10.5, 11.5], "words": "Discover new pathways to yourself." },
+  "audio": { "resolve": 9.9, "fadeOutEnd": 12.0 }
+}

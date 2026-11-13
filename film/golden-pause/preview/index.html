@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en-AU" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>The Golden Pause</title>
+<meta name="description" content="Preview of The Golden Pause, a 13-second optional opening film for the Empatherapy homepage. Not the live site.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3C19 10 26 15 26 21a10 10 0 0 1-20 0c0-6 7-11 10-18z' fill='%23D9A441' stroke='%23B9823E' stroke-width='1.5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Fonts never block the page or the film: fetched early here, applied by player.js (or by the noscript link). -->
+<link rel="preload" as="style" data-gp-fonts href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Nunito+Sans:wght@400;600;700&display=swap">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Nunito+Sans:wght@400;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="player.css">
+<!-- The page stays "no-js" (the calm still, no controls) until player.js has really started the player.
+     "gp-wait" only hides that fallback while the scripts load; if they never start the player, it is lifted. -->
+<script>(function (d) { var h = d.documentElement; h.className += ' gp-wait'; d.addEventListener('DOMContentLoaded', function () { h.className = h.className.replace(/\s*\bgp-wait\b/, ''); }); })(document);</script>
+</head>
+<body>
+<a class="skip-link" href="#hero">Skip past the film</a>
+
+<p class="preview-note" role="note">
+  <strong>Preview of The Golden Pause. Not the live site.</strong>
+  <span>The teacup symbol in the film is a redraw, provisional until Cassidy approves it.</span>
+</p>
+
+<header class="mock-nav">
+  <div class="mock-nav__inner">
+    <span class="mock-wordmark">Empatherapy</span>
+    <p class="mock-links" aria-hidden="true">
+      <span>Discover Alchemists</span><span>Explore Modalities</span><span>IntoTheLighthouse</span><span>About</span>
+      <span class="mock-menu">Menu</span>
+    </p>
+  </div>
+</header>
+
+<main>
+  <!-- The Golden Pause stage. An optional moment: never a gate, nothing stored or measured.
+       All words on screen are live HTML (the honey script in the film is picture); the film has no sound track. -->
+  <section class="gp" data-gp-stage data-gp-mode="loading" tabindex="-1"
+           aria-label="The Golden Pause, a short optional breathing moment">
+    <div class="gp__inner">
+      <!-- The film for screen readers: one static description (the picture is aria-hidden; nothing is announced on a timer). -->
+      <p class="sr-only" data-gp="description">About the film: a 13-second film, just if you like. A drop of honey gathers on a wooden honey dipper while the words &ldquo;Take a gentle breath in&hellip;&rdquo; appear. The drop falls, and as &ldquo;And slowly let it go&hellip;&rdquo; appears, the honey flows out and writes the name Empatherapy in joined, flowing golden script. Below, the words &ldquo;Breathe along if you like, or simply watch the honey.&rdquo; Then the honey script drips away, the scene turns to warm parchment, and honey drops fall into a teacup of chamomile tea with lemon and a chamomile flower; the cup fills, honey runs over the rim and steam rises. The name Empatherapy rests above the cup, with &ldquo;Discover new pathways to yourself.&rdquo; below it.</p>
+      <div class="gp__frame" data-gp="frame">
+        <video class="gp__video" data-gp="video" muted playsinline webkit-playsinline preload="none"
+               disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video>
+        <!-- the honey name, just written (7.9 s): reduced motion, Save-Data, slow or failed video, autoplay refused -->
+        <img class="gp__still" data-gp="still" alt="" aria-hidden="true" decoding="async" hidden>
+        <!-- the settled lockup (the teacup symbol on parchment): after Skip and at the end -->
+        <img class="gp__end" data-gp="end" alt="" aria-hidden="true" decoding="async" hidden>
+        <!-- the honey name, by CSS alone, when the player is not running (no JavaScript, or player.js / cues.js did not load) -->
+        <div class="gp__fallback" aria-hidden="true"></div>
+
+        <!-- The bottom band, below the honey name: the breathing line, and the permission line just under it,
+             on one soft parchment backing. Calm still (reduced motion, Save-Data, slow or missing video, no JavaScript):
+             both breathing lines at once, with the permission line. -->
+        <div class="gp__band" aria-hidden="true">
+          <!-- an invisible twin of the permission line, above, so that the breathing line sits at the band's centre -->
+          <p class="gp__ghost"><span class="gp__l">Breathe along if you like,</span> <span class="gp__l">or simply watch the honey.</span></p>
+          <div class="gp__band-words">
+            <span class="gp__backing" data-gp="words-backing"></span>
+            <div class="gp__slot">
+              <p class="gp__line" data-gp="line-in">Take a gentle breath in&hellip;</p>
+              <p class="gp__line" data-gp="line-out">And slowly let it go&hellip;</p>
+              <div class="gp__calm">
+                <p>Take a gentle breath in&hellip;</p>
+                <p>And slowly let it go&hellip;</p>
+              </div>
+            </div>
+            <p class="gp__permission" data-gp="permission"><span class="gp__l">Breathe along if you like,</span> <span class="gp__l">or simply watch the honey.</span></p>
+          </div>
+        </div>
+
+        <!-- The welcome: the name, in the same script the honey wrote but solid brown (wordmark-script.webp), takes over from the honey script where it
+             was written, then rides the camera tilt up to sit above the teacup symbol; the tagline settles under the cup.
+             Hidden from screen readers like the rest of the picture: the description above names Empatherapy once. -->
+        <div class="gp__welcome" aria-hidden="true">
+          <div class="gp__wm-track" data-gp="wordmark-track">
+            <img class="gp__wordmark" data-gp="wordmark" src="wordmark-script.webp" alt="Empatherapy" width="2620" height="612" decoding="async">
+          </div>
+          <p class="gp__tagline" data-gp="tagline">Discover new pathways to yourself.</p>
+        </div>
+
+        <span class="gp__glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false"><path d="M9 6.5v11l8.5-5.5z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+
+      <div class="gp__bar">
+        <p class="gp__caption"><b>The Golden Pause</b> <span>13 seconds, just if you like</span></p>
+        <div class="gp__controls" role="group" aria-label="Film controls">
+          <button type="button" class="gp-btn" data-gp="toggle" data-state="pause">
+            <svg class="gp-ico gp-ico--pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6.5v11M15 6.5v11"/></svg>
+            <svg class="gp-ico gp-ico--play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8.5 6v12l9.5-6z" fill="currentColor"/></svg>
+            <span class="gp-btn__label">Pause</span>
+          </button>
+          <button type="button" class="gp-btn" data-gp="sound" aria-pressed="false">
+            <svg class="gp-ico gp-ico--muted" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 10l4 4M19.5 10l-4 4"/></svg>
+            <svg class="gp-ico gp-ico--sound" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/></svg>
+            <span class="gp-btn__label">Sound</span>
+          </button>
+          <button type="button" class="gp-btn" data-gp="skip" data-state="skip">
+            <svg class="gp-ico gp-ico--skip" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 6.5l7 5.5-7 5.5zM17.5 6.5v11"/></svg>
+            <svg class="gp-ico gp-ico--replay" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12a7 7 0 1 0 2.05-4.95"/><path d="M5 4.8v3.4h3.4"/></svg>
+            <span class="gp-btn__label">Skip</span>
+          </button>
+        </div>
+      </div>
+      <audio data-gp="audio" preload="none" crossorigin="anonymous" aria-hidden="true"></audio>
+    </div>
+  </section>
+
+  <section class="hero" id="hero" tabindex="-1" aria-labelledby="hero-title">
+    <div class="container hero__copy">
+      <span class="hand">welcome, come on in</span>
+      <h1 id="hero-title">Your journey starts <em>somewhere.</em></h1>
+      <p class="lede">Discover new pathways, meet people who care, and explore what resonates with you.</p>
+      <div class="row"><a class="btn btn--honey btn--lg" href="#rest">Begin your discovery</a></div>
+      <p class="hero__small">A few gentle questions. No sign-up needed.</p>
+    </div>
+  </section>
+
+  <section class="rest" id="rest" tabindex="-1" aria-label="About this preview">
+    <div class="container">
+      <p>On the live site, the rest of the homepage continues here: the discovery invitation, this week&rsquo;s modalities and featured Alchemists.</p>
+      <p>This preview stores nothing and measures nothing. No cookies, no analytics.</p>
+    </div>
+  </section>
+</main>
+
+<script src="cues.js"></script>
+<script src="player.js"></script>
+</body>
+</html>

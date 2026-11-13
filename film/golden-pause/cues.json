@@ -1,0 +1,209 @@
+{
+  "_about": "The Golden Pause v2 (honey writes the name). One clock for picture, words and sound. Times are seconds. Screen positions are fractions of the stage (0,0 top-left). 'pre' positions are before the camera tilts down; 'post' positions are the settled lockup.",
+  "version": 2,
+  "fps": 24,
+  "duration": 13,
+  "settle": 12.4,
+  "fadeIn": [
+    0,
+    1.2
+  ],
+  "drop": {
+    "gather": [
+      0.6,
+      2.6
+    ],
+    "fall": [
+      2.6,
+      3.2
+    ],
+    "land": 3.2
+  },
+  "write": [
+    3.2,
+    7
+  ],
+  "letGo": {
+    "thin": [
+      7,
+      7.4
+    ],
+    "break": 7.4,
+    "settle": 7.8
+  },
+  "glint": [
+    7.6,
+    8.3
+  ],
+  "melt": [
+    8.2,
+    9.4
+  ],
+  "plate": [
+    8.2,
+    9.2
+  ],
+  "tilt": [
+    8.8,
+    10.6
+  ],
+  "feed": {
+    "drops": [
+      9,
+      10.3
+    ],
+    "fill": [
+      9.9,
+      10.8
+    ],
+    "rimDrip": [
+      10.3,
+      11.2
+    ],
+    "steam": [
+      10.8,
+      12
+    ]
+  },
+  "contact": 3.2,
+  "breath": {
+    "inhale": [
+      0.3,
+      3
+    ],
+    "exhale": [
+      3.2,
+      8
+    ]
+  },
+  "text": [
+    {
+      "id": "in",
+      "words": "Take a gentle breath in…",
+      "fadeIn": [
+        0.3,
+        1
+      ],
+      "fadeOut": [
+        2.7,
+        3.2
+      ]
+    },
+    {
+      "id": "out",
+      "words": "And slowly let it go…",
+      "fadeIn": [
+        3.2,
+        3.9
+      ],
+      "fadeOut": [
+        6.8,
+        7.4
+      ]
+    },
+    {
+      "id": "permission",
+      "words": "Breathe along if you like, or simply watch the honey.",
+      "fadeIn": [
+        0.6,
+        1.4
+      ],
+      "fadeOut": [
+        6.8,
+        7.4
+      ]
+    }
+  ],
+  "welcome": {
+    "wordmark": [
+      8.9,
+      9.7
+    ],
+    "tagline": [
+      11,
+      11.8
+    ],
+    "words": "Discover new pathways to yourself."
+  },
+  "layout": {
+    "wide": {
+      "size": [
+        1600,
+        900
+      ],
+      "script": {
+        "widthFrac": 0.68,
+        "topPre": 0.575,
+        "centerPre": 0.716,
+        "landing": [
+          0.5,
+          0.668
+        ]
+      },
+      "tiltFrac": 0.466,
+      "wordmark": {
+        "centerPost": 0.23,
+        "widthFrac": 0.38,
+        "scalePre": 1.7895,
+        "image": "wordmark-script.webp",
+        "aspect": 4.281
+      },
+      "symbol": {
+        "topPost": 0.33,
+        "heightFrac": 0.46
+      },
+      "tagline": {
+        "centerPost": 0.865
+      },
+      "breathLines": {
+        "center": 0.93
+      }
+    },
+    "square": {
+      "size": [
+        900,
+        900
+      ],
+      "script": {
+        "widthFrac": 0.86,
+        "topPre": 0.575,
+        "centerPre": 0.675,
+        "landing": [
+          0.5,
+          0.641
+        ]
+      },
+      "tiltFrac": 0.475,
+      "wordmark": {
+        "centerPost": 0.18,
+        "widthFrac": 0.56,
+        "scalePre": 1.5357,
+        "image": "wordmark-script.webp",
+        "aspect": 4.281
+      },
+      "symbol": {
+        "topPost": 0.28,
+        "heightFrac": 0.48
+      },
+      "tagline": {
+        "centerPost": 0.85
+      },
+      "breathLines": {
+        "center": 0.9
+      }
+    }
+  },
+  "audio": {
+    "contact": 3.2,
+    "letGo": 7.4,
+    "feed": 10,
+    "resolve": 10.8,
+    "fadeOutEnd": 13
+  },
+  "stills": {
+    "poster": 0,
+    "still": 7.9,
+    "end": "last"
+  },
+  "easing": "All windows use smoothstep: p = clamp((t-a)/(b-a),0,1); s = p*p*(3-2p). Camera tilt offset = tiltFrac*H*s over cues.tilt. The HTML wordmark (the title image, wordmark.webp, sized by widthFrac of the stage width) rides the tilt and eases onto its lockup place: centre y = centerPre - tiltFrac*s + (centerPost - (centerPre - tiltFrac))*s, and it scales from scalePre to 1, both with the same s."
+}

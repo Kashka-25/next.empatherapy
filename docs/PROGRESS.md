@@ -36,7 +36,7 @@ Tagline: **Discover new pathways to yourself.** Feeling: a cup of lemon and hone
 | 6d. Alchemist photos | Done: up to 5 photos per profile with a "Meet them" carousel, profile picture, alt text and consent tick, metadata stripped, private storage |
 
 ## What works today
-- `/` warm homepage, then discovery invitation, this week's modalities, featured Alchemists, IntoTheLighthouse, philosophy, apply.
+- `/` warm homepage: The Golden Pause first. It opens with one breath in the breathing space (Prepare, Breathe in, Hold, Breathe out); Breathe out first shows on its own for about two and a half seconds, then through the rest of the breath out the space slowly cross-fades into the drizzling honey (the film starts unseen beneath it just before, its honey lands half way through the breath out, and the space is gone as the breath out ends). The homepage film shows no breathing words of its own (they stay on the calm still). The 13-second honey film (in which honey writes the name and feeds the teacup; Pause, Skip, sound only on request, a calm still for reduced motion, Save-Data or no JavaScript; nothing stored or measured; `components/golden-pause`, made in `film/golden-pause`). When the film is not running, "Breathe with us" opens a gentle breathing space in the same frame (Cassidy's design: a golden orb through Prepare, Breathe in, Hold and Breathe out, three easy rounds, Finish or Escape at any time). Then the welcome, discovery invitation, this week's modalities, featured Alchemists, IntoTheLighthouse, philosophy, apply.
 - `/alchemists` and `/alchemists/[slug]`: search, filters (practice, format, location, price), full profiles.
 - `/modalities` and `/modalities/[slug]`: 10 educational pages with labelled evidence.
 - `/discover`: four gentle steps, explained results, crisis signposting. Everything stays in the browser.
@@ -74,6 +74,7 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 4. **Real photographs.** Uploads now work (up to 5 per profile), but no real photos have been added. Which Alchemists do you want to start with, and who will take or collect them?
 5. **Typefaces:** Fraunces (headings), Nunito Sans (body), Caveat (handwritten notes). Happy to change.
 6. **IntoTheLighthouse repo.** Should the page here link to its own repo or site when ready?
+7. **The Golden Pause.** Please approve by ear the soundscape (it plays only when a visitor turns the sound on), and approve the teacup symbol in the film, which is a redraw of your image (`film/golden-pause/source/symbol.svg`). In the breathing space, the golden orb is likewise a redraw of your design (`film/golden-pause/breathe_orb.py`), and its Hold step (2 seconds, "For a moment…") comes from your design although your first brief asked for no breath holds: please confirm you want it. It is still to be tried on real phones (iPhone and Android) and in Safari and Firefox.
 
 ## Not built yet (and why)
 - **A live database.** The Supabase driver and schema exist and are tested against a fake of the Supabase API, but no Supabase project has been created or connected yet (that needs Cassidy). See `docs/ADMIN.md`, "Going live".

@@ -1,0 +1,25 @@
+# Rendered frames, test frames, contact sheets and the audio master are rebuilt by the scripts.
+out/
+work/
+work-audio/golden-pause.wav
+__pycache__/
+# The preview folder gets copies of the final media (see README); the originals live in public/golden-pause/.
+preview/*.mp4
+preview/*.jpg
+preview/*.m4a
+preview/*.webm
+preview/_test/*.mp4
+preview/_test/*.jpg
+preview/_test/*.m4a
+preview/_test/*.webm
+preview/_test/frames/
+preview/_test/shots/
+preview/artifact.html
+preview/artifact-player.js
+# Cassidy's ChatGPT concept images (logo ideas, breathing card, storyboard): kept locally, not part of the build.
+reference/
+work-audio/*.m4a
+work-audio/*.webm
+# Cassidy's 3D honey dipper (Meshy, 25 MB): kept locally, not committed. Copy it here to rebuild the dipper frames.
+source/dipper.glb
+work/dipper/*.blend
