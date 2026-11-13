@@ -15,6 +15,9 @@ import './breathing-space.css';
  *     through the breath out), then onClose(). Skip and Escape belong to the film then: they skip straight to the welcome.
  * Purely visual and in this browser: nothing is measured, stored or sent.
  */
+/** the opening is never quite opaque (breathing-space.css says why), and its fade starts from the same 0.999 */
+const VEIL = 0.999;
+
 export default function BreathingSpace({ onClose, onFilm, intro = false }) {
   const rootRef = useRef(null);
   const closeRef = useRef(onClose);
@@ -76,7 +79,7 @@ export default function BreathingSpace({ onClose, onFilm, intro = false }) {
           const filmNow = video && !video.paused ? Math.min(t - filmStartOf(plan), video.currentTime + 0.15) : 0;
           const r = revealOf(filmNow, plan);
           el.style.transition = 'none';
-          el.style.opacity = (1 - r).toFixed(4);
+          el.style.opacity = (VEIL * (1 - r)).toFixed(4);
           if (r >= 1 || t - filmAskedAt > 14) { close(); return; }  // (the film never came: the page shows what it has)
         }
       } else if (breathAt(t, plan).done) {

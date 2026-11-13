@@ -125,6 +125,20 @@ test('the homepage film shows no breathing words of its own (they stay on the ca
   assert.match(css, /\.gp:not\(\.gp--nojs\):not\(\[data-gp-mode="calm"\]\) \.gp__band \{ display: none; \}/);
 });
 
+test('the fade into the film is one clean picture: the film never goes to a separate video plane, the opening is one steady layer', () => {
+  const css = strip(read('components/golden-pause/breathing-space.css'));
+  // a hardware video plane under a fading layer flickers on some Windows graphics; a filter keeps the film in the page
+  const filter = css.match(/\.gp \.gp__video \{ filter: saturate\(([0-9.]+)\); \}/);
+  assert.ok(filter, 'the film carries the filter that keeps it off the video plane');
+  assert.ok(Number(filter[1]) > 1 && Number(filter[1]) <= 1.002, 'a change no eye can see');
+  assert.match(css, /\.gp-breathe\[data-intro="true"\] \{ will-change: opacity; \}/);
+  // never quite opaque, so the film is drawn all along and the fade starts without a skipped frame; the page fades
+  // from that same value (no step as the fade takes over)
+  const veil = Number(css.match(/\.gp-breathe\[data-intro="true"\]\[data-shown="true"\] \{ opacity: ([0-9.]+); \}/)[1]);
+  assert.ok(veil >= 0.998 && veil < 1, 'within a quarter of a colour step of opaque');
+  assert.equal(Number(read('components/golden-pause/BreathingSpace.jsx').match(/const VEIL = ([0-9.]+);/)[1]), veil);
+});
+
 test('the hold is short and gentle, and the orb fills and empties smoothly with the breath', () => {
   const hold = STEPS.find((s) => s.id === 'hold');
   assert.ok(hold.seconds <= 2, 'a pause at the top of the breath, never a long hold');

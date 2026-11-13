@@ -20,6 +20,12 @@
   background-image: url("/golden-pause/breathe-square.jpg");
 }
 .gp-breathe[data-shown="true"] { opacity: 1; }
+/* The opening fades over the film as a whole: one steady layer from the start, and never quite opaque (99.9%, a
+   quarter of one colour step at most, which no eye can tell), so the film underneath is drawn on every frame all along
+   and the fade begins without the browser having to start drawing it in that very frame (a skipped frame).
+   BreathingSpace.jsx fades from this same 0.999. */
+.gp-breathe[data-intro="true"] { will-change: opacity; }
+.gp-breathe[data-intro="true"][data-shown="true"] { opacity: 0.999; }
 .gp-breathe__all { position: absolute; inset: 0; opacity: calc(1 - var(--leave)); }
 
 /* the heading: the lotus, the name of the space and its subtitle, on a faint parchment backing */
@@ -137,6 +143,13 @@
    They stay on the calm still (reduced motion, Save-Data, a failed film, no JavaScript), where there is no opening
    breath to guide it. */
 .gp:not(.gp--nojs):not([data-gp-mode="calm"]) .gp__band { display: none; }
+
+/* The film is drawn by the browser together with the rest of the page, never handed to the graphics card's separate
+   video plane. On some Windows graphics (AMD among them) that plane flickers when something fades over the film, and
+   both the opening's breathing space and the film's own wordmark do. A filter the eye cannot see (0.1% more
+   saturation) keeps the film in the page's own drawing, so each cross-fade is one clean picture. Checked in Chrome:
+   with it, no frame of the film goes to the video plane (chrome://histograms, GPU.DirectComposition). */
+.gp .gp__video { filter: saturate(1.001); }
 
 @media (prefers-reduced-motion: reduce) {
   .gp-breathe, .gp-breathe__steps, .gp-breathe__steps li, .gp-breathe__label, .gp-breathe__rest { transition: none; }
