@@ -1,12 +1,12 @@
 import Link from 'next/link';
-import AlchemistAvatar from './AlchemistAvatar';
+import AlchemistPortrait from './AlchemistPortrait';
 import { modalitiesOf, placeAndFormat, priceFrom } from '@/lib/content.mjs';
 
 export default function AlchemistCard({ alchemist: a, modalities }) {
   const mods = modalitiesOf(a, modalities).slice(0, 3);
   return (
     <Link href={`/alchemists/${a.slug}`} className="card" aria-label={`${a.name}, ${a.title}`}>
-      <div className="card__portrait"><AlchemistAvatar alchemist={a} label={false} /></div>
+      <div className="card__portrait"><AlchemistPortrait alchemist={a} label={false} /></div>
       <div className="card__body">
         <div className="row">
           {a.demo ? <span className="tag tag--demo">Example profile</span> : <span className="tag tag--honey">Founding Alchemist</span>}

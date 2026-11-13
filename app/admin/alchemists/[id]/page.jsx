@@ -5,6 +5,8 @@ import { getStore } from '@/lib/store/index.mjs';
 import { loadContent } from '@/lib/content-store.mjs';
 import { alchemistToForm } from '@/lib/admin-content.mjs';
 import AlchemistEditor from '@/components/admin/AlchemistEditor';
+import PhotoManager from '@/components/admin/PhotoManager';
+import { getBlobStore } from '@/lib/images/blobs.mjs';
 import { saveAlchemistAction, resetAlchemistAction } from '../../actions';
 
 export const metadata = { title: 'Edit Alchemist' };
@@ -46,11 +48,13 @@ export default async function EditAlchemistPage({ params, searchParams }) {
         modalityOptions={content.modalities}
       />
 
+      {a ? <PhotoManager alchemist={a} enabled={Boolean(getBlobStore())} error={searchParams?.photo_error} saved={Boolean(searchParams?.photo_saved)} /> : null}
+
       {a && (content.edited.alchemists.has(a.id)) ? (
         <form action={resetAlchemistAction} className="admin-card stack">
           <input type="hidden" name="id" value={a.id} />
           <h2 style={{ fontSize: '1.15rem' }}>{seedBacked ? 'Reset to the original' : 'Delete this profile'}</h2>
-          <p style={{ fontSize: '0.92rem', color: 'var(--muted)' }}>{seedBacked ? 'Throws away the changes made here and brings back the built-in version.' : 'Removes this profile permanently. This cannot be undone.'}</p>
+          <p style={{ fontSize: '0.92rem', color: 'var(--muted)' }}>{seedBacked ? 'Throws away the changes made here, including any photos added here, and brings back the built-in version.' : 'Removes this profile and its photos permanently. This cannot be undone.'}</p>
           <label className="check"><input type="checkbox" name="confirm" required /><span>Yes, {seedBacked ? 'reset it' : 'delete it'}.</span></label>
           <button type="submit" className="btn btn--soft btn--sm" style={{ borderColor: '#9B3B22', color: '#9B3B22', justifySelf: 'start' }}>{seedBacked ? 'Reset' : 'Delete'}</button>
         </form>

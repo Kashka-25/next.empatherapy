@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Photo uploads from the admin are up to 5 MB. Admin pages need a sign-in, so this is not open to the public.
+  experimental: { serverActions: { bodySizeLimit: '6mb' } },
   // The old "guides/therapists" site became the Alchemists directory.
   // Old links keep working instead of landing on a 404.
   async redirects() {

@@ -18,10 +18,13 @@ The admin area is for the Empatherapy team only. It is **off by default** and no
 - **Modalities** (`/admin/modalities`): edit any educational page, add new ones, reset or delete. Publishing needs the full structure, honest limits and safety text, labelled evidence, and the discovery tags (themes and styles). Unpublishing a modality hides it from the site and from profiles.
 - **How edits are stored:** built-in content stays in `data/*.mjs`. Anything saved in the admin is layered on top, one record at a time, and "reset" brings the built-in version back. With storage off the site shows the built-in content. See `lib/content-store.mjs`.
 - **Public application endpoint** `POST /api/applications`: same-origin only, size limit, rate limit (3 per hour per address, shared), spam trap, full validation. Returns `503` until storage is on, so the public form stays a harmless preview.
+- **Photos** (on each Alchemist's edit page, under "Photos"): up to **5 per profile**. The first is the profile picture (shown on the profile, the directory card and discovery results); together they make the "Meet them" carousel on the public profile. JPEG, PNG or WebP up to 5 MB, at least 400 pixels on the shortest side. Every photo needs a description (alt text) and a tick that the person has agreed to it being published; a caption is optional. Photos can be reordered, set as the profile picture, re-described and removed. **Fictional example profiles cannot have photos.**
+  - Files are judged by their bytes (an SVG or HTML file renamed `.jpg` is refused), and rewritten without hidden metadata: GPS location, camera details, names and captions are stripped. Only the rotation flag is kept so phone photos stay upright. Animated images are refused.
+  - Photos live in a private store (`.data/images` locally, a private Supabase Storage bucket when hosted) and are served only through `/media/<id>`, and only for profiles that are public. Hidden or unverified profiles' photos give a plain 404 to visitors; signed-in editors preview them at `/admin/media/<id>`. Removing a photo, or deleting or resetting a profile, deletes the files.
 - **Privacy notice** at `/privacy`, linked from the footer and the application form. It must match the retention rule in `lib/retention.mjs`.
 
 ## Not built yet
-- Photo uploads for Alchemists (profiles use illustrated placeholders).
+- Photo cropping or focal-point choice (photos are centred, slightly above the middle, so faces are kept). Alchemists uploading their own photos (today an admin uploads on their behalf).
 - Creating a profile directly from an approved application (today a person types it in).
 - Homepage content and image management, reviews moderation, IntoTheLighthouse content.
 - Email invitations and password-reset emails (an owner sets and shares a starting password privately instead).
@@ -51,7 +54,7 @@ Without a session secret of 32+ characters the admin stays off. There is no defa
 ## Going live (needs Cassidy)
 The code is ready. These steps need a person with the accounts, and none has been done:
 1. **Create a Supabase project.** Choose a region (Sydney is closest) and write it into `/privacy`.
-2. **Run `supabase/schema.sql`** in the Supabase SQL editor. It creates one table with row-level security **on** and **no policies**, so the public and signed-in roles can read and write nothing. Only the server's service-role key can.
+2. **Run `supabase/schema.sql`** in the Supabase SQL editor. It creates one table with row-level security **on** and **no policies**, so the public and signed-in roles can read and write nothing, and a **private** `alchemist-photos` storage bucket. Only the server's service-role key can reach either.
 3. **Set secrets in the host's settings only** (never in the repo, never in a `NEXT_PUBLIC_` variable): `EMPATHERAPY_STORE=supabase`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_SESSION_SECRET` (32+ random characters) and, for first sign-in only, `ADMIN_PASSWORD_HASH`.
 4. **Create the first owner account**, then delete `ADMIN_PASSWORD_HASH` from the host.
 5. **Confirm the privacy notice and the retention rule**, and have a privacy professional read `/privacy`.

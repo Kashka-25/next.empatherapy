@@ -5,6 +5,9 @@ import { revalidatePath } from 'next/cache';
 import { requireAdmin, adminConfigured } from '@/lib/admin-auth.mjs';
 import { createAccount, authenticate, updateAccount, activeOwnerCount, normaliseEmail } from '@/lib/accounts.mjs';
 import { purgeExpired } from '@/lib/retention.mjs';
+import { getBlobStore, newImageId } from '@/lib/images/blobs.mjs';
+import { inspectImage, IMAGE_MESSAGES, MAX_BYTES } from '@/lib/images/inspect.mjs';
+import { MAX_PHOTOS, addPhoto, updatePhoto, makePrimary, movePhoto, removePhoto, canHavePhotos, photosOf, cleanAlt, cleanCaption, altError } from '@/lib/photos.mjs';
 import { SESSION_COOKIE, createSession } from '@/lib/session.mjs';
 import { verifyPassword } from '@/lib/password.mjs';
 import { createSharedLimiter, clientKey } from '@/lib/ratelimit.mjs';
@@ -204,7 +207,12 @@ export async function saveAlchemistAction(_prev, formData) {
 
 export async function resetAlchemistAction(formData) {
   await requireAdmin('content');
-  await needStore().remove('alchemists', text(formData, 'id'));
+  const store = needStore();
+  const id = text(formData, 'id');
+  const stored = await store.get('alchemists', id);
+  await store.remove('alchemists', id);
+  const blobs = getBlobStore();
+  if (blobs) for (const p of photosOf(stored)) await blobs.remove(p.id).catch(() => {}); // photo files go with the profile
   refreshAll();
   redirect('/admin/alchemists?reset=1');
 }
@@ -238,4 +246,71 @@ export async function resetModalityAction(formData) {
   await store.remove('modalities', id);
   refreshAll();
   redirect('/admin/modalities?reset=1');
+}
+
+/* ---------- Alchemist photos ---------- */
+const photoBack = (id, query) => redirect(`/admin/alchemists/${encodeURIComponent(id)}?${query}#photos`);
+const photoFail = (id, msg) => photoBack(id, `photo_error=${encodeURIComponent(msg)}`);
+
+async function editableAlchemist(store, id) {
+  const a = (await loadContent(store)).alchemists.find((x) => x.id === id);
+  if (!a) redirect('/admin/alchemists?e=missing');
+  return a;
+}
+
+export async function uploadPhotoAction(formData) {
+  await requireAdmin('content');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const a = await editableAlchemist(store, id);
+  const blobs = getBlobStore();
+  if (!blobs) photoFail(id, 'Photo storage is not switched on.');
+  if (!canHavePhotos(a)) photoFail(id, 'Example profiles are fictional, so they cannot have photos.');
+  if (photosOf(a).length >= MAX_PHOTOS) photoFail(id, `A profile can have up to ${MAX_PHOTOS} photos. Remove one first.`);
+  if (!formData.get('permission')) photoFail(id, 'Please confirm the person has agreed to the photo being published.');
+  const alt = cleanAlt(text(formData, 'alt'));
+  const altProblem = altError(alt);
+  if (altProblem) photoFail(id, altProblem);
+  const file = formData.get('photo');
+  if (!file || typeof file === 'string' || !file.size) photoFail(id, 'Choose a photo to upload.');
+  if (file.size > MAX_BYTES) photoFail(id, IMAGE_MESSAGES.too_large);
+  const checked = inspectImage(new Uint8Array(await file.arrayBuffer()));
+  if (!checked.ok) photoFail(id, IMAGE_MESSAGES[checked.reason] ?? IMAGE_MESSAGES.corrupt);
+
+  const imageId = newImageId(checked.ext);
+  await blobs.put(imageId, checked.bytes, checked.contentType);
+  const added = addPhoto(photosOf(a), { id: imageId, alt, caption: cleanCaption(text(formData, 'caption')), w: checked.width, h: checked.height, added_at: new Date().toISOString() });
+  try {
+    await store.put('alchemists', { ...a, photos: added.photos });
+  } catch (e) {
+    await blobs.remove(imageId).catch(() => {}); // do not leave a file nobody points to
+    throw e;
+  }
+  refreshAll();
+  photoBack(id, 'photo_saved=1');
+}
+
+export async function photoAction(formData) {
+  await requireAdmin('content');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const photoId = text(formData, 'photo_id');
+  const intent = text(formData, 'intent');
+  const a = await editableAlchemist(store, id);
+  const list = photosOf(a);
+  let r;
+  if (intent === 'save') {
+    const alt = cleanAlt(text(formData, 'alt'));
+    const problem = altError(alt);
+    if (problem) photoFail(id, problem);
+    r = updatePhoto(list, photoId, { alt, caption: cleanCaption(text(formData, 'caption')) });
+  } else if (intent === 'primary') r = makePrimary(list, photoId);
+  else if (intent === 'left' || intent === 'right') r = movePhoto(list, photoId, intent);
+  else if (intent === 'remove') r = removePhoto(list, photoId);
+  else photoFail(id, 'That did not work.');
+  if (!r.ok) photoFail(id, 'That photo no longer exists.');
+  await store.put('alchemists', { ...a, photos: r.photos });
+  if (intent === 'remove') { const blobs = getBlobStore(); if (blobs) await blobs.remove(photoId).catch(() => {}); }
+  refreshAll();
+  photoBack(id, 'photo_saved=1');
 }
