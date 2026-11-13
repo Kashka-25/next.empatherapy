@@ -58,7 +58,7 @@ Known limits: keyword rules do not understand negation ("not anxious") or nuance
 ## Plan for what is next
 1. ~~Storage layer, auth, admin MVP, applications, weekly features~~ **Done (Phase 6a)**, see `docs/ADMIN.md`.
 2. **Production database driver** (Supabase planned) behind `lib/store`, with row-level security from day one.
-3. **Admin content editing:** Alchemist profiles, modality pages, homepage content, images.
+3. ~~Admin content editing for Alchemist profiles and modality pages~~ **Done (Phase 6b).** Still to do: homepage content, photo uploads.
 4. **Individual admin accounts and roles**, shared rate limiting, enquiries.
 5. **Real content and photography.** Verification workflow before any profile is listed.
 6. **IntoTheLighthouse** as a separate product behind its safeguards, linked from here.

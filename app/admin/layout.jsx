@@ -17,6 +17,8 @@ export default async function AdminLayout({ children }) {
             <nav className="admin-nav" aria-label="Admin">
               <Link href="/admin">Overview</Link>
               <Link href="/admin/applications">Applications</Link>
+              <Link href="/admin/alchemists">Alchemists</Link>
+              <Link href="/admin/modalities">Modalities</Link>
               <Link href="/admin/features">Weekly features</Link>
               <Link href="/" target="_blank">View site</Link>
               <form action={logout}><button type="submit" className="btn btn--soft btn--sm">Sign out</button></form>

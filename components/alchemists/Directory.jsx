@@ -44,7 +44,7 @@ export default function Directory({ alchemists, modalities, locations }) {
       </div>
 
       {results.length ? (
-        <div className="grid-cards">{results.map((a) => <AlchemistCard key={a.id} alchemist={a} />)}</div>
+        <div className="grid-cards">{results.map((a) => <AlchemistCard key={a.id} alchemist={a} modalities={modalities} />)}</div>
       ) : (
         <div className="empty">
           <h3>No Alchemists match just yet</h3>

@@ -4,25 +4,29 @@ import AlchemistAvatar from '@/components/alchemists/AlchemistAvatar';
 import Button from '@/components/ui/Button';
 import Eyebrow from '@/components/ui/Eyebrow';
 import DevNote from '@/components/ui/DevNote';
-import { alchemists, getAlchemistBySlug, modalitiesOf, BASIS_LABEL, placeAndFormat } from '@/lib/content.mjs';
+import { bySlug, modalitiesOf, BASIS_LABEL, placeAndFormat } from '@/lib/content.mjs';
+import { publicContent } from '@/lib/content-store.mjs';
 
-export function generateStaticParams() {
-  return alchemists.filter((a) => a.publication_status === 'published').map((a) => ({ slug: a.slug }));
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  return (await publicContent()).alchemists.map((a) => ({ slug: a.slug }));
 }
 
-export function generateMetadata({ params }) {
-  const a = getAlchemistBySlug(params.slug);
+export async function generateMetadata({ params }) {
+  const a = bySlug((await publicContent()).alchemists, params.slug);
   if (!a) return {};
   return { title: `${a.name}${a.demo ? ' (example profile)' : ''}`, description: a.short_bio };
 }
 
 const BASIS_ORDER = ['formal', 'experience', 'study'];
 
-export default function AlchemistPage({ params }) {
-  const a = getAlchemistBySlug(params.slug);
-  if (!a || a.publication_status !== 'published') notFound();
+export default async function AlchemistPage({ params }) {
+  const { alchemists, modalities } = await publicContent();
+  const a = bySlug(alchemists, params.slug);
+  if (!a) notFound();
 
-  const mods = modalitiesOf(a);
+  const mods = modalitiesOf(a, modalities);
   const offered = mods.filter((m) => m.basis !== 'confirm');
   const drawn = mods.filter((m) => m.basis === 'confirm');
   const needsConfirm = [...a.qualifications, ...a.experience, ...a.pricing.sessions].filter((x) => x.confirm).length;
@@ -115,7 +119,7 @@ export default function AlchemistPage({ params }) {
                 <div>
                   <h3>{BASIS_LABEL.interest}</h3>
                   <p className="small" style={{ fontSize: '0.95rem', color: 'var(--muted)' }}>
-                    {a.modalities.filter((m) => m.basis === 'interest').map((m) => modalitiesOfName(m.slug)).join(', ')}. This is something I am learning about. It is not something I offer, and personal experience is not clinical training.
+                    {a.modalities.filter((m) => m.basis === 'interest').map((m) => bySlug(modalities, m.slug)?.name ?? m.slug).join(', ')}. This is something I am learning about. It is not something I offer, and personal experience is not clinical training.
                   </p>
                 </div>
               ) : null}
@@ -198,7 +202,3 @@ export default function AlchemistPage({ params }) {
   );
 }
 
-import { getModalityBySlug } from '@/lib/content.mjs';
-function modalitiesOfName(slug) {
-  return getModalityBySlug(slug)?.name ?? slug;
-}

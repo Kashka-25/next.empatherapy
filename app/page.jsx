@@ -5,7 +5,8 @@ import Eyebrow from '@/components/ui/Eyebrow';
 import AlchemistCard from '@/components/alchemists/AlchemistCard';
 import ModalityCard from '@/components/modalities/ModalityCard';
 import { TeaScene, Lighthouse, HoneyDrip, Sprig } from '@/components/art/Botanicals';
-import { alchemists, curatedOrder, modalities } from '@/lib/content.mjs';
+import { curatedOrder } from '@/lib/content.mjs';
+import { publicContent } from '@/lib/content-store.mjs';
 import { currentFeatures } from '@/lib/features.mjs';
 
 export const revalidate = 3600; // refresh hourly so the weekly feature rolls over without a redeploy
@@ -20,8 +21,9 @@ const beliefs = [
 ];
 
 export default async function HomePage() {
+  const { alchemists, modalities } = await publicContent();
   const features = await currentFeatures(new Date());
-  const featured = curatedOrder(alchemists.filter((a) => a.featured_status && a.publication_status === 'published')).slice(0, 3);
+  const featured = curatedOrder(alchemists.filter((a) => a.featured_status)).slice(0, 3);
   const modalityById = (id) => modalities.find((m) => m.id === id);
 
   return (
@@ -90,7 +92,7 @@ export default async function HomePage() {
             <p>Every Alchemist tells their story, their philosophy and the training and experience behind their work, so you can see not only what they offer but why.</p>
           </div>
           <div className="grid-cards">
-            {featured.map((a, i) => <FadeIn key={a.id} delay={i + 1}><AlchemistCard alchemist={a} /></FadeIn>)}
+            {featured.map((a, i) => <FadeIn key={a.id} delay={i + 1}><AlchemistCard alchemist={a} modalities={modalities} /></FadeIn>)}
           </div>
           <p style={{ marginTop: '2rem' }}><Link href="/alchemists" className="link-arrow">Meet all Alchemists</Link></p>
         </div>

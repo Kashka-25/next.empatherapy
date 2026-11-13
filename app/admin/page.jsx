@@ -4,11 +4,12 @@ import { getStore, storeEnabled } from '@/lib/store/index.mjs';
 import { listApplications } from '@/lib/applications.mjs';
 import { loadFeatures } from '@/lib/features.mjs';
 import { activeFeatures } from '@/data/features.mjs';
-import { alchemists } from '@/lib/content.mjs';
+import { loadContent } from '@/lib/content-store.mjs';
 
 export default async function AdminHome({ searchParams }) {
   await requireAdmin();
   const store = getStore();
+  const { alchemists } = await loadContent(store);
   const apps = store ? await listApplications(store) : [];
   const features = await loadFeatures(store);
   const live = activeFeatures(new Date(), features);
@@ -36,19 +37,19 @@ export default async function AdminHome({ searchParams }) {
           <strong className="admin-stat">{live.length}</strong>
           <span>live this week{store ? '' : ' (sample schedule)'}</span>
         </Link>
-        <div className="admin-card">
+        <Link href="/admin/alchemists" className="admin-card admin-card--link">
           <span className="eyebrow">Alchemists</span>
           <strong className="admin-stat">{alchemists.length}</strong>
           <span>{alchemists.filter((a) => a.demo).length} are fictional examples that must be removed before launch</span>
-        </div>
+        </Link>
       </div>
 
       <section className="admin-card stack">
         <h2 style={{ fontSize: '1.4rem' }}>Still to build</h2>
         <ul className="tick-list">
-          <li>Editing Alchemist profiles and modality pages here (they live in files for now, see <code>docs/PROGRESS.md</code>).</li>
           <li>A real database for hosting, with row-level security.</li>
-          <li>Reviews moderation, once reviews exist.</li>
+          <li>Individual admin accounts and roles.</li>
+          <li>Homepage content and image management, and reviews moderation once reviews exist.</li>
         </ul>
       </section>
     </div>

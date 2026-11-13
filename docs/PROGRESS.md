@@ -1,7 +1,7 @@
 # Empatherapy: progress and decisions
 
 The source of truth for what has been built, what has been decided, and what is still open.
-Update it at the end of every working session. Last updated: 12 Nov 2026.
+Update it at the end of every working session. Last updated: 13 Nov 2026.
 
 ## The product in one paragraph
 Empatherapy is a discovery and connection ecosystem. **Seekers** (people looking for understanding, support,
@@ -20,7 +20,8 @@ Tagline: **Discover new pathways to yourself.** Feeling: a cup of lemon and hone
 | 4. Discovery engine | Done: transparent rules, 26 passing tests |
 | 5. IntoTheLighthouse, personal offering, apply | Done as landing page and preview form. No live peer support. |
 | 6a. Admin foundation | Done: storage layer, sign-in, route protection, applications review, weekly features. See `docs/ADMIN.md` |
-| 6b. Admin content editing | **Not started:** editing Alchemist profiles and modality pages, a production database driver, individual admin accounts |
+| 6b. Admin content editing | Done: edit and create Alchemist profiles and modality pages, with publish rules and reset to original |
+| 6c. Production readiness | **Not started:** database driver, individual admin accounts, shared rate limiting, photo uploads, privacy notice |
 
 ## What works today
 - `/` warm homepage, then discovery invitation, this week's modalities, featured Alchemists, IntoTheLighthouse, philosophy, apply.
@@ -29,7 +30,7 @@ Tagline: **Discover new pathways to yourself.** Feeling: a cup of lemon and hone
 - `/discover`: four gentle steps, explained results, crisis signposting. Everything stays in the browser.
 - `/lighthouse`: its own evening identity, honest "not open yet" status, safeguards, signposting.
 - `/become-an-alchemist`: validated application form. With storage switched on it saves applications for review; with it off (the default) it stays a harmless preview.
-- `/admin` (off by default): sign-in, applications review (notes, status, permanent delete), weekly feature scheduling. Not linked from the public site and kept out of search engines.
+- `/admin` (off by default): sign-in, applications review (notes, status, permanent delete), weekly feature scheduling, and editing of Alchemist profiles and modality pages. Not linked from the public site and kept out of search engines.
 - `/about`: philosophy, how we work, safety and privacy.
 - Old routes redirect: `/therapists*` to `/alchemists*`; `/fund`, `/contact` to `/about`; `/subscribe` to `/`.
 
@@ -47,6 +48,7 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 - **Retired for now:** the old Community Healing Fund (10% of each session, "no questions asked") and Subscribe pages made commitments tied to Cassidy's personal practice. They are not in the new site. Git history has them. See open questions.
 - **Admin is off unless configured.** No default password. Needs `ADMIN_PASSWORD_HASH` and a 32+ character `ADMIN_SESSION_SECRET`. Sessions are signed, expire after 8 hours and are re-checked by every action. Storage is off unless `EMPATHERAPY_STORE=file`, and the file driver is for local work only.
 - **Storage is an interface** (`lib/store`), so a Supabase driver can replace the file driver without touching pages.
+- **Edits layer over the built-in content** one record at a time (`lib/content-store.mjs`); reset brings the original back. A profile is public only when published *and* verified, and publishing needs a complete profile.
 - **Approving an application never publishes anything.** A person creates the profile after checking training and registration.
 - **Removed:** `/api/therapists` and `/api/bookings`. The bookings route only logged requests and replied "received", which was misleading. Bookings will be rebuilt properly with the data layer.
 - **Visual signature:** honey drip dividers, a hand-drawn sprig, a lemon slice, handwritten margin notes, soft sunlit window light. IntoTheLighthouse gets a calm evening palette with a lantern glow.
@@ -60,7 +62,6 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 6. **IntoTheLighthouse repo.** Should the page here link to its own repo or site when ready?
 
 ## Not built yet (and why)
-- **Editing Alchemist profiles and modalities in the admin.** They are still files in `data/`.
 - **A production database.** The file driver cannot be used on a normal host (see `docs/ADMIN.md`, "Before this goes on a real host").
 - **Individual admin accounts and roles.** There is one shared admin password.
 - **Enquiries, bookings, reviews, favourites, Seeker accounts.**
@@ -71,6 +72,6 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 ```bash
 npm install
 npm run dev     # http://localhost:3000
-npm test        # 41 tests: matching, content, directory, validation, storage, sessions, passwords, rate limits, applications, features
+npm test        # 75 tests: matching, content, directory, validation, storage, sessions, passwords, rate limits, applications, features
 npm run build   # also runs lint
 ```

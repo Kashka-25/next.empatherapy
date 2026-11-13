@@ -1,6 +1,8 @@
 import Directory from '@/components/alchemists/Directory';
 import Eyebrow from '@/components/ui/Eyebrow';
-import { alchemists, modalities } from '@/lib/content.mjs';
+import { publicContent } from '@/lib/content-store.mjs';
+
+export const revalidate = 60;
 
 export const metadata = {
   title: 'Discover Alchemists',
@@ -12,7 +14,8 @@ const locations = [
   { value: 'perth', label: 'Perth' }, { value: 'blue mountains', label: 'Blue Mountains' },
 ];
 
-export default function AlchemistsPage() {
+export default async function AlchemistsPage() {
+  const { alchemists, modalities } = await publicContent();
   return (
     <>
       <section className="page-head">
