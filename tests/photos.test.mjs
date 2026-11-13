@@ -6,7 +6,7 @@ import path from 'node:path';
 import { deflateSync } from 'node:zlib';
 import { inspectImage, tiffOrientation, MAX_BYTES } from '../lib/images/inspect.mjs';
 import { createMemoryBlobDriver, createFileBlobDriver, createSupabaseBlobDriver, newImageId, IMAGE_ID, contentTypeFor } from '../lib/images/blobs.mjs';
-import { MAX_PHOTOS, addPhoto, updatePhoto, makePrimary, movePhoto, removePhoto, canHavePhotos, isPublicPhoto, cleanAlt, altError } from '../lib/photos.mjs';
+import { MAX_PHOTOS, addPhoto, updatePhoto, makePrimary, movePhoto, removePhoto, canHavePhotos, isPublicPhoto, cleanAlt, altError, cleanFocus, focusStyle, DEFAULT_FOCUS } from '../lib/photos.mjs';
 
 const bytes = (...parts) => new Uint8Array(parts.flatMap((p) => (typeof p === 'string' ? [...Buffer.from(p, 'latin1')] : [...p])));
 const text = (b) => Buffer.from(b).toString('latin1');
@@ -209,6 +209,25 @@ test('profile photos: up to five, first is the profile picture, reorder, replace
   assert.equal(updatePhoto(photos, 'c', { alt: 'new text', caption: 'hi' }).photos[2].alt, 'new text');
   for (const fn of [() => makePrimary(photos, 'zz'), () => movePhoto(photos, 'zz', 'left'), () => removePhoto(photos, 'zz'), () => updatePhoto(photos, 'zz', {})]) assert.equal(fn().reason, 'not_found');
   assert.equal(addPhoto(undefined, P('x')).photos.length, 1);
+});
+
+test('a focal point is kept in range, only when both numbers are real, and shapes the crop', () => {
+  assert.deepEqual(cleanFocus('20', '80.4'), { x: 20, y: 80 });
+  assert.deepEqual(cleanFocus(-10, 300), { x: 0, y: 100 }, 'clamped to the photo');
+  assert.equal(cleanFocus('left', 50), null);
+  assert.equal(cleanFocus(undefined, undefined), null);
+  assert.equal(cleanFocus('', ''), null, 'a form that sent nothing must not read as 0, 0 (the top-left corner)');
+  assert.equal(cleanFocus('  ', null), null);
+  assert.deepEqual(cleanFocus('0', '0'), { x: 0, y: 0 }, 'but a real zero is fine');
+  assert.deepEqual(DEFAULT_FOCUS, { x: 50, y: 30 });
+  const photos = [P('a'), P('b')];
+  const set = updatePhoto(photos, 'b', { focus: { x: 25, y: 60 } }).photos;
+  assert.deepEqual(set[1].focus, { x: 25, y: 60 });
+  assert.equal(set[0].focus, undefined, 'other photos are untouched');
+  assert.equal(updatePhoto(set, 'b', { alt: 'new words' }).photos[1].focus.x, 25, 'saving text keeps the focal point');
+  assert.deepEqual(focusStyle(set[1]), { objectPosition: '25% 60%' });
+  assert.equal(focusStyle(photos[0]), undefined, 'no choice, no style: the default framing stays');
+  assert.equal(focusStyle({ focus: { x: 'a', y: 1 } }), undefined);
 });
 
 test('profile photos: alt text is required and cleaned, fictional examples never get photos', () => {
