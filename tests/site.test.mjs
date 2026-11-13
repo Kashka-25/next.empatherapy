@@ -33,6 +33,9 @@ test('the sitemap is empty while indexing is off, and lists only what is passed 
   assert.ok(on.includes('https://empatherapy.co/modalities/breathwork'));
   assert.ok(!on.some((u) => u.includes('/admin') || u.includes('/api')), 'never the admin or the API');
   assert.ok(!on.some((u) => u.includes('mira-okafor')), 'fictional example profiles are never listed');
+  assert.ok(on.includes('https://empatherapy.co/knowledge'), 'the feed page is listed');
+  const withPosts = sitemapEntries({ ...content, posts: [{ slug: 'a-gentle-way' }] }, { EMPATHERAPY_INDEXING: 'on', SITE_URL: 'https://empatherapy.co' }).map((e) => e.url);
+  assert.ok(withPosts.includes('https://empatherapy.co/knowledge/a-gentle-way'), 'public posts are listed');
 });
 
 test('the content policy forbids framing, plugins, other forms and other scripts', () => {

@@ -10,6 +10,9 @@ import { bySlug, modalitiesOf, BASIS_LABEL, placeAndFormat } from '@/lib/content
 import { publicContent } from '@/lib/content-store.mjs';
 import { getStore } from '@/lib/store/index.mjs';
 import { hasPortal } from '@/lib/accounts.mjs';
+import { loadPublicPosts } from '@/lib/posts-store.mjs';
+import { postsBy } from '@/lib/posts.mjs';
+import PostCard from '@/components/knowledge/PostCard';
 
 export const revalidate = 60;
 
@@ -36,6 +39,7 @@ export default async function AlchemistPage({ params }) {
   const needsConfirm = [...a.qualifications, ...a.experience, ...a.pricing.sessions].filter((x) => x.confirm).length;
   const founder = !a.demo;
   const photos = publicPhotos(a);
+  const writing = postsBy(await loadPublicPosts(), a.id).slice(0, 3);
   const first = a.name.split(' ')[0];
   const store = getStore();
   const canEnquire = !a.demo && (Boolean(a.enquiry_email) || (store ? await hasPortal(store, a.id) : false));
@@ -94,6 +98,14 @@ export default async function AlchemistPage({ params }) {
             <blockquote className="pull" style={{ marginBottom: '1.2rem' }}>{a.pull_quote}</blockquote>
             <p>{a.philosophy}</p>
           </section>
+
+          {writing.length ? (
+            <section className="profile-section" aria-labelledby="writing-h">
+              <Eyebrow>Writing by {first}</Eyebrow>
+              <h2 id="writing-h">Learn a little before you reach out</h2>
+              <div className="post-grid">{writing.map((p) => <PostCard key={p.id} post={p} />)}</div>
+            </section>
+          ) : null}
 
           <section className="profile-section" aria-labelledby="prac-h">
             <Eyebrow>Practices</Eyebrow>

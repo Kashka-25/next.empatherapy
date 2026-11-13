@@ -366,3 +366,16 @@ fieldset { border: 0; }
 .secret-key code { display: inline-block; font-size: 1.15rem; letter-spacing: 0.08em; background: var(--parchment); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.55rem 0.8rem; word-break: break-all; user-select: all; }
 .recovery-codes { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 0.6rem; }
 .recovery-codes code { display: block; font-size: 1.05rem; letter-spacing: 0.06em; background: var(--parchment); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.5rem 0.7rem; text-align: center; user-select: all; }
+
+/* ---------- Knowledge feed ---------- */
+.post-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: 1.4rem; }
+.post-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.4rem; display: grid; gap: 0.7rem; align-content: start; box-shadow: var(--shadow-soft); }
+.post-card h3 { font-size: 1.35rem; }
+.post-card h3 a { color: inherit; text-decoration: none; }
+.post-card h3 a:hover { text-decoration: underline; text-decoration-color: var(--honey); text-underline-offset: 0.2em; }
+.post-body { display: grid; gap: 1.2rem; font-size: 1.1rem; line-height: 1.75; }
+.post-body h2 { font-size: 1.55rem; margin-top: 0.6rem; }
+.post-body ul { padding-left: 1.3rem; display: grid; gap: 0.4rem; list-style: disc; }
+.post-author { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 1.1rem; align-items: center; padding: 1.2rem; background: var(--parchment); border-radius: var(--radius-lg); }
+.post-author__avatar { width: 4.5rem; height: 4.5rem; border-radius: 50%; overflow: hidden; }
+.post-author__avatar svg, .post-author__avatar img { width: 100%; height: 100%; display: block; }

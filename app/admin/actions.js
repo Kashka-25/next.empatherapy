@@ -10,6 +10,7 @@ import { can } from '@/lib/accounts.mjs';
 import { recordAudit, describeSave, PHOTO_INTENT } from '@/lib/audit.mjs';
 import { updateEnquiry, setRatePercent, ENQUIRY_LABEL } from '@/lib/enquiries.mjs';
 import { propose, approve, reject } from '@/lib/proposals.mjs';
+import { validatePost, STATUS_LABEL as POST_STATUS_LABEL, POST_STATUSES, MAX_POSTS_PER_PROFILE } from '@/lib/posts.mjs';
 import { getBlobStore, newImageId } from '@/lib/images/blobs.mjs';
 import { inspectImage, IMAGE_MESSAGES, MAX_BYTES } from '@/lib/images/inspect.mjs';
 import { MAX_PHOTOS, addPhoto, updatePhoto, makePrimary, movePhoto, removePhoto, approvePhoto, canHavePhotos, photosOf, cleanAlt, cleanCaption, altError } from '@/lib/photos.mjs';
@@ -231,7 +232,7 @@ export async function deleteFeatureAction(formData) {
 const refreshAll = () => revalidatePath('/', 'layout');
 const formValues = (fd) => {
   const raw = Object.fromEntries([...fd.entries()].filter(([k]) => !k.startsWith('$')));
-  for (const k of ['delivery_formats', 'themes', 'styles', 'related_modalities']) raw[k] = fd.getAll(k);
+  for (const k of ['delivery_formats', 'themes', 'styles', 'related_modalities', 'modality_slugs']) raw[k] = fd.getAll(k);
   return raw;
 };
 
@@ -260,6 +261,7 @@ export async function resetAlchemistAction(formData) {
   await store.remove('alchemists', id);
   const blobs = getBlobStore();
   if (blobs) for (const p of photosOf(stored)) await blobs.remove(p.id).catch(() => {}); // photo files go with the profile
+  for (const post of (await store.list('posts')).filter((x) => x.profile_id === id)) await store.remove('posts', post.id); // and so does their writing
   await audit(me, 'alchemist_removed', id, `Reset or deleted profile ${stored?.name ?? id}`);
   refreshAll();
   redirect('/admin/alchemists?reset=1');
@@ -603,4 +605,94 @@ export async function portalUpdateEnquiryAction(formData) {
   await audit(me, 'enquiry_updated', id, `Marked an enquiry for ${r.record.alchemist_name} as ${ENQUIRY_LABEL[r.record.status]}`);
   revalidatePath('/admin', 'layout');
   back('saved=1');
+}
+
+/* ---------- the knowledge feed ---------- */
+const postLabel = (title) => `"${String(title).slice(0, 60)}"`;
+
+/** Used with useFormState. An Alchemist saves a draft or sends a post for review. Editing a live post takes it offline until it is approved again. */
+export async function portalSavePostAction(_prev, formData) {
+  const me = await requirePortal();
+  const store = needStore();
+  const id = text(formData, 'id');
+  const raw = formValues(formData);
+  const posts = await store.list('posts');
+  const existing = id ? posts.find((p) => p.id === id) : null;
+  if (id && (!existing || existing.profile_id !== me.profile_id)) redirect('/admin/portal/posts'); // never anyone else's
+  if (!existing && posts.filter((p) => p.profile_id === me.profile_id).length >= MAX_POSTS_PER_PROFILE) return { errors: { title: 'You have reached the limit of posts. Please delete an old one first.' }, values: raw, attempt: Date.now() };
+  const status = text(formData, 'intent') === 'submit' ? 'submitted' : 'draft';
+  const content = await loadContent(store);
+  const v = validatePost(raw, { existing, posts, modalities: content.modalities, status, profileId: me.profile_id });
+  if (!v.valid) return { errors: v.errors, values: raw, attempt: Date.now() };
+  const saved = await store.put('posts', v.record);
+  await audit(me, 'post_saved', saved.id, status === 'submitted' ? `Sent the post ${postLabel(saved.title)} for review` : `Saved a draft of the post ${postLabel(saved.title)}`);
+  refreshAll();
+  redirect(`/admin/portal/posts/${saved.id}?saved=${status}`);
+}
+
+export async function portalDeletePostAction(formData) {
+  const me = await requirePortal();
+  const store = needStore();
+  const id = text(formData, 'id');
+  const post = await store.get('posts', id);
+  if (post && post.profile_id === me.profile_id) {
+    await store.remove('posts', id);
+    await audit(me, 'post_removed', id, `Deleted the post ${postLabel(post.title)}`);
+    refreshAll();
+  }
+  redirect('/admin/portal/posts?deleted=1');
+}
+
+/** Used with useFormState. The team writes or edits a post for any real profile, and sets where it stands. */
+export async function savePostAction(_prev, formData) {
+  const me = await requireAdmin('content');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const raw = formValues(formData);
+  const posts = await store.list('posts');
+  const existing = id ? posts.find((p) => p.id === id) : null;
+  if (id && !existing) redirect('/admin/posts?e=missing');
+  const content = await loadContent(store);
+  const author = existing ? content.alchemists.find((a) => a.id === existing.profile_id) : content.alchemists.find((a) => a.id === text(formData, 'profile_id'));
+  if (!author || author.demo) return { errors: { profile_id: 'Choose a real profile as the author. Fictional examples cannot write.' }, values: raw, attempt: Date.now() };
+  const status = POST_STATUSES.includes(text(formData, 'status')) ? text(formData, 'status') : 'draft';
+  const v = validatePost(raw, { existing, posts, modalities: content.modalities, status, profileId: author.id });
+  if (!v.valid) return { errors: v.errors, values: raw, attempt: Date.now() };
+  const saved = await store.put('posts', v.record);
+  await audit(me, 'post_saved', saved.id, `${existing ? 'Edited' : 'Wrote'} the post ${postLabel(saved.title)} for ${author.name} (${POST_STATUS_LABEL[status]})`);
+  refreshAll();
+  redirect(`/admin/posts/${saved.id}?saved=1`);
+}
+
+/** Publish, decline with a note, or take offline. */
+export async function reviewPostAction(formData) {
+  const me = await requireAdmin('content');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const post = await store.get('posts', id);
+  if (!post) redirect('/admin/posts?e=missing');
+  const intent = text(formData, 'intent');
+  const content = await loadContent(store);
+  const status = intent === 'publish' ? 'published' : intent === 'decline' ? 'rejected' : 'draft';
+  const raw = { title: post.title, kind: post.kind, summary: post.summary, body: post.body, modality_slugs: post.modality_slugs, sources: (post.sources ?? []).map((x) => `${x.title} | ${x.url}`).join('\n') };
+  const v = validatePost(raw, { existing: post, posts: await store.list('posts'), modalities: content.modalities, status });
+  if (!v.valid) redirect(`/admin/posts/${encodeURIComponent(id)}?error=${encodeURIComponent(Object.values(v.errors)[0])}`);
+  const record = intent === 'decline' ? { ...v.record, review_note: text(formData, 'note').replace(/[\u0000-\u001F\u007F<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 600) } : v.record;
+  await store.put('posts', record);
+  await audit(me, 'post_reviewed', id, `${{ publish: 'Published', decline: 'Did not approve', unpublish: 'Took offline' }[intent] ?? 'Reviewed'} the post ${postLabel(post.title)}`);
+  refreshAll();
+  redirect(`/admin/posts/${encodeURIComponent(id)}?saved=1`);
+}
+
+export async function deletePostAction(formData) {
+  const me = await requireAdmin('content');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const post = await store.get('posts', id);
+  if (post) {
+    await store.remove('posts', id);
+    await audit(me, 'post_removed', id, `Deleted the post ${postLabel(post.title)}`);
+    refreshAll();
+  }
+  redirect('/admin/posts?deleted=1');
 }
