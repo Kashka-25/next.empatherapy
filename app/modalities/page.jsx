@@ -1,7 +1,8 @@
 import FadeIn from '@/components/ui/FadeIn';
 import Eyebrow from '@/components/ui/Eyebrow';
 import ModalityCard from '@/components/modalities/ModalityCard';
-import { modalities, activeFeatures } from '@/lib/content.mjs';
+import { modalities } from '@/lib/content.mjs';
+import { currentFeatures } from '@/lib/features.mjs';
 
 export const revalidate = 3600; // refresh hourly so the weekly feature rolls over without a redeploy
 
@@ -10,8 +11,8 @@ export const metadata = {
   description: 'Plain-language guides to alternative and holistic practices: where they come from, what a session is like, what the evidence says and who offers them.',
 };
 
-export default function ModalitiesPage() {
-  const features = activeFeatures(new Date());
+export default async function ModalitiesPage() {
+  const features = await currentFeatures(new Date());
   const byId = (id) => modalities.find((m) => m.id === id);
   const featuredIds = new Set(features.map((f) => f.modality_id));
   const rest = modalities.filter((m) => !featuredIds.has(m.id) && m.publication_status === 'published');

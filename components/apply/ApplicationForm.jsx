@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { validateApplication } from '@/lib/validation.mjs';
 
-const blank = { name: '', email: '', introduction: '', personal_story: '', modalities: '', qualifications: '', experience: '', location: '', delivery_format: '', pricing: '', links: '', consent: false };
+const blank = { website_url: '', name: '', email: '', introduction: '', personal_story: '', modalities: '', qualifications: '', experience: '', location: '', delivery_format: '', pricing: '', links: '', consent: false };
 
 function Field({ id, label, hint, error, children }) {
   return (
@@ -18,23 +18,41 @@ function Field({ id, label, hint, error, children }) {
 export default function ApplicationForm() {
   const [v, setV] = useState(blank);
   const [errors, setErrors] = useState({});
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState(null); // null | 'sent' | 'preview'
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState('');
   const set = (k) => (e) => setV((s) => ({ ...s, [k]: e.target.value }));
   const props = (k) => ({ id: k, value: v[k], onChange: set(k), 'aria-invalid': errors[k] ? 'true' : undefined, 'aria-describedby': [errors[k] && `${k}-err`].filter(Boolean).join(' ') || undefined });
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
+    setProblem('');
     const r = validateApplication(v);
     setErrors(r.errors);
-    if (r.valid) {
-      // Nothing is sent yet: applications need a secure store and a review workflow first.
-      setDone(true);
-    } else {
-      document.getElementById(Object.keys(r.errors)[0])?.focus();
-    }
+    if (!r.valid) { document.getElementById(Object.keys(r.errors)[0])?.focus(); return; }
+    setBusy(true);
+    try {
+      const res = await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...r.data, website_url: v.website_url }) });
+      if (res.status === 201) setDone('sent');
+      else if (res.status === 503) setDone('preview'); // storage is not switched on yet, so this stays a preview
+      else if (res.status === 429) setProblem('You have sent a few applications already. Please try again in an hour, or email us.');
+      else if (res.status === 400) { const body = await res.json().catch(() => ({})); setErrors(body.errors || {}); setProblem('Some answers need another look.'); }
+      else setProblem('Something went wrong on our side. Please try again, or email hello@empatherapy.co.');
+    } catch {
+      setProblem('We could not reach the server. Please check your connection and try again.');
+    } finally { setBusy(false); }
   };
 
-  if (done) {
+  if (done === 'sent') {
+    return (
+      <div className="note-card" role="status">
+        <h3>Thank you, we have your application</h3>
+        <p>A person will read it and get back to you by email. Nothing is published without your approval. You can ask us to delete your details at any time by emailing <a className="link-arrow" href="mailto:hello@empatherapy.co?subject=Delete%20my%20application">hello@empatherapy.co</a>.</p>
+      </div>
+    );
+  }
+
+  if (done === 'preview') {
     return (
       <div className="note-card" role="status">
         <h3>Thank you, your application is ready</h3>
@@ -69,7 +87,13 @@ export default function ApplicationForm() {
         </label>
         {errors.consent ? <span className="error" role="alert">{errors.consent}</span> : null}
       </div>
-      <div className="row"><button type="submit" className="btn btn--honey btn--lg">Submit application</button></div>
+      {/* spam trap: people never see or fill this */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}>
+        <label htmlFor="website_url">Leave this empty</label>
+        <input id="website_url" name="website_url" type="text" tabIndex={-1} autoComplete="off" value={v.website_url} onChange={set('website_url')} />
+      </div>
+      {problem ? <p className="error" role="alert">{problem}</p> : null}
+      <div className="row"><button type="submit" className="btn btn--honey btn--lg" disabled={busy}>{busy ? 'Sending\u2026' : 'Submit application'}</button></div>
     </form>
   );
 }
