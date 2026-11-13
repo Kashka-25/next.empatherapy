@@ -14,6 +14,7 @@ Tagline: *Discover new pathways to yourself.* Founder: Cassidy Dugan (GitHub Kas
 
 ## Decisions (Cassidy)
 - 8 Nov 2026: this repo leads Empatherapy. The live static site (Kashka-25/empatherapy, empatherapy.co) stays as is until this is ready. Not for the public eye yet. Creative Universe shows a clearly labelled "vision in progress".
+- 13 Nov 2026: enquiry retention confirmed at six months after last touched. Business model direction: commission long term, or monthly/quarterly/yearly subscriptions framed as a break-even for Alchemists. Not built; no charging yet.
 - 13 Nov 2026 (proposed, to confirm): Alchemists can log in to their own space (profile edits and new photos are reviewed before going public), receive enquiries, and write for a free knowledge feed under CC BY 4.0. Business model undecided: see `docs/BUSINESS-MODEL.md`. Reviews must wait for an AHPRA testimonial check.
 - 15 Nov 2026: Alchemist photos: up to 5 per profile, first is the profile picture, rest form a "Meet them" carousel. Every photo needs alt text and the person's agreement; metadata is stripped; fictional examples never get photos.
 - 14 Nov 2026: application retention confirmed: declined 90 days, all others 12 months after last touched, rate-limit counters 2 days (`lib/retention.mjs`, `/privacy`).
