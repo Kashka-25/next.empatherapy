@@ -39,6 +39,7 @@ export default async function AdminLayout({ children }) {
               {can(me.role, 'content') ? <Link href="/admin/features">Weekly features</Link> : null}
               {can(me.role, 'accounts') ? <Link href="/admin/accounts">Accounts</Link> : null}
               {can(me.role, 'activity') ? <Link href="/admin/activity">Activity</Link> : null}
+              {can(me.role, 'accounts') ? <Link href="/admin/launch">Launch</Link> : null}
               {can(me.role, 'retention') ? <Link href="/admin/retention">Clean-up</Link> : null}
               <Link href="/" target="_blank">View site</Link>
               {me.id !== 'bootstrap' ? <Link href="/admin/account" title={`${me.name} (${ROLE_LABEL[me.role]})`}>My account</Link> : null}

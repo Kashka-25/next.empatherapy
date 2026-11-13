@@ -11,6 +11,7 @@ import { recordAudit, describeSave, PHOTO_INTENT } from '@/lib/audit.mjs';
 import { updateEnquiry, setRatePercent, ENQUIRY_LABEL } from '@/lib/enquiries.mjs';
 import { propose, approve, reject } from '@/lib/proposals.mjs';
 import { syncCredit, voidEntry, setCreditValue } from '@/lib/credits.mjs';
+import { setTick, MANUAL_ITEMS } from '@/lib/launch.mjs';
 import { setOffer, requestSpend, respondToSpend, voidSpend, removeProfileSpending } from '@/lib/credit-spend.mjs';
 import { ensureCode, offerDiscount, respondToOffer, endAgreement, removeProfileReferrals, MAX_DISCOUNT, MIN_DISCOUNT } from '@/lib/referrals.mjs';
 import { validatePost, STATUS_LABEL as POST_STATUS_LABEL, POST_STATUSES, MAX_POSTS_PER_PROFILE } from '@/lib/posts.mjs';
@@ -800,6 +801,18 @@ export async function setCreditValueAction(formData) {
   await audit(me, 'credit_changed', 'credits', `Set the illustrative value of a credit to $${r.value}`);
   revalidatePath('/admin/referrals');
   redirect('/admin/referrals?saved=1');
+}
+
+/* ---------- launch checklist (owners) ---------- */
+export async function tickLaunchItemAction(formData) {
+  const me = await requireAdmin('accounts');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const done = text(formData, 'done') === 'yes';
+  const r = await setTick(store, id, done, me.name);
+  if (r.ok) await audit(me, 'launch_changed', id, done ? `Ticked a launch item: ${MANUAL_ITEMS.find((m) => m.id === id)?.title}` : `Un-ticked a launch item: ${MANUAL_ITEMS.find((m) => m.id === id)?.title}`);
+  revalidatePath('/admin/launch');
+  redirect('/admin/launch?saved=1');
 }
 
 /* ---------- spending credits: the accepting Alchemist gives the discount ---------- */
