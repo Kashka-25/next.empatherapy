@@ -1,7 +1,7 @@
 # Empatherapy: progress and decisions
 
 The source of truth for what has been built, what has been decided, and what is still open.
-Update it at the end of every working session. Last updated: 19 Nov 2026.
+Update it at the end of every working session. Last updated: 13 Nov 2026 (second pass).
 
 ## The product in one paragraph
 Empatherapy is a discovery and connection ecosystem. **Seekers** (people looking for understanding, support,
@@ -23,6 +23,7 @@ Tagline: **Discover new pathways to yourself.** Feeling: a cup of lemon and hone
 | 6b. Admin content editing | Done: edit and create Alchemist profiles and modality pages, with publish rules and reset to original |
 | 6c. Production readiness | Built, **not yet connected to a real database:** Supabase driver and schema, individual admin accounts with roles, shared rate limiting, privacy notice and retention rule. **Photo uploads built (6d).** |
 | 6e. Applications to profiles | Done: "Create draft profile" from an approved application, with verified-means-checked publish rules |
+| 7a. Enquiries and business model | Done: Seeker enquiries with founder and Alchemist notified, outcome tracking, illustration rate, research and a staged recommendation in `docs/BUSINESS-MODEL.md`. **Business model undecided.** |
 | 6h. Launch hygiene | Done: security headers, noindex until launch, robots and sitemap, share image, friendly error pages |
 | 6g. Two-step sign-in | Done: optional authenticator-app codes and recovery codes, owner reset |
 | 6f. Activity log | Done: owners can see who changed what and when, with 12-month retention |

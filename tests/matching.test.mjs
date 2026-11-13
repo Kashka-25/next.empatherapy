@@ -121,3 +121,9 @@ test('every suggestion carries the exploratory disclaimer', () => {
   const r = matchSeeker({ experience: 'stressed' }, data);
   assert.match(r.disclaimer, /not a diagnosis/);
 });
+
+test('crisis detection treats "do not" like "dont"', () => {
+  assert.equal(detectCrisis('I do not want to be here anymore'), true);
+  assert.equal(detectCrisis("I don't want to be here"), true);
+  assert.equal(detectCrisis('I do not want to be late for my appointment'), false);
+});

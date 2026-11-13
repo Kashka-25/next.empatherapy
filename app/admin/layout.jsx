@@ -18,6 +18,7 @@ export default async function AdminLayout({ children }) {
             <nav className="admin-nav" aria-label="Admin">
               <Link href="/admin">Overview</Link>
               {can(me.role, 'applications') ? <Link href="/admin/applications">Applications</Link> : null}
+              {can(me.role, 'enquiries') ? <Link href="/admin/enquiries">Enquiries</Link> : null}
               {can(me.role, 'content') ? <Link href="/admin/alchemists">Alchemists</Link> : null}
               {can(me.role, 'content') ? <Link href="/admin/modalities">Modalities</Link> : null}
               {can(me.role, 'content') ? <Link href="/admin/features">Weekly features</Link> : null}

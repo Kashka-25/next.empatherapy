@@ -8,6 +8,7 @@ import { purgeExpired } from '@/lib/retention.mjs';
 import { draftFromApplication } from '@/lib/application-to-profile.mjs';
 import { can } from '@/lib/accounts.mjs';
 import { recordAudit, describeSave, PHOTO_INTENT } from '@/lib/audit.mjs';
+import { updateEnquiry, setRatePercent, ENQUIRY_LABEL } from '@/lib/enquiries.mjs';
 import { getBlobStore, newImageId } from '@/lib/images/blobs.mjs';
 import { inspectImage, IMAGE_MESSAGES, MAX_BYTES } from '@/lib/images/inspect.mjs';
 import { MAX_PHOTOS, addPhoto, updatePhoto, makePrimary, movePhoto, removePhoto, canHavePhotos, photosOf, cleanAlt, cleanCaption, altError } from '@/lib/photos.mjs';
@@ -142,7 +143,7 @@ export async function changeOwnPasswordAction(formData) {
 export async function purgeExpiredAction() {
   const me = await requireAdmin('retention');
   const r = await purgeExpired(needStore());
-  await audit(me, 'retention_purge', 'retention', `Deleted ${r.applications} expired application(s), ${r.counters} old spam-protection counter(s) and ${r.audit} old log entr${r.audit === 1 ? 'y' : 'ies'}`);
+  await audit(me, 'retention_purge', 'retention', `Deleted ${r.applications} expired application(s), ${r.enquiries} old enquir${r.enquiries === 1 ? 'y' : 'ies'}, ${r.counters} old spam-protection counter(s) and ${r.audit} old log entr${r.audit === 1 ? 'y' : 'ies'}`);
   revalidatePath('/admin/retention');
   redirect(`/admin/retention?done=${r.applications}`);
 }
@@ -457,4 +458,40 @@ export async function disableTwoStepAction(formData) {
   await audit(me, 'two_step_changed', me.id, 'Turned off two-step sign-in');
   revalidatePath('/admin/account');
   accountBack('off=1');
+}
+
+/* ---------- enquiries (owners) ---------- */
+export async function updateEnquiryAction(formData) {
+  const me = await requireAdmin('enquiries');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const r = await updateEnquiry(store, id, { status: text(formData, 'status'), note: text(formData, 'note'), fee: text(formData, 'fee') });
+  const back = (q) => redirect(`/admin/enquiries/${encodeURIComponent(id)}?${q}`);
+  if (!r.ok) {
+    const msg = { not_found: 'That enquiry no longer exists.', bad_status: 'Choose a valid status.', bad_fee: 'Enter an amount from 0 to 5000.', fee_needs_booked: 'An amount can only be added once the status is "Booked a session".' }[r.reason] ?? 'That did not work.';
+    if (r.reason === 'not_found') redirect('/admin/enquiries?error=' + encodeURIComponent(msg));
+    back('error=' + encodeURIComponent(msg));
+  }
+  await audit(me, 'enquiry_updated', id, `Marked an enquiry for ${r.record.alchemist_name} as ${ENQUIRY_LABEL[r.record.status]}`);
+  revalidatePath('/admin/enquiries');
+  back('saved=1');
+}
+
+export async function deleteEnquiryAction(formData) {
+  const me = await requireAdmin('enquiries');
+  const store = needStore();
+  const id = text(formData, 'id');
+  await store.remove('enquiries', id);
+  await audit(me, 'enquiry_deleted', id, 'Deleted an enquiry');
+  revalidatePath('/admin/enquiries');
+  redirect('/admin/enquiries?saved=1');
+}
+
+export async function setRateAction(formData) {
+  const me = await requireAdmin('enquiries');
+  const r = await setRatePercent(needStore(), text(formData, 'rate'));
+  if (!r.ok) redirect('/admin/enquiries?error=' + encodeURIComponent('Enter a percentage from 0 to 30.'));
+  await audit(me, 'commission_rate_set', 'commission', `Set the illustration rate to ${Math.round(r.rate * 1000) / 10}%`);
+  revalidatePath('/admin/enquiries');
+  redirect('/admin/enquiries?saved=1');
 }

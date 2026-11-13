@@ -5,6 +5,7 @@ import { listApplications } from '@/lib/applications.mjs';
 import { loadFeatures } from '@/lib/features.mjs';
 import { activeFeatures } from '@/data/features.mjs';
 import { loadContent } from '@/lib/content-store.mjs';
+import { listEnquiries } from '@/lib/enquiries.mjs';
 import { can, ROLE_LABEL } from '@/lib/accounts.mjs';
 
 export default async function AdminHome({ searchParams }) {
@@ -14,6 +15,9 @@ export default async function AdminHome({ searchParams }) {
   const seeContent = can(me.role, 'content');
   const { alchemists } = await loadContent(store);
   const apps = store && seeApps ? await listApplications(store) : [];
+  const seeEnquiries = can(me.role, 'enquiries');
+  const enquiries = store && seeEnquiries ? await listEnquiries(store) : [];
+  const newEnquiries = enquiries.filter((e) => e.status === 'new').length;
   const features = await loadFeatures(store);
   const live = activeFeatures(new Date(), features);
   const waiting = apps.filter((a) => a.status === 'new').length;
@@ -36,6 +40,11 @@ export default async function AdminHome({ searchParams }) {
           <span className="eyebrow">Applications</span>
           <strong className="admin-stat">{store ? waiting : '–'}</strong>
           <span>{store ? `waiting for a first look, ${apps.length} in total` : 'storage is off'}</span>
+        </Link> : null}
+        {seeEnquiries ? <Link href="/admin/enquiries" className="admin-card admin-card--link">
+          <span className="eyebrow">Enquiries</span>
+          <strong className="admin-stat">{store ? newEnquiries : '–'}</strong>
+          <span>{store ? `new, ${enquiries.length} in total` : 'storage is off'}</span>
         </Link> : null}
         {seeContent ? <Link href="/admin/features" className="admin-card admin-card--link">
           <span className="eyebrow">Weekly features</span>
