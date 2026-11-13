@@ -25,6 +25,8 @@ service at runtime.
 | `sound.py` | The soundscape, synthesised in code and timed to `cues.json` (-20 LUFS, AAC and Opus). |
 | `qa.py` | Frame checks: no flashes, biggest frame-to-frame change, a still hold from the settle time. |
 | `render-v2.sh` | The whole render: dipper frames (both formats), honey frames, checks, stills, encodes, fast start, copies to `preview/` and `public/golden-pause/`. About 45 minutes on this laptop. |
+| `breathe_orb.py` | The breathing space's golden orb (homepage, "Breathe with us"): a redraw of the orbs in Cassidy's breathing-space design, with real transparency, in two looks (calm and full) to fade between. Writes `public/golden-pause/breathe/orb-*.webp`. Provisional until approved. |
+| `honey.py -- --backdrop` | The film's settled backdrop with nothing on it, for the breathing space (`breathe-wide.jpg`, `breathe-square.jpg`; copy to `public/golden-pause/`). |
 | `preview/` | The standalone preview player (mock homepage top, live words, controls, fallbacks). Tests in `preview/_test/`. `make-artifact.js` builds the private preview page. |
 | `compose.py` | The first film (v1). |
 
@@ -35,6 +37,10 @@ node work/honey/raster.js "$(pwd -W)/source/name-mask.png"     # only if the let
 node work/honey/symlayers.js                                    # symbol layers per format
 "/c/Program Files/Blender Foundation/Blender 5.2/blender.exe" -b --factory-startup --python sound.py
 bash render-v2.sh
+# the breathing space: the empty backdrop (both formats), then the orb
+for v in wide square; do "/c/Program Files/Blender Foundation/Blender 5.2/blender.exe" -b --factory-startup --python honey.py -- --backdrop --variant $v; done
+cp out/v2/breathe-*.jpg ../../public/golden-pause/
+"/c/Program Files/Blender Foundation/Blender 5.2/blender.exe" -b --factory-startup --python breathe_orb.py -- --preview
 ```
 
 ## Safety and privacy

@@ -4,6 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { STEPS, ROUNDS, REST, DURATION, SMALL, REDUCED, breathAt, lookOf, spokenOf } from '../components/golden-pause/breathe.mjs';
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 const cues = JSON.parse(read('film/golden-pause/cues.json'));
@@ -52,11 +53,51 @@ test('the stage styles carry the layout numbers from cues.json, for the page bef
   }
 });
 
-test('the player stores and measures nothing (Seeker privacy)', () => {
-  const src = read('film/golden-pause/preview/player.js').replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '');
-  for (const word of ['localStorage', 'sessionStorage', 'indexedDB', 'document.cookie', 'sendBeacon', 'fetch(', 'XMLHttpRequest', 'WebSocket']) {
-    assert.ok(!src.includes(word), `player.js uses ${word}`);
+test('the player and the breathing space store and measure nothing (Seeker privacy)', () => {
+  const files = ['film/golden-pause/preview/player.js', 'components/golden-pause/GoldenPause.jsx',
+    'components/golden-pause/BreathingSpace.jsx', 'components/golden-pause/breathe.mjs'];
+  for (const file of files) {
+    const src = read(file).replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '');
+    for (const word of ['localStorage', 'sessionStorage', 'indexedDB', 'document.cookie', 'sendBeacon', 'fetch(', 'XMLHttpRequest', 'WebSocket']) {
+      assert.ok(!src.includes(word), `${file} uses ${word}`);
+    }
   }
+});
+
+test("the breathing space follows Cassidy's four steps: Prepare once, then rounds of in, hold and out, then a rest", () => {
+  assert.deepEqual(STEPS.map((s) => s.label), ['Prepare', 'Breathe in', 'Hold', 'Breathe out']);
+  assert.deepEqual(STEPS.map((s) => s.line), ['Settle in…', 'Slowly and deeply…', 'For a moment…', 'Gently let it go…']);
+  const seq = [];
+  for (let t = 0; t < DURATION + 1; t += 0.05) { const b = breathAt(t); if (seq[seq.length - 1] !== b.step) seq.push(b.step); }
+  assert.deepEqual(seq, ['prepare', ...Array(ROUNDS).fill(['in', 'hold', 'out']).flat(), 'rest']);
+  assert.equal(DURATION, 3 + ROUNDS * (4 + 2 + 6) + REST.seconds);
+  assert.equal(breathAt(DURATION - 0.01).done, false);
+  assert.equal(breathAt(DURATION).done, true);
+  assert.equal(breathAt(-5).step, 'prepare');
+  assert.equal(breathAt(NaN).step, 'prepare');
+});
+
+test('the hold is short and gentle, and the orb fills and empties smoothly with the breath', () => {
+  const hold = STEPS.find((s) => s.id === 'hold');
+  assert.ok(hold.seconds <= 2, 'a pause at the top of the breath, never a long hold');
+  let prev = breathAt(3);
+  assert.equal(prev.size, 0);
+  for (let t = 3; t <= 3 + 12; t += 0.02) {
+    const b = breathAt(t);
+    assert.ok(Math.abs(b.size - prev.size) < 0.02, `no jump at ${t.toFixed(2)} s`);
+    if (b.step === 'in') assert.ok(b.size >= prev.size - 1e-9);
+    if (b.step === 'out') assert.ok(b.size <= prev.size + 1e-9);
+    if (b.step === 'hold') assert.equal(b.size, 1);
+    prev = b;
+  }
+  assert.equal(lookOf(breathAt(0)).scale, SMALL);
+  assert.equal(lookOf(breathAt(8)).scale, 1);
+  assert.equal(lookOf(breathAt(8), true).scale, REDUCED, 'reduced motion: the orb keeps one size');
+  assert.equal(lookOf(breathAt(5)).arrowsOut, 0);
+  assert.ok(lookOf(breathAt(5)).arrowsIn > 0.9, 'the rising arrows show while breathing in');
+  assert.ok(lookOf(breathAt(12)).arrowsOut > 0.9, 'the inward arrows show while breathing out');
+  assert.equal(spokenOf(breathAt(5)), 'Breathe in. Slowly and deeply…');
+  assert.equal(spokenOf(breathAt(DURATION - 1)), REST.label);
 });
 
 test('the player loads in Node for its timing, and starts in the browser only when the site asks', () => {
@@ -81,4 +122,6 @@ test('the homepage hero shows the film, with a way past it, and the privacy noti
   assert.match(component, /data-gp-media="\/golden-pause\/"/);
   assert.match(component, /Skip past the film/);
   assert.match(read('app/privacy/page.jsx'), /The Golden Pause/);
+  assert.match(component, /Breathe with us/);
+  assert.match(component, /<BreathingSpace /);
 });

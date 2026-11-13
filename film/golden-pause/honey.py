@@ -594,10 +594,35 @@ def stills(variant, frames_dir, out_dir):
         im.save_render(filepath=path, scene=sc)
         print('STILL', path, os.path.getsize(path))
 
+def backdrop_still(variant, out_dir):
+    """The settled backdrop with nothing on it (no symbol, no honey): the ground of the breathing space
+    (components/golden-pause/BreathingSpace.jsx), so it sits exactly where the film ends."""
+    film = Film(variant)
+    t = DUR
+    bd, _ = film.backdrop_frame(t)
+    out = bd * film.vignette
+    srgb = lin_to_srgb(out)
+    arr = np.clip(np.round(srgb * 255 + film.fixed_dither * 0.75), 0, 255).astype(np.uint8)
+    os.makedirs(out_dir, exist_ok=True)
+    png = os.path.join(HERE, 'work', f'breathe-backdrop-{variant}.png')
+    save_png(arr, png)
+    sc = bpy.context.scene
+    sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'None'
+    s = sc.render.image_settings
+    try: s.media_type = 'IMAGE'
+    except Exception: pass
+    s.file_format = 'JPEG'; s.quality = 84; s.color_mode = 'RGB'
+    path = os.path.join(out_dir, f'breathe-{variant}.jpg')
+    if os.path.exists(path): os.remove(path)
+    bpy.data.images.load(png).save_render(filepath=path, scene=sc)
+    print('BACKDROP', path, os.path.getsize(path))
+
 if __name__ == '__main__':
     variant = arg('--variant', 'wide')
     film_dir = os.path.join(HERE, 'out', f'v2-frames-{variant}')
-    if arg('--stills'):
+    if arg('--backdrop'):
+        backdrop_still(variant, os.path.join(HERE, 'out', 'v2'))
+    elif arg('--stills'):
         stills(variant, film_dir, os.path.join(HERE, 'out', 'v2'))
     elif arg('--encode'):
         os.makedirs(os.path.join(HERE, 'out', 'v2'), exist_ok=True)

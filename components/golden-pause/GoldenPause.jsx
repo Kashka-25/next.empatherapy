@@ -1,9 +1,10 @@
 'use client';
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import cues from '@/film/golden-pause/cues.json';
 // The player is shared with the film's preview (film/golden-pause/preview), where it is tested in a real browser.
 import GoldenPausePlayer from '@/film/golden-pause/preview/player.js';
 import './golden-pause.css';
+import BreathingSpace from './BreathingSpace';
 
 // Start the player before the first paint, so the no-player still never flashes up on a client-side visit.
 const useBeforePaint = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -18,9 +19,16 @@ const HOLD_STILL = "(function(s){if(!s||!s.classList)return;s.classList.add('gp-
  * or skipped, it is silent unless the visitor turns the sound on, and it stores and measures nothing.
  * Reduced motion and Save-Data get a calm still instead; without JavaScript the same still shows by CSS alone.
  * All words on screen are live text; the picture itself is hidden from screen readers and described once instead.
+ * When the film is not running, "Breathe with us" opens a gentle breathing space in the same frame (BreathingSpace).
  */
 export default function GoldenPause({ skipTo }) {
   const stageRef = useRef(null);
+  const [breathing, setBreathing] = useState(false);
+
+  // the stage says when the breathing space is open (its own buttons step aside); React never sets this class itself
+  useEffect(() => {
+    stageRef.current?.classList.toggle('gp--breathing', breathing);
+  }, [breathing]);
 
   useBeforePaint(() => {
     const stage = stageRef.current;
@@ -95,14 +103,20 @@ export default function GoldenPause({ skipTo }) {
               <p className="gp__tagline" data-gp="tagline">Discover new pathways to yourself.</p>
             </div>
 
+            {breathing ? <BreathingSpace onClose={() => setBreathing(false)} /> : null}
+
             <span className="gp__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false"><path d="M9 6.5v11l8.5-5.5z" fill="currentColor" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" /></svg>
             </span>
           </div>
 
           <div className="gp__bar">
-            <p className="gp__caption"><b>The Golden Pause</b> <span>13 seconds, just if you like</span></p>
+            <p className="gp__caption"><b>The Golden Pause</b> <span>{breathing ? 'breathe along if you like, or in your own way' : '13 seconds, just if you like'}</span></p>
             <div className="gp__controls" role="group" aria-label="Film controls">
+              <button type="button" className="gp-btn gp-btn--breathe" onClick={() => setBreathing((b) => !b)}>
+                <svg className="gp-ico gp-ico--orb" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="8.2" strokeDasharray="2.6 2.4" /></svg>
+                <span className="gp-btn__label">{breathing ? 'Finish' : 'Breathe with us'}</span>
+              </button>
               <button type="button" className="gp-btn" data-gp="toggle" data-state="pause">
                 <svg className="gp-ico gp-ico--pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6.5v11M15 6.5v11" /></svg>
                 <svg className="gp-ico gp-ico--play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8.5 6v12l9.5-6z" fill="currentColor" /></svg>
