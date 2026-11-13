@@ -5,9 +5,11 @@
 // Two plans:
 //   SPACE  "Breathe with us": Prepare once, three rounds of in, hold and out, a moment of rest, then it closes.
 //   INTRO  how the homepage opens: Prepare and one breath, then the breath out becomes the honey film's own breath out.
-//          The film starts unseen during Breathe in, so that its honey lands (cues.json drop.land) just as Hold turns
-//          to Breathe out; through the breath out the space cross-fades into the honey drizzling down and writing the
-//          name. (The page holds the opening's clock to the film's once it plays, so they stay together.)
+//          Breathe out first shows on its own for a while (the orb settling, the arrows turning in). Then, through the
+//          rest of the breath out, the space slowly cross-fades into the film: the honey drop lets go of the dipper,
+//          lands half way through the breath out, and drizzles down writing the name; the space is gone as the breath
+//          out ends. The film starts unseen just before, so it is there when the fade begins. (The page holds the
+//          opening's clock to the film's once it plays, so they stay together.)
 
 export const STEPS = [
   { id: 'prepare', label: 'Prepare', line: 'Settle in…', seconds: 3 },
@@ -18,9 +20,10 @@ export const STEPS = [
 export const ROUNDS = 3;
 export const REST = { label: 'Thank you for pausing.', seconds: 4 };
 export const SPACE = { rounds: ROUNDS, rest: REST.seconds };
-/** land: when the film's honey lands (cues.json drop.land; a test keeps them equal);
- *  revealFrom, revealFor: the cross-fade into the film, in the film's own seconds (from just before the honey lands) */
-export const INTRO = { rounds: 1, rest: 0, land: 3.2, revealFrom: 3.0, revealFor: 3.0 };
+/** alone: how long Breathe out shows on its own before anything of the film appears (seconds);
+ *  revealFrom, revealFor: then the cross-fade into the film, in the film's own seconds: from just as the honey drop lets
+ *  go of the dipper (inside cues.json drop.fall; a test checks it), for the rest of the breath out */
+export const INTRO = { rounds: 1, rest: 0, alone: 2.5, revealFrom: 2.7, revealFor: 3.5 };
 /** the orb's scale when the breath is empty (1 = full); with reduced motion it stays at REDUCED */
 export const SMALL = 0.58;
 export const REDUCED = 0.8;
@@ -31,12 +34,12 @@ export const durationOf = (plan = SPACE) => byId.prepare.seconds + plan.rounds *
 export const DURATION = durationOf(SPACE);
 /** when the breath out begins, in the opening (Prepare, Breathe in and Hold come first) */
 export const outStartOf = (plan = INTRO) => byId.prepare.seconds + (plan.rounds - 1) * ROUND + byId.in.seconds + byId.hold.seconds;
-/** when, in the opening, the film is asked to start: so that its honey lands as the breath out begins */
-export const filmStartOf = (plan = INTRO) => outStartOf(plan) - plan.land;
+/** when, in the opening, the film is asked to start (unseen): so that it reaches revealFrom just as Breathe out has
+ *  had its time alone */
+export const filmStartOf = (plan = INTRO) => outStartOf(plan) + plan.alone - plan.revealFrom;
 
 /** sine ease in and out: a breath speeds up gently and slows into its turn */
 export const ease = (p) => (1 - Math.cos(Math.PI * Math.min(Math.max(p, 0), 1))) / 2;
-const smooth = (x) => { const c = Math.min(Math.max(x, 0), 1); return c * c * (3 - 2 * c); };
 
 /**
  * Where the breathing space is at t seconds after it opened, for a plan (SPACE by default).
@@ -97,9 +100,10 @@ export function leaveOf(b, plan = SPACE) {
 /** where the opening should be, given the film's own clock, once the film plays */
 export const openingTimeOf = (filmTime, plan = INTRO) => filmStartOf(plan) + filmTime;
 
-/** in the opening, how far the space has cross-faded into the film, from the film's own clock (seconds) */
+/** in the opening, how far the space has cross-faded into the film (0 = all space, 1 = all film), at a moment given in
+ *  the film's own seconds; it eases in and out like the breath itself */
 export function revealOf(filmTime, plan = INTRO) {
-  return smooth((filmTime - plan.revealFrom) / plan.revealFor);
+  return ease((filmTime - plan.revealFrom) / plan.revealFor);
 }
 
 /** what a screen reader hears at each new step (the page announces it once, politely) */

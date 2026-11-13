@@ -9,10 +9,10 @@ import './breathing-space.css';
  * Two ways in:
  *   "Breathe with us" (when the film is not running): three easy rounds, a rest, and it closes by itself;
  *     Finish or Escape ends it at any time.
- *   intro (how the homepage opens): Prepare and one breath. onFilm() starts the film unseen underneath during
- *     Breathe in, so that its honey lands just as Hold turns to Breathe out; from then the opening keeps time with the
- *     film, and through the breath out the whole space cross-fades into the drizzling honey (read from the film's own
- *     clock), then onClose(). Skip and Escape belong to the film then: they skip straight to the welcome.
+ *   intro (how the homepage opens): Prepare and one breath. Breathe out first shows on its own; onFilm() starts the
+ *     film unseen underneath just before the breath out, and from then the opening keeps time with the film. Through
+ *     the rest of the breath out the whole space slowly cross-fades into the honey drizzling down (it lands half way
+ *     through the breath out), then onClose(). Skip and Escape belong to the film then: they skip straight to the welcome.
  * Purely visual and in this browser: nothing is measured, stored or sent.
  */
 export default function BreathingSpace({ onClose, onFilm, intro = false }) {
@@ -60,7 +60,7 @@ export default function BreathingSpace({ onClose, onFilm, intro = false }) {
       last = ms;
       let next = t + dt;
       if (intro && filmAsked && video) {
-        // keep time with the film, so its honey lands as the breath out begins: the opening runs a little slower
+        // keep time with the film, so its honey lands half way through the breath out: the opening runs a little slower
         // or faster (never less than 0.4x or more than 1.6x) until it is with the film's clock
         const err = openingTimeOf(video.paused ? 0 : video.currentTime, plan) - next;
         next += Math.max(-0.6 * dt, Math.min(0.6 * dt, err));
@@ -70,10 +70,13 @@ export default function BreathingSpace({ onClose, onFilm, intro = false }) {
       if (intro) {
         if (!filmAsked && t >= filmStartOf(plan)) { filmAsked = true; filmAskedAt = t; if (filmRef.current) filmRef.current(); }
         if (filmAsked) {
-          // through the breath out, the whole space cross-fades into the honey drizzling down and writing the name
-          const r = video && !video.paused ? revealOf(video.currentTime, plan) : 0;
+          // after Breathe out has shown on its own, the whole space cross-fades into the honey drizzling down and
+          // writing the name. The fade follows the opening's own clock, which moves every frame (the video's clock
+          // only moves with each film frame), held to the film's so it never runs ahead of a film that has stalled.
+          const filmNow = video && !video.paused ? Math.min(t - filmStartOf(plan), video.currentTime + 0.15) : 0;
+          const r = revealOf(filmNow, plan);
           el.style.transition = 'none';
-          el.style.opacity = String(1 - r);
+          el.style.opacity = (1 - r).toFixed(4);
           if (r >= 1 || t - filmAskedAt > 14) { close(); return; }  // (the film never came: the page shows what it has)
         }
       } else if (breathAt(t, plan).done) {
