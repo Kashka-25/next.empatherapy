@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Sprig } from '@/components/art/Botanicals';
+import Logo from '@/components/layout/Logo';
 
 export default function Footer() {
   return (
@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <p className="wordmark"><Sprig color="#E8BE67" />Empatherapy</p>
+            <p className="wordmark"><Logo /></p>
             <p>Discover new pathways to yourself.</p>
           </div>
           <div>

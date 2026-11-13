@@ -53,6 +53,7 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 - **Edits layer over the built-in content** one record at a time (`lib/content-store.mjs`); reset brings the original back. A profile is public only when published *and* verified, and publishing needs a complete profile.
 - **Approving an application never publishes anything.** A person creates the profile after checking training and registration.
 - **Removed:** `/api/therapists` and `/api/bookings`. The bookings route only logged requests and replied "received", which was misleading. Bookings will be rebuilt properly with the data layer.
+- **Logo (13 Nov 2026, Cassidy):** the teacup symbol beside "Empatherapy" in the same script the honey writes in The Golden Pause (Vladimir Script, drawn as vector outlines: `film/golden-pause/wordmark-svg.js` writes `components/layout/wordmark.js`), in the header and footer. The font comes with Windows and Office and allows embedding; if the logo is ever registered as a trademark, check the font licence (Monotype) first.
 - **Visual signature:** honey drip dividers, a hand-drawn sprig, a lemon slice, handwritten margin notes, soft sunlit window light. IntoTheLighthouse gets a calm evening palette with a lantern glow.
 
 ## Open questions for Cassidy
@@ -63,7 +64,7 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 4. **Real photographs.** Uploads now work (up to 5 per profile), but no real photos have been added. Which Alchemists do you want to start with, and who will take or collect them?
 5. **Typefaces:** Fraunces (headings), Nunito Sans (body), Caveat (handwritten notes). Happy to change.
 6. **IntoTheLighthouse repo.** Should the page here link to its own repo or site when ready?
-7. **The Golden Pause.** Please approve by ear the soundscape (it plays only when a visitor turns the sound on), and approve the teacup symbol in the film, which is a redraw of your image (`film/golden-pause/source/symbol.svg`). In the breathing space, the golden orb is likewise a redraw of your design (`film/golden-pause/breathe_orb.py`), and its Hold step (2 seconds, "For a moment…") comes from your design although your first brief asked for no breath holds: please confirm you want it. It is still to be tried on real phones (iPhone and Android) and in Safari and Firefox.
+7. **The Golden Pause.** Please approve by ear the soundscape (it plays only when a visitor turns the sound on), and approve the teacup symbol in the film, which is a redraw of your image (`film/golden-pause/source/symbol.svg`). The same redraw is now the logo's symbol in the header and footer (`public/brand/teacup.svg`). In the breathing space, the golden orb is likewise a redraw of your design (`film/golden-pause/breathe_orb.py`), and its Hold step (2 seconds, "For a moment…") comes from your design although your first brief asked for no breath holds: please confirm you want it. It is still to be tried on real phones (iPhone and Android) and in Safari and Firefox.
 
 ## Not built yet (and why)
 - **A live database.** The Supabase driver and schema exist and are tested against a fake of the Supabase API, but no Supabase project has been created or connected yet (that needs Cassidy). See `docs/ADMIN.md`, "Going live".

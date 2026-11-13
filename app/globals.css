@@ -92,7 +92,16 @@ a.card:hover, .card--lift:hover { transform: translateY(-4px); box-shadow: var(-
 }
 .site-nav__inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; max-width: 1240px; margin: 0 auto; padding-inline: var(--gutter); }
 .wordmark { font-family: var(--font-display); font-size: 1.55rem; font-weight: 500; color: var(--botanical-deep); display: inline-flex; align-items: center; gap: 0.55rem; letter-spacing: -0.01em; }
-.wordmark svg { width: 26px; height: 26px; }
+.wordmark > svg { width: 26px; height: 26px; }   /* the admin title's sprig */
+/* The logo (components/layout/Logo.jsx): the teacup symbol and "Empatherapy" in the film's script. The script's
+   small letters are short beside its tall capitals and loops, so it stands taller than a plain typeface would. */
+.logo { display: inline-flex; align-items: center; gap: 0.4rem; line-height: 1; }
+.logo__cup { display: block; height: 48px; width: auto; flex: none; }
+.logo__script { display: block; height: 46px; width: auto; aspect-ratio: 4.278; overflow: visible; flex: none; }
+@media (max-width: 420px) {
+  .logo__cup { height: 40px; }
+  .logo__script { height: 38px; }
+}
 .nav-links { display: flex; align-items: center; gap: 1.7rem; }
 .nav-links a.nav-link { font-size: 0.95rem; font-weight: 600; color: var(--ink); padding: 0.3rem 0; border-bottom: 2px solid transparent; }
 .nav-links a.nav-link:hover { border-color: var(--honey); }
