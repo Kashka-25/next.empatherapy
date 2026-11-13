@@ -1,11 +1,13 @@
 import { adminPhotoUrl, MAX_PHOTOS, photosOf, isApproved } from '@/lib/photos.mjs';
 import { MAX_BYTES, MIN_SIDE } from '@/lib/images/inspect.mjs';
+import CropPicker from './CropPicker.jsx';
 
 /**
  * Photos for one Alchemist: upload, describe, choose the profile picture, reorder, remove.
  * Used by the team (mode "team": uploads go live, and photos an Alchemist added can be approved) and by an Alchemist
  * for their own profile (mode "portal": uploads wait for review before anyone else sees them).
- * Server-rendered forms only, so it works without any browser script.
+ * Server-rendered forms, so it works without any browser script. Framing a new photo before upload is an enhancement
+ * (CropPicker); without script the file is sent as it is.
  */
 export default function PhotoManager({ alchemist, enabled, error, saved, mode = 'team', uploadAction, changeAction }) {
   const photos = photosOf(alchemist);
@@ -73,7 +75,7 @@ export default function PhotoManager({ alchemist, enabled, error, saved, mode = 
               <div className="field">
                 <label htmlFor="photo">Photo</label>
                 <span className="hint">JPEG, PNG or WebP, up to {MAX_BYTES / 1024 / 1024} MB, at least {MIN_SIDE} pixels on the shortest side. Location and camera details are removed automatically.</span>
-                <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required />
+                <CropPicker minSide={MIN_SIDE} />
               </div>
               <div className="field">
                 <label htmlFor="new-alt">Describe the photo</label>
