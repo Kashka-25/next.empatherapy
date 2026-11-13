@@ -9,6 +9,12 @@ the site's own typeface (live HTML), and the camera follows the drops down into 
 spills its rim drip and steams. "Discover new pathways to yourself." appears beneath. The film itself has no typed
 words; the breathing lines, wordmark and tagline are HTML on the page.
 
+The honey follows a reference Cassidy shared (13 Nov 2026): translucent gold. On the dipper it is a clear golden coat
+you can see the wood grain through, deeper amber where it pools in the grooves, with broad glossy highlights. In the
+stream, the drop and the name, it is clear gold where thin and amber where thick, with a lit golden core where light
+gathers through it and darker gold edges. The numbers are at the top of `dipper.py` (`HONEY_*`) and `honey.py`
+(`SIGMA`, `CORE`, `EDGE_*`, `HONEY_GAIN`).
+
 Everything is reproducible with Blender 5.2 (its bundled Python and numpy), Node 24 and Chrome. No downloads, no AI
 service at runtime.
 
