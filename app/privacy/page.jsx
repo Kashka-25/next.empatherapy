@@ -45,6 +45,7 @@ export default function PrivacyPage() {
               <p><strong>Who sees it.</strong> The Alchemist you wrote to, who replies to you directly by email, and Empatherapy&rsquo;s small team, only to keep things safe and to understand how introductions go. We do not sell it or use it for marketing.</p>
               <p><strong>Emails.</strong> We send the Alchemist your message, send you a confirmation, and let the Empatherapy team know that an Alchemist was reached (without your message).</p>
               <p><strong>How long we keep it.</strong> Six months after we last touched it, then it is deleted. You can ask us to delete it sooner. Once the Alchemist has your message by email, what they do with it is between you and them.</p>
+              <p><strong>Referral codes.</strong> If you type a referral code, we note which Alchemist's code it was and the agreed discount, so your Alchemist can apply it. The Alchemist who gave you the code is told only how many people have used it, never who.</p>
               <p><strong>If you are struggling.</strong> Empatherapy is not crisis care. In an emergency call 000, or Lifeline on 13 11 14.</p>
             </div>
 

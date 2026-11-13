@@ -21,6 +21,7 @@ export default async function PortalEnquiry({ params, searchParams }) {
       <h1 style={{ fontSize: '2.2rem' }}>{e.name}</h1>
       {searchParams?.saved ? <p className="admin-flash" role="status">Saved.</p> : null}
       {searchParams?.error ? <p className="error" role="alert">{searchParams.error}</p> : null}
+      {e.referral ? <p className="demo-note" role="status"><strong>Came with {e.referral.referrer_name}&rsquo;s referral code.</strong> As you agreed, please take {e.referral.percent}% off their first session.</p> : null}
       {e.support_flag ? <p className="demo-note" role="status"><strong>Their message may come from someone having a hard time.</strong> Please be gentle. {SUPPORT_MESSAGE}</p> : null}
 
       <div className="admin-two">

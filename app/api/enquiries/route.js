@@ -4,6 +4,7 @@ import { publicContent } from '@/lib/content-store.mjs';
 import { submitEnquiry } from '@/lib/enquiries.mjs';
 import { notifyEnquiry } from '@/lib/notify.mjs';
 import { hasPortal } from '@/lib/accounts.mjs';
+import { checkCode } from '@/lib/referrals.mjs';
 import { createSharedLimiter, clientKey } from '@/lib/ratelimit.mjs';
 
 export const dynamic = 'force-dynamic';
@@ -42,7 +43,15 @@ export async function POST(request) {
   const { alchemists } = await publicContent(store);
   const alchemist = alchemists.find((a) => a.id === body.alchemist_id);
   const portal = alchemist ? await hasPortal(store, alchemist.id) : false;
-  const result = alchemist && !alchemist.enquiry_email && !portal ? { ok: false, reason: 'unavailable' } : await submitEnquiry(store, alchemist, body);
+  // An optional referral code. It only counts if it gives a discount at this Alchemist; either way the message is sent.
+  let referral;
+  let referralStatus;
+  if (alchemist && typeof body.referral_code === 'string' && body.referral_code.trim()) {
+    const hit = await checkCode(store, body.referral_code, alchemist.id, alchemists);
+    referralStatus = hit.ok ? 'applied' : 'not_applied';
+    if (hit.ok) referral = { code: hit.code, referrer_id: hit.referrer.id, referrer_name: hit.referrer.name, percent: hit.percent };
+  }
+  const result = alchemist && !alchemist.enquiry_email && !portal ? { ok: false, reason: 'unavailable' } : await submitEnquiry(store, alchemist, body, new Date(), { referral });
   if (!result.ok) {
     if (result.reason === 'invalid') return json({ error: 'invalid', errors: result.errors }, 400);
     if (result.reason === 'unavailable') return json({ error: 'unavailable' }, 404);
@@ -56,5 +65,5 @@ export async function POST(request) {
   } catch (e) {
     console.error('Enquiry notification failed:', e.message);
   }
-  return json({ ok: true, support: result.support }, 201);
+  return json({ ok: true, support: result.support, ...(referralStatus ? { referral: referralStatus } : {}), ...(referral ? { percent: referral.percent, referrer: referral.referrer_name } : {}) }, 201);
 }

@@ -32,6 +32,7 @@ export default async function EnquiryPage({ params, searchParams }) {
           <dl className="admin-dl">
             <div><dt>From</dt><dd>{e.name}, {e.email}</dd></div>
             <div><dt>Message</dt><dd style={{ whiteSpace: 'pre-wrap' }}>{e.message}</dd></div>
+            {e.referral ? <div><dt>Referral</dt><dd>{e.referral.referrer_name}&rsquo;s code ({e.referral.code}), {e.referral.percent}% off a first session</dd></div> : null}
             <div><dt>Received</dt><dd>{new Date(e.created_at).toLocaleString('en-AU')}</dd></div>
             <div><dt>Consent given</dt><dd>{new Date(e.consent_at).toLocaleString('en-AU')}</dd></div>
             <div><dt>Emails sent to</dt><dd>{sent.length ? sent.join(', ') : 'nobody (mail is off, or it did not go through)'}</dd></div>

@@ -42,7 +42,7 @@ export default async function EnquiriesPage({ searchParams }) {
               {enquiries.map((e) => (
                 <tr key={e.id}>
                   <td style={{ whiteSpace: 'nowrap' }}><time dateTime={e.created_at}>{new Date(e.created_at).toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' })}</time></td>
-                  <th scope="row"><Link href={`/admin/enquiries/${e.id}`} className="link-arrow">{e.alchemist_name}</Link>{e.support_flag ? <><br /><span className="tag tag--honey">May be struggling</span></> : null}</th>
+                  <th scope="row"><Link href={`/admin/enquiries/${e.id}`} className="link-arrow">{e.alchemist_name}</Link>{e.support_flag ? <><br /><span className="tag tag--honey">May be struggling</span></> : null}{e.referral ? <><br /><span className="tag tag--sage">Referral: {e.referral.referrer_name}</span></> : null}</th>
                   <td>{e.name}</td>
                   <td>{ENQUIRY_LABEL[e.status] ?? e.status}</td>
                   <td style={{ color: 'var(--muted)' }}>{[e.notified?.alchemist && 'Alchemist', e.notified?.founder && 'You', e.notified?.seeker && 'Seeker'].filter(Boolean).join(', ') || 'No email sent'}</td>
