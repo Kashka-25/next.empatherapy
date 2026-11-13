@@ -34,7 +34,7 @@ test('cues.js matches ../../cues.json for every cue the page uses (version 2)', 
     const L = cues.layout[f], wm = L.wordmark;
     // the wordmark is the title image, sized by the stage width (no font size any more)
     assert.deepEqual(Object.keys(wm).sort(), ['aspect', 'centerPost', 'image', 'scalePre', 'widthFrac'], `${f} wordmark fields`);
-    assert.equal(wm.image, 'wordmark-script.webp', `${f} wordmark image`);
+    assert.equal(wm.image, 'wordmark.webp', `${f} wordmark image`);
     const png = pngSize(path.join(__dirname, '..', wm.image));
     near(wm.aspect, png.width / png.height, 1e-4);
     // at its starting size it is as wide as the honey name it takes over from

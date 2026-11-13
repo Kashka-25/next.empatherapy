@@ -210,7 +210,7 @@ const PAGE_HELPERS = (CUES) => {
         w: r.width / B.width, h: r.height / B.height, aspect: r.width / r.height, bottom: (r.bottom - B.top) / B.height };
     },
     /**
-     * The wordmark image itself (wordmark-script.webp), drawn pxWidth device pixels wide (its own size when not given): the colour
+     * The wordmark image itself (wordmark.webp), drawn pxWidth device pixels wide (its own size when not given): the colour
      * of its letters (the 90th percentile by luminance of its opaque, dark pixels, so a little lighter than the typical
      * letter: the cautious side for contrast) and its ink box (the pixels inkBox would count as dark when the image lies
      * on parchment at that size: thin strokes such as the flower's outline fade out when it is drawn small), as

@@ -143,10 +143,10 @@
       "tiltFrac": 0.466,
       "wordmark": {
         "centerPost": 0.23,
-        "widthFrac": 0.38,
-        "scalePre": 1.7895,
-        "image": "wordmark-script.webp",
-        "aspect": 4.281
+        "widthFrac": 0.4,
+        "scalePre": 1.7,
+        "image": "wordmark.webp",
+        "aspect": 5.0934
       },
       "symbol": {
         "topPost": 0.33,
@@ -176,10 +176,10 @@
       "tiltFrac": 0.475,
       "wordmark": {
         "centerPost": 0.18,
-        "widthFrac": 0.56,
-        "scalePre": 1.5357,
-        "image": "wordmark-script.webp",
-        "aspect": 4.281
+        "widthFrac": 0.62,
+        "scalePre": 1.3871,
+        "image": "wordmark.webp",
+        "aspect": 5.0934
       },
       "symbol": {
         "topPost": 0.28,

@@ -24,7 +24,7 @@
         size: [1600, 900],
         script: { widthFrac: 0.68, topPre: 0.575, centerPre: 0.716, landing: [0.5, 0.668] },
         tiltFrac: 0.466,
-        wordmark: { centerPost: 0.23, widthFrac: 0.38, scalePre: 1.7895, image: 'wordmark-script.webp', aspect: 4.281 },
+        wordmark: { centerPost: 0.23, widthFrac: 0.4, scalePre: 1.7, image: 'wordmark.webp', aspect: 5.0934 },
         symbol: { topPost: 0.33, heightFrac: 0.46 },
         tagline: { centerPost: 0.865 },
         breathLines: { center: 0.93 }
@@ -33,7 +33,7 @@
         size: [900, 900],
         script: { widthFrac: 0.86, topPre: 0.575, centerPre: 0.675, landing: [0.5, 0.641] },
         tiltFrac: 0.475,
-        wordmark: { centerPost: 0.18, widthFrac: 0.56, scalePre: 1.5357, image: 'wordmark-script.webp', aspect: 4.281 },
+        wordmark: { centerPost: 0.18, widthFrac: 0.62, scalePre: 1.3871, image: 'wordmark.webp', aspect: 5.0934 },
         symbol: { topPost: 0.28, heightFrac: 0.48 },
         tagline: { centerPost: 0.85 },
         breathLines: { center: 0.9 }

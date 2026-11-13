@@ -4,8 +4,8 @@ A 13-second optional breathing moment for the Empatherapy homepage (version 2, "
 
 A honey-coated wooden dipper hangs over a softly blurred garden tabletop. A drop gathers while you breathe in, falls,
 and lands on the crossbar of the "t"; the honey flows out through the joined script and writes "Empatherapy" while
-you breathe out. The stream lets go, a glint runs across the name, then the honey drips off, the name settles into
-the site's own typeface (live HTML), and the camera follows the drops down into the teacup symbol, which fills,
+you breathe out. The stream lets go, a glint runs across the name, then the honey drips off and melts into Cassidy's
+title artwork (an image on the page), and the camera follows the drops down into the teacup symbol, which fills,
 spills its rim drip and steams. "Discover new pathways to yourself." appears beneath. The film itself has no typed
 words; the breathing lines, wordmark and tagline are HTML on the page.
 
@@ -25,6 +25,8 @@ service at runtime.
 | `source/backdrop.png` | Cassidy's garden tabletop backdrop (blurred in the film). |
 | `source/dipper.glb` | Cassidy's 3D honey dipper (Meshy). **Not committed (25 MB)**: copy it here to rebuild the dipper frames. |
 | `source/name-mask.png` | "Empatherapy" in Vladimir Script, thickened, as a mask (made by `work/honey/raster.js` from the installed font). |
+| `source/wordmark.png` | Cassidy's title artwork: "Empatherapy" in serif letters, a vine from the "y", leaves and a daisy. The title the honey melts into, and the site's logo. |
+| `wordmark_layers.py` | From `source/wordmark.png`: removes its white cut-out outline and writes the film's title (`public/golden-pause/wordmark.webp`, copy it to `preview/`) and the logo's two layers (`public/brand/name-letters.webp`, a mask for the letters and vine; `name-flower.webp`, the daisy and leaves). `python wordmark_layers.py` |
 | `source/symbol.svg` | Vector redraw of Cassidy's teacup symbol, in layers (steam, back, tea, lemon, front, drip, flower). Provisional until approved. |
 | `dipper.py` | Renders the dipper in EEVEE with a transparent background: trims the modelled drip, coats the head in glossy golden honey, sway, dip and lift; writes the tip position per frame. |
 | `honey.py` | The compositor: backdrop with parallax, the honey stream from the tip, the name flowing out from the landing point (geodesic flood through the letters), melt and drips, drops falling into the cup, the symbol filling, glossy translucent honey shading, the dipper on top. Frames, stills and MP4. |
