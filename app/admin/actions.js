@@ -11,6 +11,7 @@ import { recordAudit, describeSave, PHOTO_INTENT } from '@/lib/audit.mjs';
 import { updateEnquiry, setRatePercent, ENQUIRY_LABEL } from '@/lib/enquiries.mjs';
 import { propose, approve, reject } from '@/lib/proposals.mjs';
 import { syncCredit, voidEntry, setCreditValue } from '@/lib/credits.mjs';
+import { setOffer, requestSpend, respondToSpend, voidSpend, removeProfileSpending } from '@/lib/credit-spend.mjs';
 import { ensureCode, offerDiscount, respondToOffer, endAgreement, removeProfileReferrals, MAX_DISCOUNT, MIN_DISCOUNT } from '@/lib/referrals.mjs';
 import { validatePost, STATUS_LABEL as POST_STATUS_LABEL, POST_STATUSES, MAX_POSTS_PER_PROFILE } from '@/lib/posts.mjs';
 import { getBlobStore, newImageId } from '@/lib/images/blobs.mjs';
@@ -265,6 +266,7 @@ export async function resetAlchemistAction(formData) {
   if (blobs) for (const p of photosOf(stored)) await blobs.remove(p.id).catch(() => {}); // photo files go with the profile
   for (const post of (await store.list('posts')).filter((x) => x.profile_id === id)) await store.remove('posts', post.id); // and so does their writing
   await removeProfileReferrals(store, id); // and their referral code and agreements
+  await removeProfileSpending(store, id); // and whether they take credits, and any credit requests
   for (const c of (await store.list('credit_entries')).filter((x) => x.profile_id === id)) await store.remove('credit_entries', c.id); // and credits they earned
   await audit(me, 'alchemist_removed', id, `Reset or deleted profile ${stored?.name ?? id}`);
   refreshAll();
@@ -796,6 +798,69 @@ export async function setCreditValueAction(formData) {
   const r = await setCreditValue(needStore(), text(formData, 'value'));
   if (!r.ok) redirect('/admin/referrals?error=' + encodeURIComponent('Enter an amount from 0 to 100.'));
   await audit(me, 'credit_changed', 'credits', `Set the illustrative value of a credit to $${r.value}`);
+  revalidatePath('/admin/referrals');
+  redirect('/admin/referrals?saved=1');
+}
+
+/* ---------- spending credits: the accepting Alchemist gives the discount ---------- */
+const SPEND_REASON = {
+  not_approved: 'Both profiles need to be live and approved.',
+  self: 'Choose a different Alchemist.',
+  not_accepting: 'That Alchemist is not taking credits right now.',
+  bad_credits: 'Choose a whole number of credits, at least 1.',
+  over_max: 'That is more credits than they take for one session.',
+  already_open: 'You already have an open request with them. Wait for their answer or withdraw it.',
+  not_enough: 'You do not have that many confirmed credits to spend.',
+  bad_value: 'Choose a value from $1 to $100 for one credit.',
+  bad_max: 'Choose between 1 and 5 credits per session.',
+  not_found: 'That no longer exists.',
+  not_open: 'That has already been answered.',
+  not_yours: 'That is not yours to change.',
+};
+
+export async function saveCreditOfferAction(formData) {
+  const me = await requirePortal();
+  const store = needStore();
+  const { profile } = await ownProfile(store, me);
+  const accepts = text(formData, 'accepts') === 'yes';
+  const r = await setOffer(store, profile, { accepts, value: text(formData, 'value'), max_credits: text(formData, 'max_credits') });
+  if (!r.ok) circleError(SPEND_REASON[r.reason] ?? 'That did not work.');
+  await audit(me, 'credit_changed', profile.id, accepts ? `Takes referral credits: $${r.offer.value} each, up to ${r.offer.max_credits} per session` : 'Stopped taking referral credits');
+  revalidatePath('/admin/portal/circle');
+  circleBack('saved=1');
+}
+
+export async function requestSpendAction(formData) {
+  const me = await requirePortal();
+  const store = needStore();
+  const { content, profile } = await ownProfile(store, me);
+  const partner = content.alchemists.find((a) => a.id === text(formData, 'partner_id'));
+  if (!partner) circleError(SPEND_REASON.not_found);
+  const r = await requestSpend(store, { spender: profile, partner, credits: text(formData, 'credits') });
+  if (!r.ok) circleError(SPEND_REASON[r.reason] ?? 'That did not work.');
+  await audit(me, 'credit_changed', r.spend.id, `Asked to spend ${r.spend.credits} credit${r.spend.credits === 1 ? '' : 's'} with ${partner.name}`);
+  revalidatePath('/admin/portal/circle');
+  circleBack('saved=1');
+}
+
+export async function respondToSpendAction(formData) {
+  const me = await requirePortal();
+  const store = needStore();
+  const id = text(formData, 'id');
+  const intent = text(formData, 'intent');
+  const r = await respondToSpend(store, id, { intent, byProfileId: me.profile_id });
+  if (!r.ok) circleError(SPEND_REASON[r.reason] ?? 'That did not work.');
+  await audit(me, 'credit_changed', id, { used: 'Marked a credit spend as used', decline: 'Declined a credit spend', withdraw: 'Withdrew a credit spend' }[intent]);
+  revalidatePath('/admin/portal/circle');
+  circleBack('saved=1');
+}
+
+export async function voidSpendAction(formData) {
+  const me = await requireAdmin('enquiries');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const r = await voidSpend(store, id);
+  if (r.ok) await audit(me, 'credit_changed', id, 'Voided a credit spend; the credits went back to the referrer');
   revalidatePath('/admin/referrals');
   redirect('/admin/referrals?saved=1');
 }
