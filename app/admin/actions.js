@@ -10,6 +10,7 @@ import { can } from '@/lib/accounts.mjs';
 import { recordAudit, describeSave, PHOTO_INTENT } from '@/lib/audit.mjs';
 import { updateEnquiry, setRatePercent, ENQUIRY_LABEL } from '@/lib/enquiries.mjs';
 import { propose, approve, reject } from '@/lib/proposals.mjs';
+import { ensureCode, offerDiscount, respondToOffer, endAgreement, removeProfileReferrals, MAX_DISCOUNT, MIN_DISCOUNT } from '@/lib/referrals.mjs';
 import { validatePost, STATUS_LABEL as POST_STATUS_LABEL, POST_STATUSES, MAX_POSTS_PER_PROFILE } from '@/lib/posts.mjs';
 import { getBlobStore, newImageId } from '@/lib/images/blobs.mjs';
 import { inspectImage, IMAGE_MESSAGES, MAX_BYTES } from '@/lib/images/inspect.mjs';
@@ -262,6 +263,7 @@ export async function resetAlchemistAction(formData) {
   const blobs = getBlobStore();
   if (blobs) for (const p of photosOf(stored)) await blobs.remove(p.id).catch(() => {}); // photo files go with the profile
   for (const post of (await store.list('posts')).filter((x) => x.profile_id === id)) await store.remove('posts', post.id); // and so does their writing
+  await removeProfileReferrals(store, id); // and their referral code and agreements
   await audit(me, 'alchemist_removed', id, `Reset or deleted profile ${stored?.name ?? id}`);
   refreshAll();
   redirect('/admin/alchemists?reset=1');
@@ -695,4 +697,79 @@ export async function deletePostAction(formData) {
     refreshAll();
   }
   redirect('/admin/posts?deleted=1');
+}
+
+/* ---------- referral circles ---------- */
+const circleBack = (q) => redirect(`/admin/portal/circle?${q}`);
+const circleError = (msg) => circleBack('error=' + encodeURIComponent(msg));
+const CIRCLE_REASON = {
+  bad_percent: `Choose a discount from ${MIN_DISCOUNT}% to ${MAX_DISCOUNT}%.`,
+  self: 'Choose a different Alchemist.',
+  not_approved: 'Both profiles need to be live and approved. Fictional examples cannot take part.',
+  exists: 'There is already an offer or agreement between you two.',
+  not_found: 'That no longer exists.',
+  not_yours: 'That is not yours to change.',
+  not_waiting: 'That offer has already been answered.',
+  not_live: 'That has already ended.',
+};
+
+export async function createReferralCodeAction() {
+  const me = await requirePortal();
+  const store = needStore();
+  const { profile } = await ownProfile(store, me);
+  const live = profile.publication_status === 'published' && ['verified', 'founder'].includes(profile.verification_status);
+  if (!live || profile.demo) circleError('Your code is available once your profile is live.');
+  await ensureCode(store, profile);
+  await audit(me, 'referral_changed', profile.id, `Made a referral code for ${profile.name}`);
+  revalidatePath('/admin/portal/circle');
+  circleBack('saved=1');
+}
+
+/** The Alchemist offers a discount to clients referred by another Alchemist. They give it themselves; nothing moves through Empatherapy. */
+export async function offerDiscountAction(formData) {
+  const me = await requirePortal();
+  const store = needStore();
+  const content = await loadContent(store);
+  const referrerId = text(formData, 'referrer_id');
+  const r = await offerDiscount(store, { partnerId: me.profile_id, referrerId, percent: text(formData, 'percent') }, content.alchemists);
+  if (!r.ok) circleError(CIRCLE_REASON[r.reason] ?? 'That did not work.');
+  const other = content.alchemists.find((a) => a.id === referrerId)?.name ?? 'another Alchemist';
+  await audit(me, 'referral_changed', r.agreement.id, `Offered ${r.agreement.percent}% off a first session to clients referred by ${other}`);
+  revalidatePath('/admin/portal/circle');
+  circleBack('saved=1');
+}
+
+export async function respondToOfferAction(formData) {
+  const me = await requirePortal();
+  const store = needStore();
+  const id = text(formData, 'id');
+  const accept = text(formData, 'intent') === 'accept';
+  const r = await respondToOffer(store, id, { accept, byProfileId: me.profile_id });
+  if (!r.ok) circleError(CIRCLE_REASON[r.reason] ?? 'That did not work.');
+  if (accept) { const { profile } = await ownProfile(store, me); await ensureCode(store, profile); } // accepting means they now have a code to share
+  await audit(me, 'referral_changed', id, accept ? 'Accepted a discount offer for their clients' : 'Declined a discount offer for their clients');
+  revalidatePath('/admin/portal/circle');
+  circleBack('saved=1');
+}
+
+export async function endAgreementPortalAction(formData) {
+  const me = await requirePortal();
+  const store = needStore();
+  const id = text(formData, 'id');
+  const r = await endAgreement(store, id, { byProfileId: me.profile_id });
+  if (!r.ok) circleError(CIRCLE_REASON[r.reason] ?? 'That did not work.');
+  await audit(me, 'referral_changed', id, 'Ended a referral agreement, or withdrew an offer');
+  revalidatePath('/admin/portal/circle');
+  circleBack('saved=1');
+}
+
+/** The team can end any agreement (for example after a complaint). */
+export async function endAgreementTeamAction(formData) {
+  const me = await requireAdmin('enquiries');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const r = await endAgreement(store, id);
+  if (r.ok) await audit(me, 'referral_changed', id, 'Ended a referral agreement');
+  revalidatePath('/admin/referrals');
+  redirect('/admin/referrals?saved=1');
 }

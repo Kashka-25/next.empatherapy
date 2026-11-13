@@ -52,6 +52,9 @@ The arithmetic is simply fee divided by session price. It uses income, not profi
 
 **Subscription and commission can sit together later:** a flat subscription for listing, plus a small first-session introduction fee only once on-platform booking and payments exist. That would need a lawyer's view for registered practitioners.
 
+## Referral circles and the "own link" idea
+Referral circles (built) let Alchemists give each other's clients a discount, funded by the Alchemist giving it, with no money passing through Empatherapy. They also point toward how a later commission could be fair: Mindbody and Fresha charge nothing when a client came through the practitioner's *own* link, and a referral code is the same idea. If a first-session fee is introduced, a Seeker who arrives through the Alchemist's own code would not trigger it. A subscription credit for the person who refers would be another incentive once subscriptions exist.
+
 ## Questions for professionals before any fee
 - **Lawyer:** referral or fee-splitting rules for registered practitioners; the Alchemist agreement (unfair contract terms); the review feature (see below).
 - **Accountant:** GST registration (threshold AUD 75,000 turnover), GST on a platform fee, and whether you would act as an agent or principal if payments ever flow through you.

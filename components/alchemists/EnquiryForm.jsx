@@ -4,7 +4,7 @@ import { validateEnquiry } from '@/lib/enquiries.mjs';
 import { detectCrisis } from '@/lib/matching/index.mjs';
 import { SUPPORT_MESSAGE } from '@/lib/matching/vocabulary.mjs';
 
-const blank = { website_url: '', name: '', email: '', message: '', consent: false };
+const blank = { website_url: '', name: '', email: '', message: '', referral_code: '', consent: false };
 
 /**
  * "Reach out": a Seeker asks to be put in touch with an Alchemist. Says plainly who reads the message and how long it
@@ -18,10 +18,24 @@ export default function EnquiryForm({ alchemistId, firstName, fallbackEmail }) {
   const [done, setDone] = useState(null); // null | { kind: 'sent' | 'preview', support }
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');
+  const [ref, setRef] = useState(null); // null | { state: 'checking' | 'yes' | 'no' | 'limited', percent, referrer }
   const set = (k) => (e) => setV((s) => ({ ...s, [k]: e.target.value }));
   const hardTime = detectCrisis(v.message);
   const err = (k) => (errors[k] ? <span className="error" id={`enq-${k}-err`} role="alert">{errors[k]}</span> : null);
   const aria = (k) => ({ 'aria-invalid': errors[k] ? 'true' : undefined, 'aria-describedby': errors[k] ? `enq-${k}-err` : undefined });
+
+  // Does the code give a discount here? Asked before sending so nobody is surprised.
+  const checkRef = async () => {
+    const code = v.referral_code.trim();
+    if (!code) { setRef(null); return; }
+    setRef({ state: 'checking' });
+    try {
+      const res = await fetch(`/api/referrals/check?code=${encodeURIComponent(code)}&to=${encodeURIComponent(alchemistId)}`);
+      if (res.status === 429) return setRef({ state: 'limited' });
+      const body = await res.json().catch(() => ({}));
+      setRef(body.applies ? { state: 'yes', percent: body.percent, referrer: body.referrer } : { state: 'no' });
+    } catch { setRef({ state: 'no' }); }
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -31,8 +45,8 @@ export default function EnquiryForm({ alchemistId, firstName, fallbackEmail }) {
     if (!r.valid) { document.getElementById(`enq-${Object.keys(r.errors)[0]}`)?.focus(); return; }
     setBusy(true);
     try {
-      const res = await fetch('/api/enquiries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...r.data, consent: true, alchemist_id: alchemistId, website_url: v.website_url }) });
-      if (res.status === 201) { const body = await res.json().catch(() => ({})); setDone({ kind: 'sent', support: Boolean(body.support) || hardTime }); }
+      const res = await fetch('/api/enquiries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...r.data, consent: true, alchemist_id: alchemistId, website_url: v.website_url, ...(v.referral_code.trim() ? { referral_code: v.referral_code.trim() } : {}) }) });
+      if (res.status === 201) { const body = await res.json().catch(() => ({})); setDone({ kind: 'sent', support: Boolean(body.support) || hardTime, referral: body.referral, percent: body.percent, referrer: body.referrer }); }
       else if (res.status === 503) setDone({ kind: 'preview', support: hardTime });
       else if (res.status === 429) setProblem('You have sent a few messages already. Please try again later.');
       else if (res.status === 404) setProblem(`${firstName} is not taking enquiries through the site right now.`);
@@ -50,6 +64,8 @@ export default function EnquiryForm({ alchemistId, firstName, fallbackEmail }) {
           <>
             <h3>Your message is on its way</h3>
             <p>{firstName} will reply to you by email. It can take a few days. A confirmation is on its way to your inbox too.</p>
+            {done.referral === 'applied' ? <p><strong>Your code worked.</strong> {firstName} has agreed to take {done.percent}% off your first session, as a thank you from {done.referrer}&rsquo;s circle. They will confirm it with you.</p> : null}
+            {done.referral === 'not_applied' ? <p>That referral code did not apply here, so no discount was noted. Your message was still sent.</p> : null}
           </>
         ) : (
           <>
@@ -91,6 +107,19 @@ export default function EnquiryForm({ alchemistId, firstName, fallbackEmail }) {
         <span className="hint">What is on your mind, and what you are hoping for. A few sentences is plenty.</span>
         <textarea id="enq-message" value={v.message} onChange={set('message')} maxLength={1500} style={{ minHeight: '8rem' }} {...aria('message')} />
         {err('message')}
+      </div>
+      <div className="field">
+        <label htmlFor="enq-ref">Referral code (optional)</label>
+        <span className="hint">If someone who knows {firstName} gave you a code, it may give you a discount on your first session.</span>
+        <div className="row" style={{ flexWrap: 'nowrap' }}>
+          <input id="enq-ref" type="text" autoComplete="off" value={v.referral_code} onChange={(e) => { set('referral_code')(e); setRef(null); }} maxLength={14} style={{ maxWidth: '12rem', textTransform: 'uppercase' }} />
+          <button type="button" className="btn btn--soft btn--sm" onClick={checkRef} disabled={!v.referral_code.trim() || ref?.state === 'checking'}>Check code</button>
+        </div>
+        <span role="status">
+          {ref?.state === 'yes' ? <span style={{ color: 'var(--botanical-deep)' }}>Your code works: {ref.percent}% off your first session with {firstName}, from {ref.referrer}&rsquo;s circle.</span> : null}
+          {ref?.state === 'no' ? <span style={{ color: 'var(--muted)' }}>That code does not give a discount here. You can still send your message.</span> : null}
+          {ref?.state === 'limited' ? <span style={{ color: 'var(--muted)' }}>Please try again a little later.</span> : null}
+        </span>
       </div>
       {hardTime ? <p className="demo-note" role="status">{SUPPORT_MESSAGE}</p> : null}
       {/* spam trap: people never see or fill this */}
