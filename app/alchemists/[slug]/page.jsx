@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import AlchemistPortrait from '@/components/alchemists/AlchemistPortrait';
 import PhotoCarousel from '@/components/alchemists/PhotoCarousel';
 import EnquiryForm from '@/components/alchemists/EnquiryForm';
+import ShortlistButton from '@/components/alchemists/ShortlistButton';
 import { publicPhotos } from '@/lib/photos.mjs';
 import Eyebrow from '@/components/ui/Eyebrow';
 import DevNote from '@/components/ui/DevNote';
@@ -58,6 +59,7 @@ export default async function AlchemistPage({ params }) {
             <h1>{a.name}</h1>
             <p className="hand" style={{ fontSize: '1.9rem' }}>{a.tagline}</p>
             <p className="lede" style={{ maxWidth: '40rem' }}>{a.short_bio}</p>
+            <ShortlistButton slug={a.slug} name={a.name} />
           </div>
         </div>
       </section>

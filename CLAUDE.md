@@ -24,7 +24,7 @@ Tagline: *Discover new pathways to yourself.* Founder: Cassidy Dugan (GitHub Kas
 ## Rules that matter here
 - **Never present fictional content as real.** The six example Alchemists are fictional and labelled "Example profile". Keep them labelled. Never invent credentials, prices or availability for real people. The real founding profile only uses what Cassidy has said or the files hold. Unconfirmed items carry `confirm: true`.
 - **Keep kinds of experience separate:** `formal`, `study`, `experience`, `interest`, `confirm`. An `interest` is never an offering. Modalities with `requires_formal_training` only match formally trained Alchemists. Never imply personal psychedelic experience is clinical competence.
-- **Seeker privacy:** discovery stays in the browser and stores nothing. Don't add logging, analytics or storage of what Seekers write without explicit consent design.
+- **Seeker privacy:** discovery stays in the browser and stores nothing. Don't add logging, analytics or storage of what Seekers write without explicit consent design. The Seeker shortlist (`/shortlist`) is the one thing a Seeker can save, and it lives only in their browser's localStorage as profile addresses: never send it to the server.
 - **Never market IntoTheLighthouse or Empatherapy as crisis care.** Keep the signposting (000, Lifeline 13 11 14).
 - **No unsupported medical claims.** Keep evidence parts labelled (`traditional`, `practitioner`, `research`, `established`).
 - Matching stays rules-based and explainable. If AI is added, server-side only, never required for basic discovery, keys never in frontend code.
