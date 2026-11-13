@@ -133,7 +133,7 @@ a.card:hover, .card--lift:hover { transform: translateY(-4px); box-shadow: var(-
 @media (max-width: 860px) { .hero__grid { grid-template-columns: 1fr; } .hero__art { max-width: 420px; margin-inline: auto; order: -1; } }
 /* The homepage hero with The Golden Pause (components/golden-pause): the film just under the fixed header, the welcome
    under it, both on the same left edge (the film's frame is up to 1080px wide). */
-.hero--film { padding-top: calc(76px + clamp(0.75rem, 2.5vw, 1.75rem)); }
+.hero--film { padding-top: 76px; } /* the film runs edge to edge, flush under the fixed header; the welcome keeps its reading width */
 .hero--film .gp { padding-top: 0; }
 .hero--film .container { max-width: 1080px; }
 .hero--film .hero__copy { margin-top: clamp(2.5rem, 6vw, 4rem); }
