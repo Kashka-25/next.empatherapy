@@ -149,7 +149,10 @@ test('accounts: validation, unique emails, sign in, and no hash in what is liste
 });
 
 test('accounts: roles limit what each person can reach', () => {
-  assert.deepEqual(ROLES, ['owner', 'editor', 'reviewer']);
+  assert.deepEqual(ROLES, ['owner', 'editor', 'reviewer', 'alchemist']);
+  assert.equal(can('alchemist', 'portal'), true);
+  for (const area of ['applications', 'content', 'accounts', 'retention', 'activity', 'enquiries']) assert.equal(can('alchemist', area), false, `alchemists never reach ${area}`);
+  for (const role of ['owner', 'editor', 'reviewer']) assert.equal(can(role, 'portal'), false, 'the portal is only for Alchemists');
   for (const area of ['applications', 'content', 'accounts', 'retention']) assert.equal(can('owner', area), true);
   assert.equal(can('editor', 'content'), true);
   assert.equal(can('editor', 'applications'), false, 'editors never see applicant details');

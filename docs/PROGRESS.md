@@ -23,6 +23,7 @@ Tagline: **Discover new pathways to yourself.** Feeling: a cup of lemon and hone
 | 6b. Admin content editing | Done: edit and create Alchemist profiles and modality pages, with publish rules and reset to original |
 | 6c. Production readiness | Built, **not yet connected to a real database:** Supabase driver and schema, individual admin accounts with roles, shared rate limiting, privacy notice and retention rule. **Photo uploads built (6d).** |
 | 6e. Applications to profiles | Done: "Create draft profile" from an approved application, with verified-means-checked publish rules |
+| 7b. Alchemist portal | Done: logins for Alchemists, their own profile edits as proposals the team approves, photos that wait for review, their own enquiries and outcomes. **Knowledge feed not built yet.** |
 | 7a. Enquiries and business model | Done: Seeker enquiries with founder and Alchemist notified, outcome tracking, illustration rate, research and a staged recommendation in `docs/BUSINESS-MODEL.md`. **Business model undecided.** |
 | 6h. Launch hygiene | Done: security headers, noindex until launch, robots and sitemap, share image, friendly error pages |
 | 6g. Two-step sign-in | Done: optional authenticator-app codes and recovery codes, owner reset |
@@ -70,7 +71,7 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 
 ## Not built yet (and why)
 - **A live database.** The Supabase driver and schema exist and are tested against a fake of the Supabase API, but no Supabase project has been created or connected yet (that needs Cassidy). See `docs/ADMIN.md`, "Going live".
-- **Photo cropping, and Alchemists uploading their own photos.** Today an admin uploads for them, after the person has agreed.
+- **Photo cropping.**
 - **Enquiries, bookings, reviews, favourites, Seeker accounts.**
 - **Images.** No photographs yet.
 

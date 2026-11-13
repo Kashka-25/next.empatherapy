@@ -1,6 +1,7 @@
 import { requireAdmin } from '@/lib/admin-auth.mjs';
 import { getStore } from '@/lib/store/index.mjs';
 import { listAccounts, activeOwnerCount, ROLES, ROLE_LABEL, ROLE_HELP } from '@/lib/accounts.mjs';
+import { loadContent } from '@/lib/content-store.mjs';
 import { createAccountAction, updateAccountAction } from '../actions';
 
 export const metadata = { title: 'Accounts' };
@@ -10,6 +11,9 @@ export default async function AccountsPage({ searchParams }) {
   const store = getStore();
   const accounts = store ? await listAccounts(store) : [];
   const owners = store ? await activeOwnerCount(store) : 0;
+  const profiles = (await loadContent(store)).alchemists;
+  const profileName = (id) => profiles.find((p) => p.id === id)?.name ?? id;
+  const free = profiles.filter((p) => !p.demo && !accounts.some((a) => a.profile_id === p.id));
   const setup = me.id === 'bootstrap';
 
   return (
@@ -37,12 +41,16 @@ export default async function AccountsPage({ searchParams }) {
                 <tr key={a.id}>
                   <th scope="row">{a.name}<br /><span style={{ fontWeight: 400, color: 'var(--muted)' }}>{a.email}</span></th>
                   <td>
+                    {a.role === 'alchemist' ? (
+                      <span>Alchemist<br /><span style={{ color: 'var(--muted)' }}>for {profileName(a.profile_id)}</span></span>
+                    ) : (
                     <form action={updateAccountAction} className="row">
                       <input type="hidden" name="id" value={a.id} />
                       <label className="sr-only" htmlFor={`role-${a.id}`}>Role for {a.name}</label>
-                      <select id={`role-${a.id}`} name="role" defaultValue={a.role}>{ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}</select>
+                      <select id={`role-${a.id}`} name="role" defaultValue={a.role}>{ROLES.filter((r) => r !== 'alchemist').map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}</select>
                       <button type="submit" className="btn btn--soft btn--sm">Change</button>
                     </form>
+                    )}
                   </td>
                   <td>{a.last_login_at ? new Date(a.last_login_at).toLocaleDateString('en-AU') : 'Never'}</td>
                   <td>{a.active ? 'Active' : 'Deactivated'}<br /><span style={{ color: 'var(--muted)' }}>Two-step: {a.two_step ? 'on' : 'off'}</span></td>
@@ -88,6 +96,11 @@ export default async function AccountsPage({ searchParams }) {
               <div className="field">
                 <label htmlFor="role">Role</label>
                 <select id="role" name="role" defaultValue={setup ? 'owner' : 'editor'}>{ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]} - {ROLE_HELP[r]}</option>)}</select>
+              </div>
+              <div className="field">
+                <label htmlFor="profile_id">Profile (for Alchemists only)</label>
+                <span className="hint">Which real profile this person looks after. Fictional examples are not listed.</span>
+                <select id="profile_id" name="profile_id" defaultValue=""><option value="">None</option>{free.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
               </div>
               <div className="field">
                 <label htmlFor="password">Starting password</label>

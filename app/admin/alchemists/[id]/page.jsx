@@ -7,7 +7,8 @@ import { alchemistToForm } from '@/lib/admin-content.mjs';
 import AlchemistEditor from '@/components/admin/AlchemistEditor';
 import PhotoManager from '@/components/admin/PhotoManager';
 import { getBlobStore } from '@/lib/images/blobs.mjs';
-import { saveAlchemistAction, resetAlchemistAction } from '../../actions';
+import { describeChanges } from '@/lib/proposals.mjs';
+import { saveAlchemistAction, resetAlchemistAction, uploadPhotoAction, photoAction, approvePendingAction, rejectPendingAction } from '../../actions';
 
 export const metadata = { title: 'Edit Alchemist' };
 
@@ -37,6 +38,32 @@ export default async function EditAlchemistPage({ params, searchParams }) {
         {a && a.publication_status === 'published' ? <Link href={`/alchemists/${a.slug}`} target="_blank" className="btn btn--soft btn--sm">View public page</Link> : null}
       </div>
       {searchParams?.saved ? <p className="admin-flash" role="status">Saved. The public site updates within moments.</p> : null}
+      {searchParams?.pending_error ? <p className="error" role="alert">These changes cannot be approved yet: {searchParams.pending_error}</p> : null}
+      {a?.pending ? (
+        <section className="admin-card stack" aria-labelledby="pending-h">
+          <h2 id="pending-h" style={{ fontSize: '1.3rem' }}>Changes proposed by {a.pending.by_name}</h2>
+          <p style={{ color: 'var(--muted)' }}>Sent {new Date(a.pending.submitted_at).toLocaleDateString('en-AU')}. Nothing here is public until you approve it. Approving applies only these fields to the profile as it is now, and every publishing rule is checked again.</p>
+          {describeChanges(a).some((c) => c.check) && a.verification_status === 'verified' ? <p className="demo-note"><strong>Credentials, practices or prices changed.</strong> Check the marked items before approving a verified profile.</p> : null}
+          <div className="stack" style={{ gap: '1rem' }}>
+            {describeChanges(a).map((c) => (
+              <div key={c.key} className="stack" style={{ gap: '0.3rem' }}>
+                <strong>{c.label}{c.check ? <> <span className="tag tag--honey">Check this</span></> : null}</strong>
+                <p style={{ color: 'var(--muted)', whiteSpace: 'pre-wrap' }}><span className="eyebrow">Now</span> {c.before || '(empty)'}</p>
+                <p style={{ whiteSpace: 'pre-wrap' }}><span className="eyebrow">Proposed</span> {c.after || '(empty)'}</p>
+              </div>
+            ))}
+          </div>
+          <div className="row">
+            <form action={approvePendingAction}><input type="hidden" name="id" value={a.id} /><button type="submit" className="btn btn--honey">Approve these changes</button></form>
+            <form action={rejectPendingAction} className="row">
+              <input type="hidden" name="id" value={a.id} />
+              <label className="sr-only" htmlFor="reject-note">Note to {a.pending.by_name}</label>
+              <div className="field" style={{ margin: 0, minWidth: '18rem' }}><input id="reject-note" name="note" placeholder="A kind note about what to change" maxLength={600} /></div>
+              <button type="submit" className="btn btn--soft">Do not approve</button>
+            </form>
+          </div>
+        </section>
+      ) : null}
       {a?.demo ? <p className="demo-note">This is a <strong>fictional example profile</strong>. It stays labelled as an example. Remove these before launch.</p> : null}
       {searchParams?.created ? <p className="admin-flash" role="status">Draft created from the application. It is hidden. Finish it below, check what they told us, then verify and publish.</p> : null}
       {a?.source ? (
@@ -62,7 +89,7 @@ export default async function EditAlchemistPage({ params, searchParams }) {
         modalityOptions={content.modalities}
       />
 
-      {a ? <PhotoManager alchemist={a} enabled={Boolean(getBlobStore())} error={searchParams?.photo_error} saved={Boolean(searchParams?.photo_saved)} /> : null}
+      {a ? <PhotoManager alchemist={a} enabled={Boolean(getBlobStore())} error={searchParams?.photo_error} saved={Boolean(searchParams?.photo_saved)} uploadAction={uploadPhotoAction} changeAction={photoAction} /> : null}
 
       {a && (content.edited.alchemists.has(a.id)) ? (
         <form action={resetAlchemistAction} className="admin-card stack">
