@@ -92,7 +92,7 @@ a.card:hover, .card--lift:hover { transform: translateY(-4px); box-shadow: var(-
 }
 .site-nav__inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; max-width: 1240px; margin: 0 auto; padding-inline: var(--gutter); }
 .wordmark { font-family: var(--font-display); font-size: 1.55rem; font-weight: 500; color: var(--botanical-deep); display: inline-flex; align-items: center; gap: 0.55rem; letter-spacing: -0.01em; }
-.wordmark svg { width: 26px; height: 26px; }
+.wordmark svg { width: 36px; height: 36px; flex: none; }
 .nav-links { display: flex; align-items: center; gap: 1.7rem; }
 .nav-links a.nav-link { font-size: 0.95rem; font-weight: 600; color: var(--ink); padding: 0.3rem 0; border-bottom: 2px solid transparent; }
 .nav-links a.nav-link:hover { border-color: var(--honey); }

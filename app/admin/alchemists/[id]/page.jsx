@@ -38,6 +38,20 @@ export default async function EditAlchemistPage({ params, searchParams }) {
       </div>
       {searchParams?.saved ? <p className="admin-flash" role="status">Saved. The public site updates within moments.</p> : null}
       {a?.demo ? <p className="demo-note">This is a <strong>fictional example profile</strong>. It stays labelled as an example. Remove these before launch.</p> : null}
+      {searchParams?.created ? <p className="admin-flash" role="status">Draft created from the application. It is hidden. Finish it below, check what they told us, then verify and publish.</p> : null}
+      {a?.source ? (
+        <section className="admin-card stack" aria-labelledby="src-h">
+          <h2 id="src-h" style={{ fontSize: '1.2rem' }}>Created from an application</h2>
+          <p style={{ color: 'var(--muted)' }}>These are the applicant&rsquo;s own words, not checked. They are private and disappear when the profile is published. {a.source.application_id ? <Link href={`/admin/applications/${a.source.application_id}`} className="link-arrow">See the application</Link> : null}</p>
+          <dl className="admin-dl">
+            {a.source.practices_as_written ? <div><dt>Practices as written</dt><dd>{a.source.practices_as_written}</dd></div> : null}
+            {a.source.unmatched_practices?.length ? <div><dt>Not matched to a modality page</dt><dd>{a.source.unmatched_practices.join(', ')}</dd></div> : null}
+            {a.source.qualifications_as_written ? <div><dt>Qualifications as written</dt><dd style={{ whiteSpace: 'pre-wrap' }}>{a.source.qualifications_as_written}</dd></div> : null}
+            {a.source.pricing_as_written ? <div><dt>Their pricing answer</dt><dd>{a.source.pricing_as_written}</dd></div> : null}
+            {a.source.links?.length ? <div><dt>Links they gave</dt><dd>{a.source.links.join(' ')}</dd></div> : null}
+          </dl>
+        </section>
+      ) : null}
       {isNew ? <p className="demo-note">New profiles start as hidden drafts. They go public only when published <em>and</em> verified, after you have checked their training and registration.</p> : null}
 
       <AlchemistEditor

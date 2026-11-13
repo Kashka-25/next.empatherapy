@@ -12,6 +12,9 @@ The admin area is for the Empatherapy team only. It is **off by default** and no
 - **The setup password.** `ADMIN_PASSWORD_HASH` is a one-time way in, used only to create the first owner. It stops working the moment an active owner account exists. After that, remove it from the host's settings.
 - **Route protection.** Middleware sends anyone without a valid session to the sign-in page and marks admin pages `noindex` and `no-store`. Every page and action then checks the person's role again.
 - **Applications** (`/admin/applications`): read, add private notes, move through New, In review, Approved, Declined, or delete permanently for data-deletion requests. Approving does **not** publish anything.
+  - **Create draft profile** (owners, on an approved application): starts a hidden, unverified draft from their answers. Practices are matched to modality pages and marked "confirm" (their claim, never formal training), qualifications are flagged "(confirm)", their email is **not** copied to the public profile, and no price is invented (their pricing answer is kept as a note). Their original wording sits in a private "Created from an application" panel on the draft, which is deleted when the profile is published. A draft is only made once per application.
+  - Deleting an application for a data-deletion request also deletes an **unpublished** draft made from it (and its photos). A published profile is kept, so remove it separately if asked.
+  - A **verified** profile cannot go public while any qualification or price is still marked "(confirm)", or while every practice is still "confirm". The founder and the fictional examples are exempt.
 - **Clean-up** (`/admin/retention`, owners only): shows which applications are past the retention rule and deletes them when an owner clicks. Nothing is deleted automatically.
 - **Weekly features** (`/admin/features`): schedule one to three modalities per week, publish, draft, archive, delete. At most three can be live on any day and positions and modalities cannot clash.
 - **Alchemists** (`/admin/alchemists`): edit any profile, add new ones, reset a built-in profile to its original, delete a new one. A profile is public only when it is **published and verified** (or the founder, or a labelled example). Publishing needs a complete profile: story, philosophy, safety information, at least one practice they actually offer, a typical session, prices and a location. Example profiles stay examples, and nobody can be made "founder" from the form. Each practice carries its basis (formal, study, experience, interest, confirm), and qualifications can be flagged "(confirm)".
@@ -25,7 +28,6 @@ The admin area is for the Empatherapy team only. It is **off by default** and no
 
 ## Not built yet
 - Photo cropping or focal-point choice (photos are centred, slightly above the middle, so faces are kept). Alchemists uploading their own photos (today an admin uploads on their behalf).
-- Creating a profile directly from an approved application (today a person types it in).
 - Homepage content and image management, reviews moderation, IntoTheLighthouse content.
 - Email invitations and password-reset emails (an owner sets and shares a starting password privately instead).
 - Two-step sign-in (a second factor). Worth adding before more than a handful of people have accounts.

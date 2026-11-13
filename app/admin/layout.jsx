@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { currentAdmin } from '@/lib/admin-auth.mjs';
 import { can, ROLE_LABEL } from '@/lib/accounts.mjs';
 import { logout } from './actions';
-import { Sprig } from '@/components/art/Botanicals';
+import { TeaMark } from '@/components/art/Botanicals';
 
 export const metadata = { title: 'Admin', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
@@ -13,7 +13,7 @@ export default async function AdminLayout({ children }) {
     <div className="admin">
       <header className="admin-bar">
         <div className="admin-bar__inner">
-          <Link href="/admin" className="wordmark" style={{ fontSize: '1.3rem' }}><Sprig size={22} color="var(--botanical)" />Empatherapy admin</Link>
+          <Link href="/admin" className="wordmark" style={{ fontSize: '1.3rem' }}><TeaMark size={30} />Empatherapy admin</Link>
           {me ? (
             <nav className="admin-nav" aria-label="Admin">
               <Link href="/admin">Overview</Link>
