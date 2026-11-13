@@ -4,7 +4,8 @@ import FadeIn from '@/components/ui/FadeIn';
 import Eyebrow from '@/components/ui/Eyebrow';
 import AlchemistCard from '@/components/alchemists/AlchemistCard';
 import ModalityCard from '@/components/modalities/ModalityCard';
-import { TeaScene, Lighthouse, HoneyDrip, Sprig } from '@/components/art/Botanicals';
+import { Lighthouse, HoneyDrip, Sprig } from '@/components/art/Botanicals';
+import GoldenPause from '@/components/golden-pause/GoldenPause';
 import { curatedOrder } from '@/lib/content.mjs';
 import { publicContent } from '@/lib/content-store.mjs';
 import { currentFeatures } from '@/lib/features.mjs';
@@ -28,10 +29,11 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Warm welcome first. The directory comes after. */}
-      <section className="hero" aria-labelledby="hero-title">
-        <div className="container hero__grid">
-          <div className="hero__copy">
+      {/* Warm welcome first: The Golden Pause (an optional breathing film), then the welcome. The directory comes after. */}
+      <section className="hero hero--film" aria-labelledby="hero-title">
+        <GoldenPause skipTo="hero-copy" />
+        <div className="container">
+          <div className="hero__copy" id="hero-copy" tabIndex={-1}>
             <span className="hand">welcome, come on in</span>
             <h1 id="hero-title">Your journey starts <em>somewhere.</em></h1>
             <p className="lede">Discover new pathways, meet people who care, and explore what resonates with you.</p>
@@ -41,7 +43,6 @@ export default async function HomePage() {
             </div>
             <p style={{ fontSize: '0.95rem', color: 'var(--muted)' }}>A few gentle questions. No sign-up needed.</p>
           </div>
-          <div className="hero__art"><TeaScene /></div>
         </div>
       </section>
 

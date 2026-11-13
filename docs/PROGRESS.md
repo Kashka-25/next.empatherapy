@@ -26,7 +26,7 @@ Tagline: **Discover new pathways to yourself.** Feeling: a cup of lemon and hone
 | 6d. Alchemist photos | Done: up to 5 photos per profile with a "Meet them" carousel, profile picture, alt text and consent tick, metadata stripped, private storage |
 
 ## What works today
-- `/` warm homepage, then discovery invitation, this week's modalities, featured Alchemists, IntoTheLighthouse, philosophy, apply.
+- `/` warm homepage: The Golden Pause first (a 13-second optional breathing film in which honey writes the name and feeds the teacup; Pause, Skip, sound only on request, a calm still for reduced motion, Save-Data or no JavaScript; nothing stored or measured; `components/golden-pause`, made in `film/golden-pause`), then the welcome, discovery invitation, this week's modalities, featured Alchemists, IntoTheLighthouse, philosophy, apply.
 - `/alchemists` and `/alchemists/[slug]`: search, filters (practice, format, location, price), full profiles.
 - `/modalities` and `/modalities/[slug]`: 10 educational pages with labelled evidence.
 - `/discover`: four gentle steps, explained results, crisis signposting. Everything stays in the browser.
@@ -63,6 +63,7 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 4. **Real photographs.** Uploads now work (up to 5 per profile), but no real photos have been added. Which Alchemists do you want to start with, and who will take or collect them?
 5. **Typefaces:** Fraunces (headings), Nunito Sans (body), Caveat (handwritten notes). Happy to change.
 6. **IntoTheLighthouse repo.** Should the page here link to its own repo or site when ready?
+7. **The Golden Pause.** Please approve by ear the soundscape (it plays only when a visitor turns the sound on), and approve the teacup symbol in the film, which is a redraw of your image (`film/golden-pause/source/symbol.svg`). It is still to be tried on real phones (iPhone and Android) and in Safari and Firefox.
 
 ## Not built yet (and why)
 - **A live database.** The Supabase driver and schema exist and are tested against a fake of the Supabase API, but no Supabase project has been created or connected yet (that needs Cassidy). See `docs/ADMIN.md`, "Going live".

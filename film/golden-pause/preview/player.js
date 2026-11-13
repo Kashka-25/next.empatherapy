@@ -1,4 +1,6 @@
-/* The Golden Pause: preview player (cue sheet version 2: the honey writes the name).
+/* The Golden Pause: the player (cue sheet version 2: the honey writes the name).
+   Used by this preview (it starts itself on the page's [data-gp-stage]) and by the site's homepage hero
+   (components/golden-pause/GoldenPause.jsx calls createPlayer(stage, cues) and destroy() itself).
    One clock: the video's currentTime. The breathing words, the wordmark, the tagline and the sound all follow it.
    stateAt(t) is a pure function of time, the cue numbers (cues.js) and the film format, so it can be unit-tested in Node:
      const cues = require('./cues.js'); const { stateAt } = require('./player.js'); stateAt(1.0, cues, 'wide')
@@ -94,6 +96,7 @@
   if (typeof module === 'object' && module && module.exports) module.exports = api;
   if (!root || typeof document === 'undefined') return;
   root.GoldenPause = api;
+  api.createPlayer = createPlayer;
 
   // ---------------------------------------------------------------------------------------------
   // The player (browser only)
@@ -120,7 +123,8 @@
   // become "js". If anything here fails, the calm still stays, rather than controls that do nothing.
   function init() {
     var stage = document.querySelector('[data-gp-stage]');
-    if (!stage || !root.GOLDEN_PAUSE_CUES || api.player) return;
+    // a stage marked data-gp-manual (the site) is started by its own page code, never here
+    if (!stage || stage.hasAttribute('data-gp-manual') || !root.GOLDEN_PAUSE_CUES || api.player) return;
     try {
       api.player = createPlayer(stage, root.GOLDEN_PAUSE_CUES);
     } catch (e) {
@@ -133,8 +137,16 @@
   // The scripts sit at the end of <body>, so the stage is already there: start now, before the first paint if possible.
   if (document.querySelector('[data-gp-stage]')) init(); else ready(init);
 
-  /** Optional ?media=folder/ prefix for the media files (for testing). Relative paths only. */
-  function mediaBase() {
+  /**
+   * Where the media files are: the stage's data-gp-media folder (the site: "/golden-pause/"), or the optional
+   * ?media=folder/ prefix (for testing, relative paths only), or next to the page.
+   */
+  function mediaBase(stage) {
+    var own = stage && stage.getAttribute('data-gp-media');
+    if (own) {
+      if (!/^\/?[A-Za-z0-9_\-.]+(\/[A-Za-z0-9_\-.]+)*\/?$/.test(own) || own.indexOf('..') !== -1) return '';
+      return own.charAt(own.length - 1) === '/' ? own : own + '/';
+    }
     var v = '';
     try { v = new URLSearchParams(root.location.search).get('media') || ''; } catch (e) { v = ''; }
     if (!v || !/^[A-Za-z0-9_\-./]+$/.test(v) || v.charAt(0) === '/' || v.indexOf('..') !== -1) return '';
@@ -161,6 +173,12 @@
     };
     var END = cues.duration;
     var FPS = cues.fps || 24;
+    var dead = false;            // destroy() has run: nothing here touches the page again
+    var unlisten = [];
+    function listen(target, type, fn) {
+      target.addEventListener(type, fn);
+      unlisten.push(function () { target.removeEventListener(type, fn); });
+    }
 
     // ---------- which film: wide (16:9) or square, by the width of the window ----------
     // Chosen at load. On a rotation or resize it is chosen again only while the film is not running
@@ -177,7 +195,7 @@
       stage.style.setProperty('--gp-tagline-y', String(L.tagline.centerPost));
     }
     setLayoutVars();
-    var base = mediaBase();
+    var base = mediaBase(stage);
     var media = { webm: base + 'golden-pause.webm', m4a: base + 'golden-pause.m4a' };
     function setMediaUrls() {
       media.film = base + 'film-' + fmt + '.mp4';
@@ -212,9 +230,9 @@
       function on() {
         if (isHidden()) return;
         document.removeEventListener('visibilitychange', on);
-        fn();
+        if (!dead) fn();
       }
-      document.addEventListener('visibilitychange', on);
+      listen(document, 'visibilitychange', on);
     }
 
     // ---------- media setup ----------
@@ -234,7 +252,7 @@
     // Two images over the video: the honey name (still, 7.9 s) and the settled lockup (end). Never both.
     // A missing image hides itself; the video (its poster or its last frame) shows through instead.
     function imageLayer(img, url) {
-      img.addEventListener('error', function () { img.hidden = true; img.removeAttribute('src'); img.dataset.failed = '1'; });
+      listen(img, 'error', function () { img.hidden = true; img.removeAttribute('src'); img.dataset.failed = '1'; });
       return {
         load: function () { if (!img.getAttribute('src') && !img.dataset.failed) img.src = url(); },
         show: function () { if (img.dataset.failed) return; this.load(); img.hidden = false; },
@@ -405,8 +423,8 @@
     }
     var shapeTimer = 0;
     function onResize() { clearTimeout(shapeTimer); shapeTimer = setTimeout(onShapeChange, 150); }
-    root.addEventListener('resize', onResize);
-    root.addEventListener('orientationchange', onResize);
+    listen(root, 'resize', onResize);
+    listen(root, 'orientationchange', onResize);
 
     // ---------- states ----------
     function armStartTimer() {
@@ -433,7 +451,7 @@
       try { p = video.play(); } catch (e) { p = null; }
       if (p && typeof p.catch === 'function') {
         p.catch(function (err) {
-          if (mode !== 'loading') return;              // we have already moved on (paused, calm, ended)
+          if (dead || mode !== 'loading') return;      // we have already moved on (paused, calm, ended), or gone
           var name = err && err.name;
           if (name === 'AbortError') return;           // a pause or new load interrupted it
           clearTimeout(startTimer);
@@ -515,7 +533,7 @@
     }
 
     // ---------- video events ----------
-    video.addEventListener('playing', function () {
+    listen(video, 'playing', function () {
       clearTimeout(startTimer);
       if (mode === 'calm' || mode === 'ended' || mode === 'poster' || userPaused) { video.pause(); return; }
       everPlayed = true;
@@ -524,12 +542,12 @@
       audioStart();
       endLayer.load();                                // ready for Skip and the end
     });
-    video.addEventListener('waiting', function () {
+    listen(video, 'waiting', function () {
       // the network ran dry mid-play: the picture holds, so the sound must not run on (or loop) without it.
       // The 'playing' event brings it back, in sync, once the picture moves again.
       if (mode === 'playing') audioStop(0.12);
     });
-    video.addEventListener('pause', function () {
+    listen(video, 'pause', function () {
       if (video.ended || mode !== 'playing') return;
       // paused by the browser or the system (not by our buttons): say so honestly
       setMode('paused');
@@ -537,10 +555,10 @@
       render(video.currentTime);
       audioStop(0.15);
     });
-    video.addEventListener('ended', function () { if (mode !== 'ended') finish(false); });
-    video.addEventListener('seeked', function () { clock.last = -1; if (!clock.running && mode !== 'calm' && mode !== 'ended') render(video.currentTime); });
-    video.addEventListener('timeupdate', function () { if (!clock.running && (mode === 'paused' || mode === 'loading')) render(video.currentTime); });
-    video.addEventListener('error', function () {
+    listen(video, 'ended', function () { if (mode !== 'ended') finish(false); });
+    listen(video, 'seeked', function () { clock.last = -1; if (!clock.running && mode !== 'calm' && mode !== 'ended') render(video.currentTime); });
+    listen(video, 'timeupdate', function () { if (!clock.running && (mode === 'paused' || mode === 'loading')) render(video.currentTime); });
+    listen(video, 'error', function () {
       if (!srcSet) return;
       videoFailed = true;
       if (mode === 'ended') { updateControls(); return; }   // keep the welcome; Replay and Sound go away
@@ -548,21 +566,21 @@
     });
 
     // ---------- buttons and keys ----------
-    btnToggle.addEventListener('click', function () {
+    listen(btnToggle, 'click', function () {
       if (mode === 'playing' || mode === 'loading') pauseFilm();
       else if (mode === 'paused') resumeFilm();
       else if (mode === 'poster' || mode === 'calm') startFromTop();
     });
-    btnSkip.addEventListener('click', function () {
+    listen(btnSkip, 'click', function () {
       if (mode === 'ended') startFromTop();
       else skip();
     });
-    btnSound.addEventListener('click', function () {
+    listen(btnSound, 'click', function () {
       if (btnSound.getAttribute('aria-disabled') === 'true') return;
       if (sound.wanted) soundOff(); else soundOn();
     });
-    frame.addEventListener('click', function () { if (mode === 'poster') startFromTop(); });
-    stage.addEventListener('keydown', function (e) {
+    listen(frame, 'click', function () { if (mode === 'poster') startFromTop(); });
+    listen(stage, 'keydown', function (e) {
       if (e.key !== 'Escape' && e.key !== 'Esc') return;
       if (mode === 'playing' || mode === 'loading' || mode === 'paused' || mode === 'poster') { e.preventDefault(); skip(); }
     });
@@ -583,7 +601,7 @@
       var webm = audioEl.canPlayType('audio/webm; codecs="opus"') === 'probably';
       audioEl.src = webm ? media.webm : media.m4a;
       audioEl.preload = 'auto';
-      audioEl.addEventListener('error', function () {
+      listen(audioEl, 'error', function () {
         sound.failed = true;
         sound.wanted = false;
         btnSound.setAttribute('aria-pressed', 'false');
@@ -788,8 +806,29 @@
       whenVisible(function () { if (mode === 'loading' && !userPaused) attemptAutoplay(); });
     }
 
-    // A small read-only window for testing. Nothing here stores anything.
+    /** Take the player off the page: timers, listeners, media and the audio device. The markup stays as it is. */
+    function destroy() {
+      if (dead) return;
+      dead = true;
+      sound.gen++;
+      clearTimeout(startTimer);
+      clearTimeout(shapeTimer);
+      stopClock();
+      cancelAnimationFrame(sound.volRaf);
+      unlisten.forEach(function (off) { off(); });
+      unlisten.length = 0;
+      try { video.pause(); video.removeAttribute('src'); video.load(); } catch (e) { /* ignore */ }
+      try { audioEl.pause(); audioEl.removeAttribute('src'); } catch (e) { /* ignore */ }
+      if (sound.ctx && sound.ctx.state !== 'closed') {
+        try { var p = sound.ctx.close(); if (p && typeof p.catch === 'function') p.catch(function () {}); } catch (e) { /* ignore */ }
+      }
+      stage.classList.remove('gp--' + fmt);
+      stage.removeAttribute('data-gp-calm');
+    }
+
+    // A small read-only window for testing, and destroy(). Nothing here stores anything.
     return {
+      destroy: destroy,
       stateAt: function (t, format) { return stateAt(t, cues, format || fmt); },
       get mode() { return mode; },
       get modeAt() { return modeAt; },

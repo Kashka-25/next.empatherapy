@@ -1,14 +1,14 @@
 (media under test: the real media in the preview folder; screenshots in C:\Users\cassi\Projects\Empatherapy\next.empatherapy\.worktrees\golden-pause\film\golden-pause\preview\_test\shots\real)
 (fonts: ok italic 400 20px Fraunces, ok italic 300 20px Fraunces, ok 400 20px Fraunces, ok 500 20px Fraunces, ok 400 20px "Nunito Sans", ok 600 20px "Nunito Sans", ok 700 20px "Nunito Sans", ok 500 20px Caveat, 5 Google Fonts responses cached for the run)
 PASS  wide: film autoplays muted
-PASS  wide: uses film-wide.mp4 (muted, playsinline, aria-hidden), poster-wide.jpg as its poster  {"src":"http://127.0.0.1:8784/film-wide.mp4","muted":true,"playsInline":true,"ariaHidden":"true","fmt":"wide","vfc":true,"poster":"poster-wide.jpg"}
+PASS  wide: uses film-wide.mp4 (muted, playsinline, aria-hidden), poster-wide.jpg as its poster  {"src":"http://127.0.0.1:8765/film-wide.mp4","muted":true,"playsInline":true,"ariaHidden":"true","fmt":"wide","vfc":true,"poster":"poster-wide.jpg"}
 PASS  the page switches from no-js to js only once the player is running  js
 PASS  wide: clock sampled with requestVideoFrameCallback
 PASS  stage is a labelled region  {"tag":"SECTION","label":"The Golden Pause, a short optional breathing moment"}
 PASS  no breathing ring and no provisional mark on the page (the film has its own picture and the teacup symbol)  {"ring":0,"mark":0,"welcomeBacking":0}
 PASS  wide: the player sets the stage positions from cues.js (breath line, wordmark width, tagline)  {"bl":"0.93","wm":"0.38","tag":"0.865"}
 PASS  the wordmark is the title image (<img src="wordmark-script.webp" alt="Empatherapy">), loaded at its own size and proportions (4.281), in its track, hidden from assistive technology with the rest of the picture, no filter  {"tag":"IMG","alt":"Empatherapy","src":"wordmark-script.webp","loaded":true,"natural":[2620,612],"attrs":[2620,612],"hiddenFromAT":true,"inTrack":true,"filter":"none"}
-PASS  playback: rendered overlay time stays within ~1.5 frames of video.currentTime  max |video - rendered| = 22.2 ms over 30 samples (0.04s to 2.85s)
+PASS  playback: rendered overlay time stays within ~1.5 frames of video.currentTime  max |video - rendered| = 19.4 ms over 30 samples (0.06s to 3.02s)
 PASS  playback: DOM matches stateAt(rendered time)  []
 PASS  screen readers: no live announcements (nothing is spoken on a timer)  0
 PASS  screen readers: one static, visually hidden description of the v2 film in the stage, with all three lines and the welcome  {"missing":[],"exposed":[],"visuallyHidden":true}
@@ -46,23 +46,23 @@ PASS  wide wordmark in the lockup: widthFrac (0.38) of the stage width within 1%
 PASS  wide lockup: the wordmark's box ends above the teacup symbol's box (symbol.topPost 0.33)  {"wordmarkBottom":0.3087,"symbolTop":0.33,"gapPx":12}
 PASS  wide tagline centred at tagline.centerPost (0.865), in Nunito Sans  {"centre":0.8642,"font":"\"Nunito Sans\", \"Segoe UI\", system-ui, sans-serif"}
 PASS  keyboard: Enter on Play resumes  Pause
-PASS  sound: Space turns it on; silent until on the film clock, then fades up (Web Audio gain)  {"pressed":"true","src":"golden-pause.webm","paused":false,"gain":0.978,"webaudio":true,"drift":-0.003,"learnedLead":0.004,"msToAudible":826}
-PASS  sound: stays within ~50 ms of the film over 1.5 s  {"maxDriftMs":7}
-PASS  sound: a 400 ms drift is re-seated to within 50 ms (with a short fade)  {"drift":0.007,"fixes":1,"gain":0.905}
-PASS  sound: a small drift (under 120 ms) is nudged back by speed, never more than 2% (no dip, no seek)  {"secs":"2.3","maxDriftMs":51,"minGain":1,"maxRate":1.02}
+PASS  sound: Space turns it on; silent until on the film clock, then fades up (Web Audio gain)  {"pressed":"true","src":"golden-pause.webm","paused":false,"gain":0.979,"webaudio":true,"drift":0.011,"learnedLead":0.015,"msToAudible":1089}
+PASS  sound: stays within ~50 ms of the film over 1.5 s  {"maxDriftMs":19}
+PASS  sound: a 400 ms drift is re-seated to within 50 ms (with a short fade)  {"drift":0.02,"fixes":1,"gain":1}
+PASS  sound: a small drift (under 120 ms) is nudged back by speed, never more than 2% (no dip, no seek)  {"secs":"2.9","maxDriftMs":49,"minGain":1,"maxRate":1.02}
 PASS  sound: a stall (video "waiting") fades the sound out and stops it; "playing" brings it back in sync  {"stalled":{"paused":true,"gain":0,"wanted":true},"back":true}
 PASS  sound: Pause fades the sound out and stops it  {"paused":true,"gain":0}
-PASS  sound: Play resumes the sound in sync  {"paused":false,"gain":0.977,"drift":-0.012}
+PASS  sound: Play resumes the sound in sync  {"paused":false,"gain":0.977,"drift":0.006}
 PASS  sound: off again fades out and stops, and the audio context is suspended  {"paused":true,"pressed":"false","gain":0,"context":"suspended"}
-PASS  sound: on again wakes the audio context and comes back in sync  {"context":"running","gain":1,"drift":-0.017}
+PASS  sound: on again wakes the audio context and comes back in sync  {"context":"running","gain":0.948,"drift":-0.002}
 PASS  keyboard: Skip jumps to the settled lockup within one frame (wordmark at its place at scale 1, tagline; no breathing words)  {"mode":"ended","focus":"skip","wordmark":{"opacity":1,"y":0.2297982456140351,"scale":1},"tagline":1,"backing":0,"lineIn":0,"lineOut":0,"permission":0,"imgs":{"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":true,"loaded":true,"src":"end-wide.jpg"}},"videoPaused":true}
 PASS  Skip: the wordmark and tagline sit on the lockup frame (end-wide.jpg), never on the honey-name still  {"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":true,"loaded":true,"src":"end-wide.jpg"}}
 PASS  Skip turns into Replay without moving focus  {"label":"Replay","focus":"skip"}
 PASS  contrast (wide) on the lockup image: the wordmark's letters and the tagline >= 4.5:1 against the darkest pixel under them  {"wordmark":{"text":"letters of wordmark-script.webp: rgb(79, 54, 24)","darkestUnder":[244,193,127],"ratioOverDarkest":6.82,"ratioOverParchment":10.48},"tagline":{"text":"rgb(79, 73, 62)","darkestUnder":[250,217,163],"ratioOverDarkest":6.59,"ratioOverParchment":8.34}}
 PASS  sound: Skip fades the sound out and stops it  {"paused":true,"gain":0}
 PASS  ended: Pause is hidden, Replay and Sound remain
-PASS  keyboard: Replay plays again from the start, focus stays, button reads Skip  {"t":0.0057,"focus":"skip","imgs":{"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":false,"loaded":true,"src":"end-wide.jpg"}}}
-PASS  sound: Replay restarts the sound with the film  {"paused":false,"drift":-0.003}
+PASS  keyboard: Replay plays again from the start, focus stays, button reads Skip  {"t":0.0083,"focus":"skip","imgs":{"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":false,"loaded":true,"src":"end-wide.jpg"}}}
+PASS  sound: Replay restarts the sound with the film  {"paused":false,"drift":0.007}
 PASS  Esc inside the stage skips (focus moves from the hidden Pause to Replay)  {"mode":"ended","focus":"skip"}
 PASS  Esc outside the stage does nothing to the film
 PASS  natural end: settles on the lockup (wordmark at its place, scale 1, and the tagline), offers Replay, plays once (no loop)  {"ended":true,"videoEnded":true,"wordmark":{"opacity":1,"y":0.2297982456140351,"scale":1},"tagline":{"opacity":1},"endLabel":"Replay","mode":"ended"}
@@ -73,8 +73,8 @@ PASS  wide: nothing stored (localStorage, sessionStorage, cookies, IndexedDB)  {
 PASS  wide: no network calls beyond the page, its media and Google Fonts  14 requests
 PASS  wide: no console errors
 PASS  narrow: autoplays
-PASS  narrow: uses film-square.mp4 in a square frame  {"src":"http://127.0.0.1:8784/film-square.mp4","fmt":"square","w":358,"h":358,"frameBottom":520.03125,"barTop":520.03125,"scrollW":390,"innerW":390}
-PASS  narrow: no horizontal scroll  {"src":"http://127.0.0.1:8784/film-square.mp4","fmt":"square","w":358,"h":358,"frameBottom":520.03125,"barTop":520.03125,"scrollW":390,"innerW":390}
+PASS  narrow: uses film-square.mp4 in a square frame  {"src":"http://127.0.0.1:8765/film-square.mp4","fmt":"square","w":358,"h":358,"frameBottom":520.03125,"barTop":520.03125,"scrollW":390,"innerW":390}
+PASS  narrow: no horizontal scroll  {"src":"http://127.0.0.1:8765/film-square.mp4","fmt":"square","w":358,"h":358,"frameBottom":520.03125,"barTop":520.03125,"scrollW":390,"innerW":390}
 PASS  controls sit below the frame, never over the words  {"frameBottom":520.03125,"barTop":520.03125}
 PASS  controls are at least 44 x 44 px  [["Pause",101,44],["Sound",104,44],["Skip",90,44]]
 PASS  touch: tapping Pause pauses
@@ -133,12 +133,12 @@ PASS  calm (phone) band: the permission line sits just under the breathing line,
 PASS  calm (phone) band: no word covers the honey name (all below 0.775 of the height); the backing barely reaches its descenders  {"wordsTop":0.8691,"nameBottom":0.775,"backingAtTips":{"p1":0,"p2":0,"y":0},"backingAtFoot":0}
 PASS  contrast (calm, phone): both lines and the permission line >= 4.5:1 over the worst case  {"permission":{"text":"rgb(56, 53, 47)","worstEllipseRadius":0.55,"backingAlphaAtWorstCorner":0.724,"ratioOverBlack":5.84,"ratioOverDarkHoney":7.18},"calm0":{"text":"rgb(56, 53, 47)","worstEllipseRadius":0.555,"backingAlphaAtWorstCorner":0.722,"ratioOverBlack":5.8,"ratioOverDarkHoney":7.15},"calm1":{"text":"rgb(56, 53, 47)","worstEllipseRadius":0.555,"backingAlphaAtWorstCorner":0.722,"ratioOverBlack":5.8,"ratioOverDarkHoney":7.15}}
 PASS  reduced motion (phone): no console errors
-PASS  broken video: falls back to the calm still within ~1.5 s  {"msAfterPlayerStart":76,"reason":"error","calm":"flex"}
+PASS  broken video: falls back to the calm still within ~1.5 s  {"msAfterPlayerStart":139,"reason":"error","calm":"flex"}
 PASS  broken video: no Play and no Sound offered (nothing to play), page still usable
 PASS  broken video (404s expected): no console errors
-PASS  default page: plays the real film from the preview folder (film-wide.mp4, poster, still, end)  {"src":"http://127.0.0.1:8784/film-wide.mp4","poster":"poster-wide.jpg","media":{"webm":"golden-pause.webm","m4a":"golden-pause.m4a","film":"film-wide.mp4","poster":"poster-wide.jpg","still":"still-wide.jpg","end":"end-wide.jpg"}}
+PASS  default page: plays the real film from the preview folder (film-wide.mp4, poster, still, end)  {"src":"http://127.0.0.1:8765/film-wide.mp4","poster":"poster-wide.jpg","media":{"webm":"golden-pause.webm","m4a":"golden-pause.m4a","film":"film-wide.mp4","poster":"poster-wide.jpg","still":"still-wide.jpg","end":"end-wide.jpg"}}
 PASS  default page: no console errors
-PASS  slow video: calm still after ~1.5 s  {"msAfterPlayerStart":1507}
+PASS  slow video: calm still after ~1.5 s  {"msAfterPlayerStart":1514}
 PASS  slow video: Play offered, Sound hidden
 PASS  slow video: Play starts it once it arrives
 PASS  slow video: no console errors
@@ -147,7 +147,7 @@ PASS  Save-Data: Play loads and plays the film on request
 PASS  save-data: no console errors
 PASS  autoplay refused: the honey-name still (still-wide.jpg, not the blank parchment poster) and a Play button  {"glyph":"grid","glyphBottom":0.493,"primary":true,"imgs":{"still":{"shown":true,"loaded":true,"src":"still-wide.jpg"},"end":{"shown":false,"loaded":false,"src":""}}}
 PASS  autoplay refused: the play glyph sits above the honey name  {"glyphBottom":0.493,"nameTop":0.575}
-PASS  autoplay refused: Play starts the film (the still goes)  {"still":{"shown":false,"loaded":true,"src":"still-wide.jpg"},"end":{"shown":false,"loaded":true,"src":"end-wide.jpg"}}
+PASS  autoplay refused: Play starts the film (the still goes)  {"still":{"shown":false,"loaded":true,"src":"still-wide.jpg"},"end":{"shown":false,"loaded":false,"src":"end-wide.jpg"}}
 PASS  autoplay refused: no console errors
 PASS  JavaScript off: the honey-name still with both lines and the permission line on their backing, no wordmark, no dead controls  {"fallback":true,"calm":true,"permission":true,"controls":false,"hero":true,"htmlClass":"no-js","fallbackShown":true,"fallbackImage":"still-wide.jpg","calmShown":true,"timedLinesHidden":true,"permissionOpacity":"1","backingOpacity":"1","welcomeOpacity":"0","ring":0,"controlsShown":false,"description":true}
 PASS  JavaScript off (wide) band: the breathing line is centred at breathLines.center (0.93) of the height, or lifted only to keep the permission line in the frame  {"format":"wide","frame":[1014,570],"cue":0.93,"breathCentre":0.9292,"offPx":-0.5,"permTop":0.956,"permBottom":0.9872,"slotBottom":0.9514,"roomBelowPx":7.3,"wordsTop":0.9052,"nameBottom":0.857,"overName":0,"backingAtTips":{"p1":0,"p2":0,"y":0},"backingAtFoot":0,"centred":true,"lifted":false}
@@ -172,10 +172,10 @@ PASS  rotated calm band: the breathing line is centred at breathLines.center (0.
 PASS  rotated calm band: the permission line sits just under the breathing line, inside the frame  {"slotBottom":0.928,"permTop":0.9351,"roomBelowPx":6}
 PASS  rotated calm band: no word covers the honey name (all below 0.775 of the height); the backing barely reaches its descenders  {"wordsTop":0.8691,"nameBottom":0.775,"backingAtTips":{"p1":0,"p2":0,"y":0},"backingAtFoot":0}
 PASS  rotate while the film plays: it keeps playing the film it started with  {"fmt":"wide","mode":"playing"}
-PASS  ...and takes the square film at the next Replay  {"afterSkip":{"fmt":"wide","imgs":{"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":true,"loaded":true,"src":"end-wide.jpg"}}},"afterReplay":{"fmt":"square","src":"http://127.0.0.1:8784/film-square.mp4"}}
+PASS  ...and takes the square film at the next Replay  {"afterSkip":{"fmt":"wide","imgs":{"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":true,"loaded":true,"src":"end-wide.jpg"}}},"afterReplay":{"fmt":"square","src":"http://127.0.0.1:8765/film-square.mp4"}}
 PASS  rotate at the end: back to the wide film at once, on the wide lockup, the wordmark moved to the wide centerPost  {"squareEnd":{"opacity":1,"y":0.18,"scale":1},"fmt":"wide","mode":"ended","imgs":{"still":{"shown":false,"loaded":false,"src":""},"end":{"shown":true,"loaded":true,"src":"end-wide.jpg"}},"wordmark":{"opacity":1,"y":0.2297982456140351,"scale":1}}
 PASS  rotation: no console errors
-PASS  sound: with 200 ms of output latency, the sound runs 200 ms ahead of the picture so you hear it in sync  {"aheadMs":[200,195,197,198,201,195,197,197],"worstDriftMs":5}
+PASS  sound: with 200 ms of output latency, the sound runs 200 ms ahead of the picture so you hear it in sync  {"aheadMs":[203,203,197,202,195,198,202,203],"worstDriftMs":5}
 PASS  output latency: no console errors
 
 177/177 checks passed
