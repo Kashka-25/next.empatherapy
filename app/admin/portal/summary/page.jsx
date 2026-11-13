@@ -4,6 +4,7 @@ import { getStore } from '@/lib/store/index.mjs';
 import { loadContent } from '@/lib/content-store.mjs';
 import { loadPosts } from '@/lib/posts-store.mjs';
 import { summarise, monthlySeries, PERIODS } from '@/lib/summary.mjs';
+import { ledgerFor, balanceOf } from '@/lib/credits.mjs';
 
 export const metadata = { title: 'What Empatherapy brought you' };
 
@@ -20,6 +21,7 @@ export default async function SummaryPage({ searchParams }) {
   const profile = (await loadContent(store)).alchemists.find((a) => a.id === me.profile_id);
   const posts = (await loadPosts(store)).filter((p) => p.profile_id === me.profile_id && p.status === 'published').length;
   const biggest = Math.max(1, ...series.map((r) => r.enquiries));
+  const credits = balanceOf(store ? await ledgerFor(store, me.profile_id) : [], me.profile_id);
 
   return (
     <div className="stack" style={{ gap: '2rem' }}>
@@ -46,6 +48,7 @@ export default async function SummaryPage({ searchParams }) {
           <li>{s.medianReplyHours === null ? 'Once you mark enquiries as replied, you will see how quickly you usually answer.' : `You usually reply within about ${s.medianReplyHours < 1 ? 'an hour' : s.medianReplyHours < 48 ? `${Math.round(s.medianReplyHours)} hours` : `${Math.round(s.medianReplyHours / 24)} days`}.`}</li>
           <li>{s.cameWithACode} {s.cameWithACode === 1 ? 'enquiry' : 'enquiries'} came with another Alchemist&rsquo;s referral code.</li>
           <li><span>Your own code was used {s.myCodeUsed.enquiries} {s.myCodeUsed.enquiries === 1 ? 'time' : 'times'}{s.myCodeUsed.booked ? `, ${s.myCodeUsed.booked} of them booking` : ''}. <Link href="/admin/portal/circle" style={{ textDecoration: 'underline', textUnderlineOffset: '0.2em' }}>See your referral circle</Link></span></li>
+          <li>{credits.confirmed} referral {credits.confirmed === 1 ? 'credit' : 'credits'} confirmed{credits.pending ? `, ${credits.pending} pending` : ''}.</li>
           <li>You have {posts} {posts === 1 ? 'post' : 'posts'} in the knowledge feed, and {(profile.photos ?? []).filter((p) => p.approved !== false).length} {(profile.photos ?? []).filter((p) => p.approved !== false).length === 1 ? 'photo' : 'photos'} on your profile.</li>
         </ul>
       </section>

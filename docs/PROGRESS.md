@@ -23,6 +23,7 @@ Tagline: **Discover new pathways to yourself.** Feeling: a cup of lemon and hone
 | 6b. Admin content editing | Done: edit and create Alchemist profiles and modality pages, with publish rules and reset to original |
 | 6c. Production readiness | Built, **not yet connected to a real database:** Supabase driver and schema, individual admin accounts with roles, shared rate limiting, privacy notice and retention rule. **Photo uploads built (6d).** |
 | 6e. Applications to profiles | Done: "Create draft profile" from an approved application, with verified-means-checked publish rules |
+| 7e. Referral credits | Done: referrers earn 1 credit per booked first session via their code, with anti-gaming rules, a ledger for them and the team, and an illustration of Empatherapy's share. **Spending credits is not built; who funds it is undecided.** |
 | 7d. Summary and referral circles | Done: "What Empatherapy brought you" for each Alchemist, and unique referral codes with discount agreements between Alchemists. Referrer incentive (beyond their clients getting a perk) is for Cassidy to decide. |
 | 7c. Knowledge feed | Done: Alchemists (or the team) write openly licensed articles, reviewed before they appear, with an open Atom feed. **Licence (CC BY 4.0) to confirm.** |
 | 7b. Alchemist portal | Done: logins for Alchemists, their own profile edits as proposals the team approves, photos that wait for review, their own enquiries and outcomes. The knowledge feed is the next row. |
@@ -82,6 +83,6 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 ```bash
 npm install
 npm run dev     # http://localhost:3000
-npm test        # 199 tests: referral circles and the summary, knowledge feed, Alchemist portal, enquiries and mail, launch settings, two-step sign-in (RFC 6238 vectors), activity log, application to draft profile, photos (checks, metadata stripping, storage, list rules), matching, content, directory, validation, storage (file, memory, Supabase), sessions, passwords, rate limits, accounts and roles, retention, applications, features
+npm test        # 210 tests: referral credits, referral circles and the summary, knowledge feed, Alchemist portal, enquiries and mail, launch settings, two-step sign-in (RFC 6238 vectors), activity log, application to draft profile, photos (checks, metadata stripping, storage, list rules), matching, content, directory, validation, storage (file, memory, Supabase), sessions, passwords, rate limits, accounts and roles, retention, applications, features
 npm run build   # also runs lint
 ```

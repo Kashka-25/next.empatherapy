@@ -55,6 +55,13 @@ The arithmetic is simply fee divided by session price. It uses income, not profi
 ## Referral circles and the "own link" idea
 Referral circles (built) let Alchemists give each other's clients a discount, funded by the Alchemist giving it, with no money passing through Empatherapy. They also point toward how a later commission could be fair: Mindbody and Fresha charge nothing when a client came through the practitioner's *own* link, and a referral code is the same idea. If a first-session fee is introduced, a Seeker who arrives through the Alchemist's own code would not trigger it. A subscription credit for the person who refers would be another incentive once subscriptions exist.
 
+## Rewarding referrers, and Empatherapy's share
+Cassidy's aim (13 Nov 2026): Alchemists bring in more people, are rewarded for it, and Empatherapy is rewarded financially too. The built mechanism is a credit ledger: a referrer earns 1 credit per client first session booked through their code. **Who funds spending those credits on cheaper sessions is deliberately undecided.**
+
+The simplest way for all three to win is for the credit to be paid for out of an introduction fee on those same referred first sessions. Illustration only (the numbers are placeholders): a $100 first session booked through a referral, a 12% introduction fee of $12, and a $5 credit to the referrer, leaving $7 for Empatherapy. The team page at `/admin/referrals` shows this arithmetic from the real referred bookings once an illustration rate and a credit value are set.
+
+Options for who bears the cost when credits are spent (to decide): the Alchemist giving the cheaper session (costs Empatherapy nothing, optional per Alchemist); Empatherapy, reimbursing Alchemists out of fees (needs income first, so after subscriptions or fees start); or credits that reduce the referrer's own subscription (simplest and fully in Empatherapy's control, but not "cheaper sessions"). Credits that can be spent as money may have consumer-law and tax implications (vouchers, expiry rules, GST): put them to the lawyer and accountant above before spending opens.
+
 ## Questions for professionals before any fee
 - **Lawyer:** referral or fee-splitting rules for registered practitioners; the Alchemist agreement (unfair contract terms); the review feature (see below).
 - **Accountant:** GST registration (threshold AUD 75,000 turnover), GST on a platform fee, and whether you would act as an agent or principal if payments ever flow through you.
