@@ -76,7 +76,7 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 
 ## Not built yet (and why)
 - **A live database.** The Supabase driver and schema exist and are tested against a fake of the Supabase API, but no Supabase project has been created or connected yet (that needs Cassidy). See `docs/ADMIN.md`, "Going live".
-- **Photo cropping.**
+- **Photo focal point on photos already uploaded** (framing a new photo before upload is built: `components/admin/CropPicker.jsx`).
 - **Enquiries, bookings, reviews, favourites, Seeker accounts.**
 - **Images.** No photographs yet.
 

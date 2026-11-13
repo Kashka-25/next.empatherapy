@@ -64,7 +64,7 @@ The admin area is for the Empatherapy team only. It is **off by default** and no
 - **Privacy notice** at `/privacy`, linked from the footer and the application form. It must match the retention rule in `lib/retention.mjs`.
 
 ## Not built yet
-- Photo cropping or focal-point choice (photos are centred, slightly above the middle, so faces are kept). Alchemists uploading their own photos (today an admin uploads on their behalf).
+- **Framing a new photo.** When a photo is chosen, a preview lets the person pick a shape (whole photo, square, portrait 4:5, landscape 3:2), zoom, and drag or use the arrow keys to move the photo in the frame. The framed picture replaces the file before it is sent, in the browser, at the photo's own resolution (long side capped at 2,400 px, saved as JPEG), and warns if the framing falls under the 400 px minimum. It is an enhancement: without script the file is sent as it is, and the server still checks and cleans every image. A photo left as "whole photo" is sent untouched. Re-framing a photo that is already uploaded, or choosing a focal point for it, is not built (uploaded photos show centred, slightly above the middle, so faces are kept).
 - Homepage content and image management, reviews moderation, IntoTheLighthouse content.
 - Email invitations and password-reset emails (an owner sets and shares a starting password privately instead).
 - A QR code for setting up two-step sign-in, and a way to require it for owners.
