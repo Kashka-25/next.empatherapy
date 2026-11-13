@@ -49,6 +49,11 @@ export default function PrivacyPage() {
             </div>
 
             <div className="stack">
+              <h2>If you write for the knowledge feed</h2>
+              <p>Writing for the feed is entirely your choice. A post is published with your name and profile, and the team reads it first. Posts are shared under a Creative Commons Attribution licence, so anyone may copy and adapt them with credit to you. You can ask us to take a post down at any time. Copies others have already made under the licence are theirs to keep.</p>
+            </div>
+
+            <div className="stack">
               <h2>Photos</h2>
               <p>If you become an Alchemist, we publish photos of you only with your agreement, and you can ask us to remove or replace any of them at any time. A profile can show up to five. We remove hidden details such as location and camera information from every photo before it is stored, so only the picture itself is kept.</p>
             </div>

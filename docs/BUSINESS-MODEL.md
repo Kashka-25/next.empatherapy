@@ -1,6 +1,6 @@
 # Business model: options and a recommendation
 
-**Status: undecided. This is for Cassidy to decide.** It reports what comparable businesses do and offers a view. It is not financial, tax or legal advice. The evidence and its gaps are in [`research/business-model-research.md`](research/business-model-research.md), prepared 13 Nov 2026 largely from third-party summaries of rate cards, so check any figure before relying on it.
+**Status: direction set, details undecided.** Cassidy's direction (13 Nov 2026): commission long term, or a subscription with monthly, quarterly and yearly options, shown to Alchemists as a simple break-even ("one booked session covers it"). **Decided: start free** (founding Alchemists pay nothing) while everything is set up, then introduce the subscription or commission later. Nothing is charged, and nothing in the system can charge yet. See "Subscription tiers and the break-even idea" below. It reports what comparable businesses do and offers a view. It is not financial, tax or legal advice. The evidence and its gaps are in [`research/business-model-research.md`](research/business-model-research.md), prepared 13 Nov 2026 largely from third-party summaries of rate cards, so check any figure before relying on it.
 
 ## The situation today
 - Seekers can send an **enquiry** to an Alchemist through the site. Everything after that (talking, booking, paying) happens off the platform.
@@ -32,6 +32,25 @@
 5. **Avoid** per-lead charges, and paid placement unless it is clearly labelled as paid.
 
 An optional values-led layer: concession places, or the retired 10% Healing Fund idea reborn as a pay-it-forward contribution.
+
+## Subscription tiers and the break-even idea
+A subscription needs no payments between Seeker and Alchemist, so it can come before commission. Monthly, quarterly and yearly options with a discount for committing longer is a familiar shape. **The prices below are illustrative placeholders, not a recommendation of exact amounts.** For scale: reported Australian counsellor directories charge about AUD 154 to 198 a year, and Psychology Today about USD 30 a month.
+
+| Illustrative option | Price (AUD) | Per month | Booked sessions to cover it at $60 | $90 | $120 | $200 |
+|---|---|---|---|---|---|---|
+| Monthly | $19 | $19 | 0.3 | 0.2 | 0.2 | 0.1 |
+| Quarterly | $49 | about $16 | 0.8 | 0.5 | 0.4 | 0.2 |
+| Yearly | $159 | about $13 | 2.7 | 1.8 | 1.3 | 0.8 |
+
+The arithmetic is simply fee divided by session price. It uses income, not profit, and ignores the Alchemist's time.
+
+**Keeping the "pays for itself" message honest** (my reading of Australian consumer law, to confirm with a lawyer):
+- Say what the arithmetic says ("one booked session covers about X months"), never that they *will* get a client. Lead and booking numbers are unknown until launch, and a promise of clients could be misleading.
+- Show the full price up front, say plainly if it renews automatically, and make cancelling as easy as joining. A new unfair-trading-practices regime covering hidden fees and subscription traps is reported to start in 2027.
+- **Use their own numbers.** The enquiry tracker already records, per Alchemist, enquiries, replies, bookings and first-session amounts. A simple "what Empatherapy brought you this year" summary would let renewal rest on evidence rather than a claim. It is not built yet.
+- A **free founding period** first, so the first renewal conversation is backed by real enquiries.
+
+**Subscription and commission can sit together later:** a flat subscription for listing, plus a small first-session introduction fee only once on-platform booking and payments exist. That would need a lawyer's view for registered practitioners.
 
 ## Questions for professionals before any fee
 - **Lawyer:** referral or fee-splitting rules for registered practitioners; the Alchemist agreement (unfair contract terms); the review feature (see below).

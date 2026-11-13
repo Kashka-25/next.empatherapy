@@ -16,6 +16,7 @@ export default function Footer() {
               <li><Link href="/discover">Begin your discovery</Link></li>
               <li><Link href="/alchemists">Discover Alchemists</Link></li>
               <li><Link href="/modalities">Explore Modalities</Link></li>
+              <li><Link href="/knowledge">Knowledge feed</Link></li>
             </ul>
           </div>
           <div>

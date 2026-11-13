@@ -20,6 +20,7 @@ export default async function AdminLayout({ children }) {
                 <Link href="/admin/portal">Your space</Link>
                 <Link href="/admin/portal/profile">Your profile</Link>
                 <Link href="/admin/portal/photos">Photos</Link>
+                <Link href="/admin/portal/posts">Writing</Link>
                 <Link href="/admin/portal/enquiries">Enquiries</Link>
                 <Link href="/admin/account">My account</Link>
                 <form action={logout}><button type="submit" className="btn btn--soft btn--sm">Sign out</button></form>
@@ -31,6 +32,7 @@ export default async function AdminLayout({ children }) {
               {can(me.role, 'enquiries') ? <Link href="/admin/enquiries">Enquiries</Link> : null}
               {can(me.role, 'content') ? <Link href="/admin/alchemists">Alchemists</Link> : null}
               {can(me.role, 'content') ? <Link href="/admin/modalities">Modalities</Link> : null}
+              {can(me.role, 'content') ? <Link href="/admin/posts">Writing</Link> : null}
               {can(me.role, 'content') ? <Link href="/admin/features">Weekly features</Link> : null}
               {can(me.role, 'accounts') ? <Link href="/admin/accounts">Accounts</Link> : null}
               {can(me.role, 'activity') ? <Link href="/admin/activity">Activity</Link> : null}

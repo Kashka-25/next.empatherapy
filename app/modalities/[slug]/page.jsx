@@ -7,6 +7,9 @@ import ModalityCard from '@/components/modalities/ModalityCard';
 import { Icon } from '@/components/art/Botanicals';
 import { bySlug, alchemistsFor } from '@/lib/content.mjs';
 import { publicContent } from '@/lib/content-store.mjs';
+import { loadPublicPosts } from '@/lib/posts-store.mjs';
+import { postsAbout } from '@/lib/posts.mjs';
+import PostCard from '@/components/knowledge/PostCard';
 
 export const revalidate = 60;
 
@@ -31,6 +34,7 @@ export default async function ModalityPage({ params }) {
   const m = bySlug(modalities, params.slug);
   if (!m) notFound();
   const who = alchemistsFor(m, alchemists);
+  const writing = postsAbout(await loadPublicPosts(), m.slug).slice(0, 3);
   const related = m.related_modalities.map((s) => bySlug(modalities, s)).filter(Boolean);
 
   return (
@@ -79,6 +83,16 @@ export default async function ModalityPage({ params }) {
           </section>
         </div>
       </div>
+
+      {writing.length ? (
+        <section className="section">
+          <div className="container stack" style={{ gap: '1.4rem' }}>
+            <Eyebrow>From Alchemists</Eyebrow>
+            <h2>Writing about {m.name}</h2>
+            <div className="post-grid">{writing.map((p) => <PostCard key={p.id} post={p} />)}</div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="section section--linen">
         <div className="container">
