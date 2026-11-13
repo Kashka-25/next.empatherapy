@@ -1,0 +1,209 @@
+/* The Golden Pause on the homepage hero: the stage, the bottom band, the welcome and the controls.
+   Copied from the film's preview stylesheet (film/golden-pause/preview/player.css), where it is tested in a real
+   browser, with one change: the preview marks "no player yet" on <html> (no-js, gp-wait); here the stage carries it
+   (gp--nojs, gp--wait), so the rest of the site is untouched. Keep the two in step. */
+
+/* ---------- The stage ---------- */
+/* Positions are fractions of the stage height, from cues.json "layout". The three --gp-* numbers below are the
+   defaults for the page without the player; player.js sets them from cues.json for the format it plays
+   (tests/golden-pause.test.mjs checks that both match cues.json). Sizes are in units of the frame width (cqw);
+   --stage-w and --stage-h are the frame's width and height in those units. */
+.gp {
+  display: block; padding-top: clamp(1rem, 3vw, 2rem);
+  /* The soft parchment backing behind the words in the bottom band: radial, with a long gaussian-like feather.
+     It is sized from the words' own box so every glyph sits where the alpha is still >= ~0.63, which keeps ink
+     text above 4.5:1 even if the film under it were black (checked by _test/check.js). */
+  --gp-backing: radial-gradient(closest-side, rgba(251, 247, 238, 0.82) 0%, rgba(251, 247, 238, 0.79) 40%, rgba(251, 247, 238, 0.72) 56%, rgba(251, 247, 238, 0.5) 70%, rgba(251, 247, 238, 0.26) 82%, rgba(251, 247, 238, 0.09) 92%, rgba(251, 247, 238, 0) 100%);
+  /* wide (16:9) */
+  --stage-w: 100cqw;
+  --stage-h: 56.25cqw;
+  --gp-bl-center: 0.93;     /* layout.wide.breathLines.center */
+  --gp-wm-frac: 0.38;       /* layout.wide.wordmark.widthFrac (of the stage width) */
+  --gp-tagline-y: 0.865;    /* layout.wide.tagline.centerPost */
+  --band-margin: 6px;       /* the least room left under the permission line */
+  --line-size: clamp(0.95rem, 2.05cqw, 1.75rem);
+  --perm-size: clamp(0.75rem, 1.3cqw, 1rem);
+  --tagline-size: clamp(0.9rem, 1.8cqw, 1.3rem);
+}
+.gp:focus { outline: none; }
+.gp:focus-visible { outline: 3px solid var(--amber-text); outline-offset: 4px; }
+.gp--square {
+  --stage-h: 100cqw;
+  --gp-bl-center: 0.9;      /* layout.square.breathLines.center */
+  --gp-wm-frac: 0.56;       /* layout.square.wordmark.widthFrac (of the stage width) */
+  --gp-tagline-y: 0.85;     /* layout.square.tagline.centerPost */
+  --line-size: clamp(1rem, 4.6cqw, 1.6rem);
+  /* small enough that the permission line stays on one line down to a 320px phone: on two lines the band
+     would have to rise into the name */
+  --perm-size: clamp(0.7rem, 3.55cqw, 1rem);
+  --band-width: 96%;
+  --tagline-size: clamp(0.85rem, 4.2cqw, 1.15rem);
+}
+@media (max-width: 700px) {
+  /* without the player, phones get the square frame and the square still */
+  .gp.gp--nojs {
+    --stage-h: 100cqw;
+    --gp-bl-center: 0.9;    /* layout.square.breathLines.center */
+    --line-size: clamp(1rem, 4.6cqw, 1.6rem);
+    --perm-size: clamp(0.7rem, 3.55cqw, 1rem);
+    --band-width: 96%;
+  }
+  .gp--nojs .gp__frame { aspect-ratio: 1 / 1; }
+  .gp--nojs .gp__inner { max-width: 600px; }
+}
+@supports not (width: 1cqw) {
+  /* no container units: estimate the frame from the window (the frame is the window less the gutters, up to 1080px or 600px) */
+  .gp { --stage-w: calc(min(100vw, 1080px) - 2 * var(--gutter)); --stage-h: calc((min(100vw, 1080px) - 2 * var(--gutter)) * 0.5625); --line-size: clamp(1rem, 1.85vw, 1.75rem); --perm-size: clamp(0.78rem, 1.2vw, 1rem); --tagline-size: clamp(0.9rem, 1.6vw, 1.3rem); }
+  .gp--square { --stage-w: calc(min(100vw, 600px) - 2 * var(--gutter)); --stage-h: calc(min(100vw, 600px) - 2 * var(--gutter)); --line-size: clamp(1rem, 4.2vw, 1.6rem); --perm-size: clamp(0.8rem, 3.2vw, 1rem); --tagline-size: clamp(0.85rem, 3.8vw, 1.15rem); }
+}
+
+.gp__inner { width: 100%; max-width: 1080px; margin: 0 auto; padding-inline: var(--gutter); }
+.gp--square .gp__inner { max-width: 600px; }
+
+.gp__frame {
+  position: relative; overflow: hidden; isolation: isolate;
+  aspect-ratio: 16 / 9; container-type: inline-size;
+  border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-lift);
+  /* the ground before (or without) any media: warm parchment, as the film begins and ends */
+  background:
+    radial-gradient(60% 70% at 50% 46%, rgba(250, 243, 206, 0.95), rgba(250, 243, 206, 0) 70%),
+    linear-gradient(180deg, var(--surface), var(--parchment) 60%, var(--linen));
+}
+.gp--square .gp__frame { aspect-ratio: 1 / 1; }
+
+.gp__video, .gp__still, .gp__end, .gp__fallback {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; border: 0;
+}
+.gp__video { z-index: 0; background: transparent; }
+.gp__still, .gp__end { z-index: 1; }
+.gp__still[hidden], .gp__end[hidden] { display: none; }
+.gp--nojs .gp__video { display: none; }
+/* Without the player (no JavaScript, or its scripts did not load): the honey-name still as a background, so the image
+   is only fetched when this is really shown (a missing file fails silently). While the scripts load, "gp--wait" holds it back. */
+.gp__fallback { display: none; z-index: 1; }
+.gp--nojs:not(.gp--wait) .gp__fallback { display: block; background: url("/golden-pause/still-wide.jpg") center / cover no-repeat; }
+@media (max-width: 700px) { .gp--nojs:not(.gp--wait) .gp__fallback { background-image: url("/golden-pause/still-square.jpg"); } }
+
+/* Overlays are driven frame by frame from the video clock (player.js), so no CSS transitions here. */
+.gp__band, .gp__welcome, .gp__glyph { pointer-events: none; }
+
+/* ---------- The bottom band: breathing line, permission line ----------
+   Under the honey name (which fills about 0.575 to 0.86 of the height on wide, 0.575 to 0.78 on square).
+   The breathing line is centred at --gp-bl-center of the stage height; the permission line sits just under it.
+   An invisible twin of the permission line above the breathing line keeps the breathing line at the band's centre
+   whatever the wrapping, so the band is simply centred there; if the permission line would then come closer than
+   --band-margin to the frame's bottom edge (small screens, larger text), the whole band rises just enough. */
+.gp__band {
+  position: absolute; left: 50%; z-index: 3;
+  top: calc(var(--gp-bl-center) * 100%);
+  transform: translate(-50%, min(-50%, calc((1 - var(--gp-bl-center)) * var(--stage-h) - var(--band-margin) - 100%)));
+  width: max-content; max-width: var(--band-width, 92%);
+  display: grid; justify-items: center; text-align: center;
+}
+.gp__band-words { position: relative; display: grid; justify-items: center; }
+/* One backing for the whole band, sized from the words' own box, so it grows with larger text or wider spacing.
+   Wide and flat, so its feather has faded to almost nothing by the descenders of the name just above. While the film
+   plays, the widest row is the permission line at the bottom, so the backing sits a little low; on the calm still the
+   two breathing lines side by side are as wide, so it is centred and a little taller. */
+.gp__backing {
+  position: absolute; left: 50%; top: 52.2%; z-index: -1; border-radius: 50%;
+  width: 300%; height: 194%;
+  transform: translate(-50%, -50%); background: var(--gp-backing); opacity: 0;
+}
+.gp[data-gp-mode="calm"] .gp__backing, .gp--nojs:not(.gp--wait) .gp__backing { top: 48.5%; height: 230%; }
+.gp__slot { display: grid; justify-items: center; font-size: var(--line-size); }
+.gp__line, .gp__calm p {
+  max-width: none; font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 1em;
+  line-height: 1.22; text-align: center; color: var(--ink); letter-spacing: 0.005em;
+}
+.gp__line { grid-area: 1 / 1; opacity: 0; text-wrap: balance; }
+.gp__permission, .gp__ghost {
+  max-width: none; margin-top: 0.2em;
+  font-family: var(--font-body); font-size: var(--perm-size); font-weight: 600; line-height: 1.35; color: var(--ink);
+}
+.gp__permission { opacity: 0; }
+.gp__ghost { visibility: hidden; margin-top: 0; margin-bottom: 0.2em; }
+/* the two halves of the permission line break between them, never inside, when the line is too long for the frame */
+.gp__l { display: inline-block; }
+
+/* The calm still: reduced motion, Save-Data, slow or missing video, or no player (no JavaScript, or its scripts did
+   not load). Both breathing lines at once, side by side where they fit (stacked where they do not), with the
+   permission line under them, on the same backing. player.js sets the backing and the permission line to full
+   opacity in calm; without the player, this CSS does. */
+.gp__calm {
+  grid-area: 1 / 1; display: none; flex-wrap: wrap; justify-content: center; column-gap: 1.2em;
+  font-size: 0.9em;
+}
+.gp[data-gp-mode="calm"] .gp__calm, .gp--nojs:not(.gp--wait) .gp__calm { display: flex; }
+.gp[data-gp-mode="calm"] .gp__line, .gp--nojs:not(.gp--wait) .gp__line { visibility: hidden; }
+.gp--nojs:not(.gp--wait) .gp__backing, .gp--nojs:not(.gp--wait) .gp__permission { opacity: 1; }
+.gp[data-gp-mode="calm"] .gp__welcome { visibility: hidden; }
+
+/* ---------- The welcome: the wordmark, then the tagline ----------
+   The wordmark is the honey script's lettering in solid brown (wordmark-script.webp, layout.wordmark.image). It takes over from the honey script
+   where it was written (layout.script.centerPre), larger (wordmark.scalePre: as wide as the honey name), and rides the
+   camera tilt up to wordmark.centerPost at its own size: widthFrac of the stage width, its height from the image's
+   own proportions (the width and height attributes). player.js moves the track (as tall as the stage, so
+   translateY(y * 100%) puts the wordmark's centre at y) and scales the wordmark. The image's centre is its visual
+   centre, so no optical lift is needed. No backing: by the time the wordmark is fully in (9.7 s) the film is parchment. */
+.gp__welcome { position: absolute; inset: 0; z-index: 3; }
+.gp__wm-track { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.gp__wordmark {
+  position: absolute; left: 50%; top: 0; display: block; opacity: 0;
+  width: calc(var(--gp-wm-frac) * var(--stage-w)); max-width: none; height: auto;
+  transform: translate(-50%, -50%);
+}
+.gp__tagline {
+  position: absolute; left: 50%; top: calc(var(--gp-tagline-y) * 100%); transform: translate(-50%, -50%);
+  width: max-content; max-width: 92%; text-align: center; opacity: 0;
+  font-family: var(--font-body); font-weight: 600; font-size: var(--tagline-size); line-height: 1.35; color: #4F493E; /* darker than --muted: the backdrop stays behind the lockup */
+}
+
+/* While the scripts load (JavaScript on), keep the controls' room so nothing shifts when the player starts.
+   GoldenPause.jsx lifts gp--wait a little after the page has loaded, so if the player never starts, the calm still above takes over. */
+.gp--nojs.gp--wait .gp__controls { display: flex; visibility: hidden; }
+
+/* Play glyph over the honey-name still when autoplay was refused (the real control is the Play button below).
+   It sits above the name (which starts at 0.575 of the height). */
+.gp__glyph {
+  position: absolute; left: 50%; top: 42%; z-index: 4; transform: translate(-50%, -50%);
+  width: clamp(58px, 9cqw, 84px); aspect-ratio: 1; border-radius: 50%;
+  display: none; place-items: center; color: var(--amber-text);
+  background: rgba(251, 247, 238, 0.86); border: 1.5px solid var(--honey-light); box-shadow: var(--shadow-soft);
+}
+.gp__glyph svg { width: 46%; height: 46%; margin-left: 8%; }
+.gp[data-gp-mode="poster"] .gp__glyph { display: grid; }
+.gp[data-gp-mode="poster"] .gp__frame { cursor: pointer; }
+
+/* ---------- Controls: below the frame, so they never cover the words ---------- */
+.gp__bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem 1rem; padding-top: 0.8rem; }
+.gp__caption { font-size: 0.88rem; line-height: 1.4; color: var(--muted); }
+.gp__caption b { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 1.02rem; color: var(--ink); margin-right: 0.35rem; }
+.gp__controls { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-left: auto; }
+.gp--nojs .gp__controls { display: none; }
+.gp-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+  min-height: 44px; min-width: 44px; padding: 0 1.05rem; border-radius: var(--radius-pill);
+  border: 1.5px solid var(--border); background: var(--surface); color: var(--ink);
+  font: 700 0.9rem/1.2 var(--font-body); cursor: pointer; touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent; transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.gp-btn:hover { border-color: var(--honey); }
+.gp-btn:focus-visible { outline: 3px solid var(--amber-text); outline-offset: 3px; border-radius: var(--radius-pill); }
+.gp-btn[hidden] { display: none; }
+.gp-btn[aria-pressed="true"] { background: var(--lemon-soft); border-color: var(--honey); }
+.gp-btn[aria-disabled="true"] { opacity: 0.6; cursor: default; }
+.gp-btn--primary { background: var(--honey); border-color: var(--honey); }
+.gp-btn--primary:hover { background: var(--honey-light); border-color: var(--honey-light); }
+.gp-ico { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.gp-ico--play { stroke-width: 1.2; }
+.gp-btn[data-state="pause"] .gp-ico--play,
+.gp-btn[data-state="play"] .gp-ico--pause,
+.gp-btn[aria-pressed="false"] .gp-ico--sound,
+.gp-btn[aria-pressed="true"] .gp-ico--muted,
+.gp-btn[data-state="skip"] .gp-ico--replay,
+.gp-btn[data-state="replay"] .gp-ico--skip { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gp-btn { transition: none; }
+}
