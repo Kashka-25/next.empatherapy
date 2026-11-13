@@ -9,7 +9,7 @@ export const metadata = { title: 'Clean-up' };
 export default async function RetentionPage({ searchParams }) {
   await requireAdmin('retention');
   const store = getStore();
-  const found = store ? await findExpired(store) : { applications: [], counters: [] };
+  const found = store ? await findExpired(store) : { applications: [], counters: [], audit: [] };
 
   return (
     <div className="stack" style={{ gap: '2rem' }}>
@@ -26,6 +26,7 @@ export default async function RetentionPage({ searchParams }) {
           <li>Declined applications are deleted {RETENTION_DAYS.declined} days after they were declined.</li>
           <li>Every other application is deleted 12 months after it was last touched.</li>
           <li>Spam-protection counters (hashed, with no names or addresses) are deleted after {RETENTION_DAYS.ratelimits} days.</li>
+          <li>Activity log entries (staff actions only) are deleted after 12 months.</li>
         </ul>
         <p style={{ color: 'var(--muted)' }}>The same rule is written on the public <a href="/privacy">privacy notice</a>. Change them together.</p>
       </section>
@@ -38,8 +39,8 @@ export default async function RetentionPage({ searchParams }) {
               {found.applications.map((a) => <li key={a.id}>{STATUS_LABEL[a.status] ?? a.status}, last touched {new Date(a.updated_at ?? a.created_at).toLocaleDateString('en-AU')}</li>)}
             </ul>
           ) : <p>No applications are due for deletion.</p>}
-          <p style={{ color: 'var(--muted)' }}>{found.counters.length} old spam-protection {found.counters.length === 1 ? 'counter' : 'counters'} also due.</p>
-          {found.applications.length || found.counters.length ? (
+          <p style={{ color: 'var(--muted)' }}>{found.counters.length} old spam-protection {found.counters.length === 1 ? 'counter' : 'counters'} and {found.audit.length} old activity {found.audit.length === 1 ? 'entry' : 'entries'} also due.</p>
+          {found.applications.length || found.counters.length || found.audit.length ? (
             <form action={purgeExpiredAction}>
               <button type="submit" className="btn btn--honey">Permanently delete these</button>
             </form>

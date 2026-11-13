@@ -7,6 +7,7 @@ import { createAccount, authenticate, updateAccount, activeOwnerCount, normalise
 import { purgeExpired } from '@/lib/retention.mjs';
 import { draftFromApplication } from '@/lib/application-to-profile.mjs';
 import { can } from '@/lib/accounts.mjs';
+import { recordAudit, describeSave, PHOTO_INTENT } from '@/lib/audit.mjs';
 import { getBlobStore, newImageId } from '@/lib/images/blobs.mjs';
 import { inspectImage, IMAGE_MESSAGES, MAX_BYTES } from '@/lib/images/inspect.mjs';
 import { MAX_PHOTOS, addPhoto, updatePhoto, makePrimary, movePhoto, removePhoto, canHavePhotos, photosOf, cleanAlt, cleanCaption, altError } from '@/lib/photos.mjs';
@@ -24,6 +25,12 @@ const loginByAddress = createSharedLimiter({ name: 'login-address', max: 5, wind
 const loginByEmail = createSharedLimiter({ name: 'login-email', max: 5, windowMs: WINDOW, getStore });
 const passwordChange = createSharedLimiter({ name: 'password-change', max: 5, windowMs: WINDOW, getStore });
 const text = (fd, k) => String(fd.get(k) ?? '');
+
+/** Notes who did what in the activity log. Never blocks the action it describes. */
+async function audit(me, action, target, summary) {
+  try { await recordAudit(getStore(), me, action, target, summary); }
+  catch (e) { console.error('Activity log could not be written:', e.message); }
+}
 
 function needStore() {
   const store = getStore();
@@ -43,10 +50,12 @@ export async function login(formData) {
   const password = text(formData, 'password');
   const store = getStore();
   let who = null; // null means the setup owner
+  let actor = { id: 'bootstrap', name: 'Setup owner', role: 'owner' };
   if (email) {
     const acct = store ? await authenticate(store, email, password) : null;
     if (!acct) redirect('/admin/login?e=bad');
     who = { sub: acct.id, role: acct.role };
+    actor = { id: acct.id, name: acct.name, role: acct.role };
   } else {
     // The setup password works only until the first owner account exists.
     const closed = store ? (await activeOwnerCount(store)) > 0 : false;
@@ -54,6 +63,7 @@ export async function login(formData) {
   }
   await loginByAddress.reset(address);
   if (email) await loginByEmail.reset(email);
+  await audit(actor, 'sign_in', actor.id, 'Signed in');
   cookies().set(SESSION_COOKIE, await createSession(process.env.ADMIN_SESSION_SECRET, 8 * 3600, Date.now(), who), { ...cookieOptions, maxAge: 8 * 3600 });
   redirect('/admin');
 }
@@ -77,6 +87,7 @@ export async function createAccountAction(formData) {
   const store = needStore();
   const r = await createAccount(store, { email: text(formData, 'email'), name: text(formData, 'name'), role: text(formData, 'role'), password: text(formData, 'password') });
   if (!r.ok) accountsError(Object.values(r.errors)[0]);
+  await audit(me, 'account_created', r.account.id, `Created ${r.account.role} account for ${r.account.name}`);
   if (me.id === 'bootstrap') { // the setup password has done its job: sign in with the new account
     cookies().set(SESSION_COOKIE, '', { ...cookieOptions, maxAge: 0 });
     redirect('/admin/login?e=created');
@@ -96,6 +107,7 @@ export async function updateAccountAction(formData) {
   if (id === me.id && (change.active === false || (change.role && change.role !== 'owner'))) accountsError('You cannot lock yourself out. Ask another owner to do it.');
   const r = await updateAccount(store, id, change);
   if (!r.ok) accountsError(REASON[r.reason] ?? 'That did not work.');
+  await audit(me, 'account_changed', id, `${[change.role !== undefined && `Changed role to ${change.role}`, change.active !== undefined && (change.active ? 'Reactivated' : 'Deactivated'), change.password !== undefined && 'Reset the password'].filter(Boolean).join(', ')} for ${r.account.name}`);
   revalidatePath('/admin/accounts');
   redirect('/admin/accounts?saved=1');
 }
@@ -113,29 +125,32 @@ export async function changeOwnPasswordAction(formData) {
   if (!(await authenticate(store, me.email, text(formData, 'current_password')))) fail('The current password is not right.');
   const r = await updateAccount(store, me.id, { password: next });
   if (!r.ok) fail(REASON[r.reason] ?? 'That did not work.');
+  await audit(me, 'password_changed', me.id, 'Changed their own password');
   back('saved=1');
 }
 
 /* ---------- retention (owners) ---------- */
 export async function purgeExpiredAction() {
-  await requireAdmin('retention');
+  const me = await requireAdmin('retention');
   const r = await purgeExpired(needStore());
+  await audit(me, 'retention_purge', 'retention', `Deleted ${r.applications} expired application(s), ${r.counters} old spam-protection counter(s) and ${r.audit} old log entr${r.audit === 1 ? 'y' : 'ies'}`);
   revalidatePath('/admin/retention');
   redirect(`/admin/retention?done=${r.applications}`);
 }
 
 /* ---------- applications ---------- */
 export async function reviewApplicationAction(formData) {
-  await requireAdmin('applications');
+  const me = await requireAdmin('applications');
   const store = needStore();
   const id = text(formData, 'id');
   const r = await reviewApplication(store, id, { status: formData.get('status') ?? undefined, notes: formData.has('notes') ? text(formData, 'notes') : undefined });
+  if (r.ok) await audit(me, 'application_updated', id, formData.get('status') ? `Status set to ${text(formData, 'status')}` : 'Review notes updated');
   revalidatePath('/admin/applications');
   redirect(r.ok ? `/admin/applications/${encodeURIComponent(id)}?saved=1` : '/admin/applications?e=missing');
 }
 
 export async function deleteApplicationAction(formData) {
-  await requireAdmin('applications');
+  const me = await requireAdmin('applications');
   const store = needStore();
   const id = text(formData, 'id');
   // A deletion request covers a draft profile made from the application too. A published profile is kept (remove it separately).
@@ -149,6 +164,7 @@ export async function deleteApplicationAction(formData) {
     }
   }
   await removeApplication(store, id);
+  await audit(me, 'application_deleted', id, 'Deleted an application and any unpublished draft made from it');
   revalidatePath('/admin/applications');
   redirect('/admin/applications?deleted=1');
 }
@@ -157,25 +173,27 @@ export async function deleteApplicationAction(formData) {
 const refreshPublic = () => { revalidatePath('/'); revalidatePath('/modalities'); revalidatePath('/admin/features'); };
 
 export async function seedFeaturesAction() {
-  await requireAdmin('content');
+  const me = await requireAdmin('content');
   await seedFeatures(needStore());
+  await audit(me, 'feature_changed', 'features', 'Loaded the sample weekly schedule');
   refreshPublic();
   redirect('/admin/features?saved=1');
 }
 
 export async function addFeatureAction(formData) {
-  await requireAdmin('content');
+  const me = await requireAdmin('content');
   const store = needStore();
   const raw = Object.fromEntries(['modality_id', 'feature_start', 'feature_end', 'featured_position', 'editorial_introduction', 'publication_status'].map((k) => [k, text(formData, k)]));
   const v = validateFeature(raw, await loadFeatures(store), (await loadContent(store)).modalities);
   if (!v.valid) redirect(`/admin/features?error=${encodeURIComponent(Object.values(v.errors)[0])}`);
   await store.put('features', v.data);
+  await audit(me, 'feature_changed', v.data.modality_id, `Scheduled ${v.data.modality_id} from ${v.data.feature_start} to ${v.data.feature_end}`);
   refreshPublic();
   redirect('/admin/features?saved=1');
 }
 
 export async function setFeatureStatusAction(formData) {
-  await requireAdmin('content');
+  const me = await requireAdmin('content');
   const store = needStore();
   const rec = await store.get('features', text(formData, 'id'));
   const status = text(formData, 'status');
@@ -184,13 +202,15 @@ export async function setFeatureStatusAction(formData) {
     if (!v.valid) redirect(`/admin/features?error=${encodeURIComponent(Object.values(v.errors)[0])}`);
     await store.put('features', { ...rec, publication_status: status });
   }
+  if (rec) await audit(me, 'feature_changed', rec.id, `Set a weekly feature to ${status}`);
   refreshPublic();
   redirect('/admin/features?saved=1');
 }
 
 export async function deleteFeatureAction(formData) {
-  await requireAdmin('content');
+  const me = await requireAdmin('content');
   await needStore().remove('features', text(formData, 'id'));
+  await audit(me, 'feature_changed', text(formData, 'id'), 'Removed a scheduled feature');
   refreshPublic();
   redirect('/admin/features?saved=1');
 }
@@ -205,7 +225,7 @@ const formValues = (fd) => {
 
 /** Used with useFormState: returns errors and the typed values when something needs fixing, redirects when saved. */
 export async function saveAlchemistAction(_prev, formData) {
-  await requireAdmin('content');
+  const me = await requireAdmin('content');
   const store = needStore();
   const id = text(formData, 'id');
   const content = await loadContent(store);
@@ -215,24 +235,26 @@ export async function saveAlchemistAction(_prev, formData) {
   const v = validateAlchemist(raw, existing, { alchemists: content.alchemists, modalities: content.modalities });
   if (!v.valid) return { errors: v.errors, values: raw, attempt: Date.now() };
   await store.put('alchemists', v.record);
+  await audit(me, 'alchemist_saved', v.record.id, describeSave(existing, v.record));
   refreshAll();
   redirect(`/admin/alchemists/${encodeURIComponent(v.record.id)}?saved=1`);
 }
 
 export async function resetAlchemistAction(formData) {
-  await requireAdmin('content');
+  const me = await requireAdmin('content');
   const store = needStore();
   const id = text(formData, 'id');
   const stored = await store.get('alchemists', id);
   await store.remove('alchemists', id);
   const blobs = getBlobStore();
   if (blobs) for (const p of photosOf(stored)) await blobs.remove(p.id).catch(() => {}); // photo files go with the profile
+  await audit(me, 'alchemist_removed', id, `Reset or deleted profile ${stored?.name ?? id}`);
   refreshAll();
   redirect('/admin/alchemists?reset=1');
 }
 
 export async function saveModalityAction(_prev, formData) {
-  await requireAdmin('content');
+  const me = await requireAdmin('content');
   const store = needStore();
   const id = text(formData, 'id');
   const content = await loadContent(store);
@@ -242,12 +264,13 @@ export async function saveModalityAction(_prev, formData) {
   const v = validateModality(raw, existing, { modalities: content.modalities });
   if (!v.valid) return { errors: v.errors, values: raw, attempt: Date.now() };
   await store.put('modalities', v.record);
+  await audit(me, 'modality_saved', v.record.id, describeSave(existing, v.record, 'modality'));
   refreshAll();
   redirect(`/admin/modalities/${encodeURIComponent(v.record.id)}?saved=1`);
 }
 
 export async function resetModalityAction(formData) {
-  await requireAdmin('content');
+  const me = await requireAdmin('content');
   const store = needStore();
   const id = text(formData, 'id');
   const content = await loadContent(store);
@@ -258,6 +281,7 @@ export async function resetModalityAction(formData) {
     if (blocker && !content.seedIds.modalities.has(id)) redirect(`/admin/modalities/${encodeURIComponent(id)}?error=${encodeURIComponent(blocker)}`);
   }
   await store.remove('modalities', id);
+  await audit(me, 'modality_removed', id, `Reset or deleted modality ${m?.name ?? id}`);
   refreshAll();
   redirect('/admin/modalities?reset=1');
 }
@@ -273,7 +297,7 @@ async function editableAlchemist(store, id) {
 }
 
 export async function uploadPhotoAction(formData) {
-  await requireAdmin('content');
+  const me = await requireAdmin('content');
   const store = needStore();
   const id = text(formData, 'id');
   const a = await editableAlchemist(store, id);
@@ -300,12 +324,13 @@ export async function uploadPhotoAction(formData) {
     await blobs.remove(imageId).catch(() => {}); // do not leave a file nobody points to
     throw e;
   }
+  await audit(me, 'photo_changed', id, `Added a photo to ${a.name}`);
   refreshAll();
   photoBack(id, 'photo_saved=1');
 }
 
 export async function photoAction(formData) {
-  await requireAdmin('content');
+  const me = await requireAdmin('content');
   const store = needStore();
   const id = text(formData, 'id');
   const photoId = text(formData, 'photo_id');
@@ -325,6 +350,7 @@ export async function photoAction(formData) {
   if (!r.ok) photoFail(id, 'That photo no longer exists.');
   await store.put('alchemists', { ...a, photos: r.photos });
   if (intent === 'remove') { const blobs = getBlobStore(); if (blobs) await blobs.remove(photoId).catch(() => {}); }
+  await audit(me, 'photo_changed', id, `${PHOTO_INTENT[intent] ?? 'Changed a photo'} for ${a.name}`);
   refreshAll();
   photoBack(id, 'photo_saved=1');
 }
@@ -353,6 +379,7 @@ export async function createDraftProfileAction(formData) {
   const record = { ...v.record, source: { ...source, application_id: app.id } };
   await store.put('alchemists', record);
   await store.put('applications', { ...app, profile_id: record.id });
+  await audit(me, 'profile_draft_created', record.id, `Created a draft profile for ${record.name} from an application`);
   refreshAll();
   redirect(`/admin/alchemists/${encodeURIComponent(record.id)}?created=1`);
 }

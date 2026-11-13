@@ -196,6 +196,6 @@ test('retention: declined after 90 days, everything else after a year, counters 
   assert.deepEqual(found.applications.map((a) => a.id).sort(), ['declined-old', 'new-old']);
   assert.deepEqual(found.counters.map((c) => c.id), ['old-counter']);
   assert.equal((await store.list('applications')).length, 4, 'finding does not delete');
-  assert.deepEqual(await purgeExpired(store, now), { applications: 2, counters: 1 });
+  assert.deepEqual(await purgeExpired(store, now), { applications: 2, counters: 1, audit: 0 });
   assert.deepEqual((await store.list('applications')).map((a) => a.id).sort(), ['approved-recent', 'declined-recent']);
 });
