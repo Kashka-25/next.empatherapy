@@ -70,6 +70,12 @@ The code is ready. These steps need a person with the accounts, and none has bee
 7. Use HTTPS only (the session cookie is `Secure` in production).
 8. Remove the six fictional example profiles before any public launch.
 
+## Launch settings (search engines, security headers)
+- **Search engines are kept out until you say so.** Unless `EMPATHERAPY_INDEXING=on` is set on the host, every page sends `noindex`, `robots.txt` disallows everything and the sitemap is empty. These are decided **when the site is built**, so changing the setting needs a redeploy.
+- **Before turning indexing on:** remove the six fictional example profiles (the sitemap already leaves them out, but their pages still exist), set `SITE_URL` to the real address (for example `https://empatherapy.co`), and have the privacy notice reviewed.
+- **Security headers** go on every response (`lib/site.mjs`): a content policy (own scripts and styles, Google Fonts, own images, nothing else; no framing, no plugins, forms post back to us only), `nosniff`, clickjacking protection, a strict referrer policy, camera/microphone/location switched off, and HTTPS-only (`Strict-Transport-Security`) in production. Inline scripts and styles stay allowed because Next.js and React need them; a stricter nonce-based policy would be a larger change.
+- Friendly "not found" and "something went wrong" pages show no technical details. The share picture for links is `app/opengraph-image.png`.
+
 ## Privacy rules this code follows
 - Seeker discovery is never sent to the server or stored. Only Alchemist applications are stored, and only with consent.
 - Applications keep just what the form asks for, plus when consent was given. An admin can delete one permanently, and `/admin/retention` removes old ones. Applicants can email to ask.
