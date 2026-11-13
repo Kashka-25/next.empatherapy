@@ -1,7 +1,7 @@
 # Empatherapy: progress and decisions
 
 The source of truth for what has been built, what has been decided, and what is still open.
-Update it at the end of every working session. Last updated: 17 Nov 2026.
+Update it at the end of every working session. Last updated: 18 Nov 2026.
 
 ## The product in one paragraph
 Empatherapy is a discovery and connection ecosystem. **Seekers** (people looking for understanding, support,
@@ -23,6 +23,7 @@ Tagline: **Discover new pathways to yourself.** Feeling: a cup of lemon and hone
 | 6b. Admin content editing | Done: edit and create Alchemist profiles and modality pages, with publish rules and reset to original |
 | 6c. Production readiness | Built, **not yet connected to a real database:** Supabase driver and schema, individual admin accounts with roles, shared rate limiting, privacy notice and retention rule. **Photo uploads built (6d).** |
 | 6e. Applications to profiles | Done: "Create draft profile" from an approved application, with verified-means-checked publish rules |
+| 6g. Two-step sign-in | Done: optional authenticator-app codes and recovery codes, owner reset |
 | 6f. Activity log | Done: owners can see who changed what and when, with 12-month retention |
 | 6d. Alchemist photos | Done: up to 5 photos per profile with a "Meet them" carousel, profile picture, alt text and consent tick, metadata stripped, private storage |
 
@@ -75,6 +76,6 @@ All of it lives in `data/*.mjs`. Replace it with real, verified content before a
 ```bash
 npm install
 npm run dev     # http://localhost:3000
-npm test        # 122 tests: activity log, application to draft profile, photos (checks, metadata stripping, storage, list rules), matching, content, directory, validation, storage (file, memory, Supabase), sessions, passwords, rate limits, accounts and roles, retention, applications, features
+npm test        # 136 tests: two-step sign-in (RFC 6238 vectors), activity log, application to draft profile, photos (checks, metadata stripping, storage, list rules), matching, content, directory, validation, storage (file, memory, Supabase), sessions, passwords, rate limits, accounts and roles, retention, applications, features
 npm run build   # also runs lint
 ```

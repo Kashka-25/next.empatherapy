@@ -3,7 +3,7 @@ import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { requireAdmin, adminConfigured } from '@/lib/admin-auth.mjs';
-import { createAccount, authenticate, updateAccount, activeOwnerCount, normaliseEmail } from '@/lib/accounts.mjs';
+import { createAccount, authenticate, updateAccount, activeOwnerCount, normaliseEmail, touchLogin, activeAccount, beginTotp, cancelTotp, confirmTotp, disableTotp, checkSecondFactor } from '@/lib/accounts.mjs';
 import { purgeExpired } from '@/lib/retention.mjs';
 import { draftFromApplication } from '@/lib/application-to-profile.mjs';
 import { can } from '@/lib/accounts.mjs';
@@ -11,7 +11,7 @@ import { recordAudit, describeSave, PHOTO_INTENT } from '@/lib/audit.mjs';
 import { getBlobStore, newImageId } from '@/lib/images/blobs.mjs';
 import { inspectImage, IMAGE_MESSAGES, MAX_BYTES } from '@/lib/images/inspect.mjs';
 import { MAX_PHOTOS, addPhoto, updatePhoto, makePrimary, movePhoto, removePhoto, canHavePhotos, photosOf, cleanAlt, cleanCaption, altError } from '@/lib/photos.mjs';
-import { SESSION_COOKIE, createSession } from '@/lib/session.mjs';
+import { SESSION_COOKIE, PENDING_COOKIE, pendingSecret, createSession, readSession } from '@/lib/session.mjs';
 import { verifyPassword } from '@/lib/password.mjs';
 import { createSharedLimiter, clientKey } from '@/lib/ratelimit.mjs';
 import { getStore } from '@/lib/store/index.mjs';
@@ -23,6 +23,8 @@ import { validateAlchemist, validateModality, modalityDeleteBlocker } from '@/li
 const WINDOW = 15 * 60 * 1000;
 const loginByAddress = createSharedLimiter({ name: 'login-address', max: 5, windowMs: WINDOW, getStore });
 const loginByEmail = createSharedLimiter({ name: 'login-email', max: 5, windowMs: WINDOW, getStore });
+const secondStepByAccount = createSharedLimiter({ name: 'second-step-account', max: 5, windowMs: WINDOW, getStore });
+const secondStepByAddress = createSharedLimiter({ name: 'second-step-address', max: 10, windowMs: WINDOW, getStore });
 const passwordChange = createSharedLimiter({ name: 'password-change', max: 5, windowMs: WINDOW, getStore });
 const text = (fd, k) => String(fd.get(k) ?? '');
 
@@ -52,8 +54,13 @@ export async function login(formData) {
   let who = null; // null means the setup owner
   let actor = { id: 'bootstrap', name: 'Setup owner', role: 'owner' };
   if (email) {
-    const acct = store ? await authenticate(store, email, password) : null;
+    const acct = store ? await authenticate(store, email, password, { touch: false }) : null;
     if (!acct) redirect('/admin/login?e=bad');
+    if (acct.two_step) { // right password, but a code is still needed: half signed in, in a separate short-lived cookie
+      cookies().set(PENDING_COOKIE, await createSession(pendingSecret(process.env.ADMIN_SESSION_SECRET), 300, Date.now(), { sub: acct.id, role: 'pending' }), { ...cookieOptions, maxAge: 300 });
+      redirect('/admin/login/code');
+    }
+    await touchLogin(store, acct.id);
     who = { sub: acct.id, role: acct.role };
     actor = { id: acct.id, name: acct.name, role: acct.role };
   } else {
@@ -70,6 +77,7 @@ export async function login(formData) {
 
 export async function logout() {
   cookies().set(SESSION_COOKIE, '', { ...cookieOptions, maxAge: 0 });
+  cookies().set(PENDING_COOKIE, '', { ...cookieOptions, maxAge: 0 });
   redirect('/admin/login');
 }
 
@@ -104,10 +112,11 @@ export async function updateAccountAction(formData) {
   if (formData.has('role')) change.role = text(formData, 'role');
   if (formData.has('active')) change.active = text(formData, 'active') === 'yes';
   if (formData.has('password')) change.password = text(formData, 'password');
+  if (formData.has('reset_two_step')) change.resetTwoStep = true;
   if (id === me.id && (change.active === false || (change.role && change.role !== 'owner'))) accountsError('You cannot lock yourself out. Ask another owner to do it.');
   const r = await updateAccount(store, id, change);
   if (!r.ok) accountsError(REASON[r.reason] ?? 'That did not work.');
-  await audit(me, 'account_changed', id, `${[change.role !== undefined && `Changed role to ${change.role}`, change.active !== undefined && (change.active ? 'Reactivated' : 'Deactivated'), change.password !== undefined && 'Reset the password'].filter(Boolean).join(', ')} for ${r.account.name}`);
+  await audit(me, 'account_changed', id, `${[change.role !== undefined && `Changed role to ${change.role}`, change.active !== undefined && (change.active ? 'Reactivated' : 'Deactivated'), change.password !== undefined && 'Reset the password', change.resetTwoStep && 'Reset two-step sign-in'].filter(Boolean).join(', ')} for ${r.account.name}`);
   revalidatePath('/admin/accounts');
   redirect('/admin/accounts?saved=1');
 }
@@ -382,4 +391,70 @@ export async function createDraftProfileAction(formData) {
   await audit(me, 'profile_draft_created', record.id, `Created a draft profile for ${record.name} from an application`);
   refreshAll();
   redirect(`/admin/alchemists/${encodeURIComponent(record.id)}?created=1`);
+}
+
+/* ---------- two-step sign-in ---------- */
+const clearPending = () => cookies().set(PENDING_COOKIE, '', { ...cookieOptions, maxAge: 0 });
+
+/** The second page of signing in: the code from the app (or a recovery code). */
+export async function secondStepAction(formData) {
+  if (!adminConfigured()) redirect('/admin/login?e=config');
+  const store = getStore();
+  const who = await readSession(cookies().get(PENDING_COOKIE)?.value, pendingSecret(process.env.ADMIN_SESSION_SECRET || ''));
+  if (!store || !who) redirect('/admin/login?e=expired');
+  const address = clientKey(headers());
+  if (!(await secondStepByAddress.check(address)).ok || !(await secondStepByAccount.check(who.sub)).ok) { clearPending(); redirect('/admin/login?e=wait'); }
+  const result = await checkSecondFactor(store, who.sub, text(formData, 'code'));
+  if (!result.ok) redirect('/admin/login/code?e=bad');
+  const acct = await activeAccount(store, who.sub);
+  if (!acct) { clearPending(); redirect('/admin/login?e=bad'); }
+  await touchLogin(store, acct.id);
+  await secondStepByAccount.reset(who.sub);
+  await loginByAddress.reset(address);
+  await loginByEmail.reset(acct.email);
+  clearPending();
+  cookies().set(SESSION_COOKIE, await createSession(process.env.ADMIN_SESSION_SECRET, 8 * 3600, Date.now(), { sub: acct.id, role: acct.role }), { ...cookieOptions, maxAge: 8 * 3600 });
+  await audit({ id: acct.id, name: acct.name, role: acct.role }, 'sign_in', acct.id, result.via === 'recovery' ? `Signed in with a recovery code (${result.remaining} left)` : 'Signed in with two-step');
+  redirect('/admin');
+}
+
+const accountBack = (q) => redirect(`/admin/account?${q}`);
+
+export async function startTwoStepAction() {
+  const me = await requireAdmin();
+  if (me.id === 'bootstrap') accountBack('error=' + encodeURIComponent('Create your own account first.'));
+  const r = await beginTotp(needStore(), me.id);
+  if (!r.ok && r.reason === 'already_on') accountBack('error=' + encodeURIComponent('Two-step sign-in is already on.'));
+  revalidatePath('/admin/account');
+  accountBack('setup=1');
+}
+
+export async function cancelTwoStepAction() {
+  const me = await requireAdmin();
+  await cancelTotp(needStore(), me.id);
+  revalidatePath('/admin/account');
+  accountBack('x=1');
+}
+
+/** Used with useFormState: returns an error, or the recovery codes (shown once). */
+export async function confirmTwoStepAction(_prev, formData) {
+  const me = await requireAdmin();
+  const store = needStore();
+  if (!(await passwordChange.check(`2fa:${me.id}`)).ok) return { error: 'Too many attempts. Please wait a few minutes.', codes: null };
+  const r = await confirmTotp(store, me.id, text(formData, 'code'));
+  if (!r.ok) return { error: r.reason === 'bad_code' ? 'That code did not match. Check the time on your phone and try the newest code.' : 'Start the setup again.', codes: null };
+  await audit(me, 'two_step_changed', me.id, 'Turned on two-step sign-in');
+  // No revalidatePath here: refreshing the page would swap this form for the "it is on" view and hide the recovery codes.
+  return { error: null, codes: r.recoveryCodes };
+}
+
+export async function disableTwoStepAction(formData) {
+  const me = await requireAdmin();
+  const store = needStore();
+  if (!(await passwordChange.check(`2fa-off:${me.id}`)).ok) accountBack('error=' + encodeURIComponent('Too many attempts. Please wait a few minutes.'));
+  if (!(await authenticate(store, me.email, text(formData, 'password'), { touch: false }))) accountBack('error=' + encodeURIComponent('The password is not right.'));
+  await disableTotp(store, me.id);
+  await audit(me, 'two_step_changed', me.id, 'Turned off two-step sign-in');
+  revalidatePath('/admin/account');
+  accountBack('off=1');
 }
