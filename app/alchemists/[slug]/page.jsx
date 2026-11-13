@@ -3,11 +3,13 @@ import { notFound } from 'next/navigation';
 import AlchemistPortrait from '@/components/alchemists/AlchemistPortrait';
 import PhotoCarousel from '@/components/alchemists/PhotoCarousel';
 import EnquiryForm from '@/components/alchemists/EnquiryForm';
-import { photosOf } from '@/lib/photos.mjs';
+import { publicPhotos } from '@/lib/photos.mjs';
 import Eyebrow from '@/components/ui/Eyebrow';
 import DevNote from '@/components/ui/DevNote';
 import { bySlug, modalitiesOf, BASIS_LABEL, placeAndFormat } from '@/lib/content.mjs';
 import { publicContent } from '@/lib/content-store.mjs';
+import { getStore } from '@/lib/store/index.mjs';
+import { hasPortal } from '@/lib/accounts.mjs';
 
 export const revalidate = 60;
 
@@ -33,9 +35,10 @@ export default async function AlchemistPage({ params }) {
   const drawn = mods.filter((m) => m.basis === 'confirm');
   const needsConfirm = [...a.qualifications, ...a.experience, ...a.pricing.sessions].filter((x) => x.confirm).length;
   const founder = !a.demo;
-  const photos = photosOf(a);
+  const photos = publicPhotos(a);
   const first = a.name.split(' ')[0];
-  const canEnquire = !a.demo && Boolean(a.enquiry_email);
+  const store = getStore();
+  const canEnquire = !a.demo && (Boolean(a.enquiry_email) || (store ? await hasPortal(store, a.id) : false));
 
   return (
     <>

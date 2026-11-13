@@ -3,6 +3,7 @@ import { getStore } from '@/lib/store/index.mjs';
 import { publicContent } from '@/lib/content-store.mjs';
 import { submitEnquiry } from '@/lib/enquiries.mjs';
 import { notifyEnquiry } from '@/lib/notify.mjs';
+import { hasPortal } from '@/lib/accounts.mjs';
 import { createSharedLimiter, clientKey } from '@/lib/ratelimit.mjs';
 
 export const dynamic = 'force-dynamic';
@@ -40,7 +41,8 @@ export async function POST(request) {
 
   const { alchemists } = await publicContent(store);
   const alchemist = alchemists.find((a) => a.id === body.alchemist_id);
-  const result = await submitEnquiry(store, alchemist, body);
+  const portal = alchemist ? await hasPortal(store, alchemist.id) : false;
+  const result = alchemist && !alchemist.enquiry_email && !portal ? { ok: false, reason: 'unavailable' } : await submitEnquiry(store, alchemist, body);
   if (!result.ok) {
     if (result.reason === 'invalid') return json({ error: 'invalid', errors: result.errors }, 400);
     if (result.reason === 'unavailable') return json({ error: 'unavailable' }, 404);
@@ -49,7 +51,7 @@ export async function POST(request) {
 
   // Stored. Now tell people. A mail problem must never lose or fail the enquiry.
   try {
-    const notified = await notifyEnquiry(result.record, alchemist);
+    const notified = await notifyEnquiry(result.record, alchemist, process.env, globalThis.fetch, { portal });
     await store.put('enquiries', { ...result.record, notified });
   } catch (e) {
     console.error('Enquiry notification failed:', e.message);

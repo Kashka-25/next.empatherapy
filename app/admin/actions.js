@@ -2,16 +2,17 @@
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { requireAdmin, adminConfigured } from '@/lib/admin-auth.mjs';
+import { requireAdmin, requirePortal, adminConfigured } from '@/lib/admin-auth.mjs';
 import { createAccount, authenticate, updateAccount, activeOwnerCount, normaliseEmail, touchLogin, activeAccount, beginTotp, cancelTotp, confirmTotp, disableTotp, checkSecondFactor } from '@/lib/accounts.mjs';
 import { purgeExpired } from '@/lib/retention.mjs';
 import { draftFromApplication } from '@/lib/application-to-profile.mjs';
 import { can } from '@/lib/accounts.mjs';
 import { recordAudit, describeSave, PHOTO_INTENT } from '@/lib/audit.mjs';
 import { updateEnquiry, setRatePercent, ENQUIRY_LABEL } from '@/lib/enquiries.mjs';
+import { propose, approve, reject } from '@/lib/proposals.mjs';
 import { getBlobStore, newImageId } from '@/lib/images/blobs.mjs';
 import { inspectImage, IMAGE_MESSAGES, MAX_BYTES } from '@/lib/images/inspect.mjs';
-import { MAX_PHOTOS, addPhoto, updatePhoto, makePrimary, movePhoto, removePhoto, canHavePhotos, photosOf, cleanAlt, cleanCaption, altError } from '@/lib/photos.mjs';
+import { MAX_PHOTOS, addPhoto, updatePhoto, makePrimary, movePhoto, removePhoto, approvePhoto, canHavePhotos, photosOf, cleanAlt, cleanCaption, altError } from '@/lib/photos.mjs';
 import { SESSION_COOKIE, PENDING_COOKIE, pendingSecret, createSession, readSession } from '@/lib/session.mjs';
 import { verifyPassword } from '@/lib/password.mjs';
 import { createSharedLimiter, clientKey } from '@/lib/ratelimit.mjs';
@@ -94,7 +95,8 @@ const REASON = {
 export async function createAccountAction(formData) {
   const me = await requireAdmin('accounts');
   const store = needStore();
-  const r = await createAccount(store, { email: text(formData, 'email'), name: text(formData, 'name'), role: text(formData, 'role'), password: text(formData, 'password') });
+  const content = await loadContent(store);
+  const r = await createAccount(store, { email: text(formData, 'email'), name: text(formData, 'name'), role: text(formData, 'role'), password: text(formData, 'password'), profile_id: text(formData, 'profile_id') }, { profiles: content.alchemists });
   if (!r.ok) accountsError(Object.values(r.errors)[0]);
   await audit(me, 'account_created', r.account.id, `Created ${r.account.role} account for ${r.account.name}`);
   if (me.id === 'bootstrap') { // the setup password has done its job: sign in with the new account
@@ -297,52 +299,51 @@ export async function resetModalityAction(formData) {
 }
 
 /* ---------- Alchemist photos ---------- */
-const photoBack = (id, query) => redirect(`/admin/alchemists/${encodeURIComponent(id)}?${query}#photos`);
-const photoFail = (id, msg) => photoBack(id, `photo_error=${encodeURIComponent(msg)}`);
+// The team manages any profile's photos. An Alchemist manages only their own, and what they upload waits for review.
+const photoNav = (base) => ({
+  done: (q) => redirect(`${base}?${q}#photos`),
+  fail: (msg) => redirect(`${base}?photo_error=${encodeURIComponent(msg)}#photos`),
+});
 
 async function editableAlchemist(store, id) {
   const a = (await loadContent(store)).alchemists.find((x) => x.id === id);
-  if (!a) redirect('/admin/alchemists?e=missing');
+  if (!a) redirect('/admin?e=forbidden');
   return a;
 }
 
-export async function uploadPhotoAction(formData) {
-  const me = await requireAdmin('content');
+async function uploadPhotoCore({ me, id, formData, approved, nav }) {
   const store = needStore();
-  const id = text(formData, 'id');
   const a = await editableAlchemist(store, id);
   const blobs = getBlobStore();
-  if (!blobs) photoFail(id, 'Photo storage is not switched on.');
-  if (!canHavePhotos(a)) photoFail(id, 'Example profiles are fictional, so they cannot have photos.');
-  if (photosOf(a).length >= MAX_PHOTOS) photoFail(id, `A profile can have up to ${MAX_PHOTOS} photos. Remove one first.`);
-  if (!formData.get('permission')) photoFail(id, 'Please confirm the person has agreed to the photo being published.');
+  if (!blobs) nav.fail('Photo storage is not switched on.');
+  if (!canHavePhotos(a)) nav.fail('Example profiles are fictional, so they cannot have photos.');
+  if (photosOf(a).length >= MAX_PHOTOS) nav.fail(`A profile can have up to ${MAX_PHOTOS} photos. Remove one first.`);
+  if (!formData.get('permission')) nav.fail('Please confirm the person has agreed to the photo being published.');
   const alt = cleanAlt(text(formData, 'alt'));
   const altProblem = altError(alt);
-  if (altProblem) photoFail(id, altProblem);
+  if (altProblem) nav.fail(altProblem);
   const file = formData.get('photo');
-  if (!file || typeof file === 'string' || !file.size) photoFail(id, 'Choose a photo to upload.');
-  if (file.size > MAX_BYTES) photoFail(id, IMAGE_MESSAGES.too_large);
+  if (!file || typeof file === 'string' || !file.size) nav.fail('Choose a photo to upload.');
+  if (file.size > MAX_BYTES) nav.fail(IMAGE_MESSAGES.too_large);
   const checked = inspectImage(new Uint8Array(await file.arrayBuffer()));
-  if (!checked.ok) photoFail(id, IMAGE_MESSAGES[checked.reason] ?? IMAGE_MESSAGES.corrupt);
+  if (!checked.ok) nav.fail(IMAGE_MESSAGES[checked.reason] ?? IMAGE_MESSAGES.corrupt);
 
   const imageId = newImageId(checked.ext);
   await blobs.put(imageId, checked.bytes, checked.contentType);
-  const added = addPhoto(photosOf(a), { id: imageId, alt, caption: cleanCaption(text(formData, 'caption')), w: checked.width, h: checked.height, added_at: new Date().toISOString() });
+  const added = addPhoto(photosOf(a), { id: imageId, alt, caption: cleanCaption(text(formData, 'caption')), w: checked.width, h: checked.height, added_at: new Date().toISOString(), ...(approved ? {} : { approved: false }) });
   try {
     await store.put('alchemists', { ...a, photos: added.photos });
   } catch (e) {
     await blobs.remove(imageId).catch(() => {}); // do not leave a file nobody points to
     throw e;
   }
-  await audit(me, 'photo_changed', id, `Added a photo to ${a.name}`);
+  await audit(me, 'photo_changed', id, approved ? `Added a photo to ${a.name}` : `Uploaded a photo for review for ${a.name}`);
   refreshAll();
-  photoBack(id, 'photo_saved=1');
+  nav.done('photo_saved=1');
 }
 
-export async function photoAction(formData) {
-  const me = await requireAdmin('content');
+async function photoChangeCore({ me, id, formData, nav, allowApprove }) {
   const store = needStore();
-  const id = text(formData, 'id');
   const photoId = text(formData, 'photo_id');
   const intent = text(formData, 'intent');
   const a = await editableAlchemist(store, id);
@@ -351,18 +352,42 @@ export async function photoAction(formData) {
   if (intent === 'save') {
     const alt = cleanAlt(text(formData, 'alt'));
     const problem = altError(alt);
-    if (problem) photoFail(id, problem);
+    if (problem) nav.fail(problem);
     r = updatePhoto(list, photoId, { alt, caption: cleanCaption(text(formData, 'caption')) });
   } else if (intent === 'primary') r = makePrimary(list, photoId);
   else if (intent === 'left' || intent === 'right') r = movePhoto(list, photoId, intent);
   else if (intent === 'remove') r = removePhoto(list, photoId);
-  else photoFail(id, 'That did not work.');
-  if (!r.ok) photoFail(id, 'That photo no longer exists.');
+  else if (intent === 'approve' && allowApprove) r = approvePhoto(list, photoId);
+  else nav.fail('That did not work.');
+  if (!r.ok) nav.fail('That photo no longer exists.');
   await store.put('alchemists', { ...a, photos: r.photos });
   if (intent === 'remove') { const blobs = getBlobStore(); if (blobs) await blobs.remove(photoId).catch(() => {}); }
   await audit(me, 'photo_changed', id, `${PHOTO_INTENT[intent] ?? 'Changed a photo'} for ${a.name}`);
   refreshAll();
-  photoBack(id, 'photo_saved=1');
+  nav.done('photo_saved=1');
+}
+
+export async function uploadPhotoAction(formData) {
+  const me = await requireAdmin('content');
+  const id = text(formData, 'id');
+  return uploadPhotoCore({ me, id, formData, approved: true, nav: photoNav(`/admin/alchemists/${encodeURIComponent(id)}`) });
+}
+
+export async function photoAction(formData) {
+  const me = await requireAdmin('content');
+  const id = text(formData, 'id');
+  return photoChangeCore({ me, id, formData, allowApprove: true, nav: photoNav(`/admin/alchemists/${encodeURIComponent(id)}`) });
+}
+
+// The posted profile id is ignored: an Alchemist can only ever touch the profile their login belongs to.
+export async function portalUploadPhotoAction(formData) {
+  const me = await requirePortal();
+  return uploadPhotoCore({ me, id: me.profile_id, formData, approved: false, nav: photoNav('/admin/portal/photos') });
+}
+
+export async function portalPhotoAction(formData) {
+  const me = await requirePortal();
+  return photoChangeCore({ me, id: me.profile_id, formData, allowApprove: false, nav: photoNav('/admin/portal/photos') });
 }
 
 /* ---------- application to draft profile ---------- */
@@ -494,4 +519,88 @@ export async function setRateAction(formData) {
   await audit(me, 'commission_rate_set', 'commission', `Set the illustration rate to ${Math.round(r.rate * 1000) / 10}%`);
   revalidatePath('/admin/enquiries');
   redirect('/admin/enquiries?saved=1');
+}
+
+/* ---------- an Alchemist's own profile: changes wait for review ---------- */
+async function ownProfile(store, me) {
+  const content = await loadContent(store);
+  const profile = content.alchemists.find((a) => a.id === me.profile_id);
+  if (!profile) redirect('/admin?e=forbidden');
+  return { content, profile };
+}
+
+/** Used with useFormState. Never changes the public profile: it stores a proposal for the team to approve. */
+export async function proposeProfileChangesAction(_prev, formData) {
+  const me = await requirePortal();
+  const store = needStore();
+  const { content, profile } = await ownProfile(store, me);
+  const raw = formValues(formData);
+  const r = propose(profile, raw, { alchemists: content.alchemists, modalities: content.modalities }, me);
+  if (!r.ok) return { errors: r.errors, values: raw, attempt: Date.now() };
+  if (r.same) redirect('/admin/portal/profile?same=1');
+  const { last_review, ...rest } = profile; // a new proposal clears the old verdict
+  await store.put('alchemists', { ...rest, pending: r.pending });
+  await audit(me, 'profile_change_proposed', profile.id, `Sent ${r.pending.changed.length} change(s) to ${profile.name}'s profile for review`);
+  revalidatePath('/admin', 'layout');
+  redirect('/admin/portal/profile?sent=1');
+}
+
+export async function withdrawProposalAction() {
+  const me = await requirePortal();
+  const store = needStore();
+  const { profile } = await ownProfile(store, me);
+  const { pending, ...rest } = profile;
+  if (pending) {
+    await store.put('alchemists', rest);
+    await audit(me, 'profile_change_proposed', profile.id, `Withdrew the changes waiting for review on ${profile.name}'s profile`);
+  }
+  revalidatePath('/admin', 'layout');
+  redirect('/admin/portal/profile?withdrawn=1');
+}
+
+/* ---------- the team reviews those changes ---------- */
+export async function approvePendingAction(formData) {
+  const me = await requireAdmin('content');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const content = await loadContent(store);
+  const profile = content.alchemists.find((a) => a.id === id);
+  if (!profile) redirect('/admin/alchemists?e=missing');
+  const r = approve(profile, { alchemists: content.alchemists, modalities: content.modalities }, me);
+  if (!r.ok) redirect(`/admin/alchemists/${encodeURIComponent(id)}?pending_error=${encodeURIComponent(r.reason === 'invalid' ? Object.values(r.errors)[0] : 'Nothing is waiting.')}`);
+  await store.put('alchemists', r.record);
+  await audit(me, 'profile_change_reviewed', id, `Approved changes to ${profile.name}'s profile`);
+  refreshAll();
+  redirect(`/admin/alchemists/${encodeURIComponent(id)}?saved=1`);
+}
+
+export async function rejectPendingAction(formData) {
+  const me = await requireAdmin('content');
+  const store = needStore();
+  const id = text(formData, 'id');
+  const content = await loadContent(store);
+  const profile = content.alchemists.find((a) => a.id === id);
+  if (!profile) redirect('/admin/alchemists?e=missing');
+  const r = reject(profile, text(formData, 'note'), me);
+  if (r.ok) {
+    await store.put('alchemists', r.record);
+    await audit(me, 'profile_change_reviewed', id, `Did not approve changes to ${profile.name}'s profile`);
+  }
+  refreshAll();
+  redirect(`/admin/alchemists/${encodeURIComponent(id)}?saved=1`);
+}
+
+/* ---------- an Alchemist's own enquiries ---------- */
+export async function portalUpdateEnquiryAction(formData) {
+  const me = await requirePortal();
+  const store = needStore();
+  const id = text(formData, 'id');
+  const enquiry = await store.get('enquiries', id);
+  if (!enquiry || enquiry.alchemist_id !== me.profile_id) redirect('/admin/portal/enquiries'); // never anyone else's
+  const back = (q) => redirect(`/admin/portal/enquiries/${encodeURIComponent(id)}?${q}`);
+  const r = await updateEnquiry(store, id, { status: text(formData, 'status'), fee: text(formData, 'fee'), alchemistNote: text(formData, 'alchemist_note') });
+  if (!r.ok) back('error=' + encodeURIComponent({ bad_status: 'Choose a valid status.', bad_fee: 'Enter an amount from 0 to 5000.', fee_needs_booked: 'An amount can only be added once the status is "Booked a session".' }[r.reason] ?? 'That did not work.'));
+  await audit(me, 'enquiry_updated', id, `Marked an enquiry for ${r.record.alchemist_name} as ${ENQUIRY_LABEL[r.record.status]}`);
+  revalidatePath('/admin', 'layout');
+  back('saved=1');
 }

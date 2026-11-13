@@ -13,8 +13,18 @@ export default async function AdminLayout({ children }) {
     <div className="admin">
       <header className="admin-bar">
         <div className="admin-bar__inner">
-          <Link href="/admin" className="wordmark" style={{ fontSize: '1.3rem' }}><TeaMark size={30} />Empatherapy admin</Link>
+          <Link href={me?.role === 'alchemist' ? '/admin/portal' : '/admin'} className="wordmark" style={{ fontSize: '1.3rem' }}><TeaMark size={30} />{me?.role === 'alchemist' ? 'Empatherapy, your space' : 'Empatherapy admin'}</Link>
           {me ? (
+            me.role === 'alchemist' ? (
+              <nav className="admin-nav" aria-label="Your space">
+                <Link href="/admin/portal">Your space</Link>
+                <Link href="/admin/portal/profile">Your profile</Link>
+                <Link href="/admin/portal/photos">Photos</Link>
+                <Link href="/admin/portal/enquiries">Enquiries</Link>
+                <Link href="/admin/account">My account</Link>
+                <form action={logout}><button type="submit" className="btn btn--soft btn--sm">Sign out</button></form>
+              </nav>
+            ) : (
             <nav className="admin-nav" aria-label="Admin">
               <Link href="/admin">Overview</Link>
               {can(me.role, 'applications') ? <Link href="/admin/applications">Applications</Link> : null}
@@ -29,6 +39,7 @@ export default async function AdminLayout({ children }) {
               {me.id !== 'bootstrap' ? <Link href="/admin/account" title={`${me.name} (${ROLE_LABEL[me.role]})`}>My account</Link> : null}
               <form action={logout}><button type="submit" className="btn btn--soft btn--sm">Sign out</button></form>
             </nav>
+            )
           ) : null}
         </div>
       </header>

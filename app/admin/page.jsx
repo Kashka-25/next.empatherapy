@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { requireAdmin } from '@/lib/admin-auth.mjs';
 import { getStore, storeEnabled } from '@/lib/store/index.mjs';
 import { listApplications } from '@/lib/applications.mjs';
@@ -7,13 +8,17 @@ import { activeFeatures } from '@/data/features.mjs';
 import { loadContent } from '@/lib/content-store.mjs';
 import { listEnquiries } from '@/lib/enquiries.mjs';
 import { can, ROLE_LABEL } from '@/lib/accounts.mjs';
+import { waitingPhotos } from '@/lib/photos.mjs';
 
 export default async function AdminHome({ searchParams }) {
   const me = await requireAdmin();
+  if (me.role === 'alchemist') redirect(searchParams?.e === 'forbidden' ? '/admin/portal?e=forbidden' : '/admin/portal');
   const store = getStore();
   const seeApps = can(me.role, 'applications');
   const seeContent = can(me.role, 'content');
   const { alchemists } = await loadContent(store);
+  const profileChanges = alchemists.filter((a) => a.pending).length;
+  const photoReviews = alchemists.reduce((n, a) => n + waitingPhotos(a).length, 0);
   const apps = store && seeApps ? await listApplications(store) : [];
   const seeEnquiries = can(me.role, 'enquiries');
   const enquiries = store && seeEnquiries ? await listEnquiries(store) : [];
@@ -50,6 +55,11 @@ export default async function AdminHome({ searchParams }) {
           <span className="eyebrow">Weekly features</span>
           <strong className="admin-stat">{live.length}</strong>
           <span>live this week{store ? '' : ' (sample schedule)'}</span>
+        </Link> : null}
+        {seeContent && (profileChanges || photoReviews) ? <Link href="/admin/alchemists" className="admin-card admin-card--link">
+          <span className="eyebrow">Waiting for your review</span>
+          <strong className="admin-stat">{profileChanges + photoReviews}</strong>
+          <span>{profileChanges} profile {profileChanges === 1 ? 'change' : 'changes'}, {photoReviews} {photoReviews === 1 ? 'photo' : 'photos'}</span>
         </Link> : null}
         {seeContent ? <Link href="/admin/alchemists" className="admin-card admin-card--link">
           <span className="eyebrow">Alchemists</span>
