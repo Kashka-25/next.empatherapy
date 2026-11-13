@@ -20,3 +20,6 @@ preview/artifact-player.js
 reference/
 work-audio/*.m4a
 work-audio/*.webm
+# Cassidy's 3D honey dipper (Meshy, 25 MB): kept locally, not committed. Copy it here to rebuild the dipper frames.
+source/dipper.glb
+work/dipper/*.blend

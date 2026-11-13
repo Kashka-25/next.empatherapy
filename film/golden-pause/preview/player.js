@@ -1,7 +1,7 @@
-/* The Golden Pause: preview player.
-   One clock: the video's currentTime. The ring, the words, the welcome and the sound all follow it.
-   stateAt(t) is a pure function of time and the cue numbers (cues.js), so it can be unit-tested in Node:
-     const cues = require('./cues.js'); const { stateAt } = require('./player.js'); stateAt(1.0, cues)
+/* The Golden Pause: preview player (cue sheet version 2: the honey writes the name).
+   One clock: the video's currentTime. The breathing words, the wordmark, the tagline and the sound all follow it.
+   stateAt(t) is a pure function of time, the cue numbers (cues.js) and the film format, so it can be unit-tested in Node:
+     const cues = require('./cues.js'); const { stateAt } = require('./player.js'); stateAt(1.0, cues, 'wide')
    No storage of any kind, no analytics. Network: the page's own media files, plus the Google Fonts stylesheet
    and font files, which tell Google the visitor's IP address (on the live site, self-host the fonts). */
 (function (root) {
@@ -10,41 +10,40 @@
   // ---------------------------------------------------------------------------------------------
   // Pure timing. No DOM, no globals read except the default cue numbers.
   // ---------------------------------------------------------------------------------------------
-  var RING_MIN = 0.82;
-  var RING_MAX = 1.0;
-
   function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
   function ramp(t, a, b) { if (!(b > a)) return t >= a ? 1 : 0; return clamp01((t - a) / (b - a)); }
-  /** ease in-out (sine): 0..1 -> 0..1 */
-  function ease(x) { return 0.5 - 0.5 * Math.cos(Math.PI * clamp01(x)); }
+  /** smoothstep, as the cue sheet says for every window: p*p*(3-2p) */
+  function smooth(x) { x = clamp01(x); return x * x * (3 - 2 * x); }
+  /** progress through a cue window [a, b], eased */
+  function win(t, w) { return smooth(ramp(t, w[0], w[1])); }
   function round(x) { return Math.round(x * 10000) / 10000; }
   /** opacity of a cue that fades in across fadeIn=[a,b] and (optionally) out across fadeOut=[c,d] */
   function fade(t, fadeIn, fadeOut) {
-    var up = ease(ramp(t, fadeIn[0], fadeIn[1]));
-    var down = fadeOut ? 1 - ease(ramp(t, fadeOut[0], fadeOut[1])) : 1;
+    var up = win(t, fadeIn);
+    var down = fadeOut ? 1 - win(t, fadeOut) : 1;
     return round(Math.min(up, down));
-  }
-  /** ring scale: grows across the inhale window, holds, shrinks across the exhale window */
-  function breathScale(t, breath) {
-    var span = RING_MAX - RING_MIN;
-    if (t <= breath.inhale[0]) return RING_MIN;
-    if (t < breath.inhale[1]) return round(RING_MIN + span * ease(ramp(t, breath.inhale[0], breath.inhale[1])));
-    if (t <= breath.exhale[0]) return RING_MAX;
-    if (t < breath.exhale[1]) return round(RING_MAX - span * ease(ramp(t, breath.exhale[0], breath.exhale[1])));
-    return RING_MIN;
   }
   function textCue(cues, id) {
     for (var i = 0; i < cues.text.length; i++) if (cues.text[i].id === id) return cues.text[i];
     throw new Error('cues.text has no "' + id + '" cue');
   }
+  /** the layout numbers for a film format ('wide' or 'square'; 'wide' when none is given) */
+  function layoutFor(cues, format) {
+    var f = format || 'wide';
+    var L = cues.layout && cues.layout[f];
+    if (!L) throw new Error('cues.layout has no "' + f + '" format');
+    return L;
+  }
 
   /**
-   * The state of every overlay at film time t (seconds).
-   * Each overlay: { opacity: 0..1, scale }. Welcome items also carry offset (0 = at rest, 1 = fully lowered).
+   * The state of every overlay at film time t (seconds), for the film format ('wide' or 'square').
+   * Every overlay has an opacity (0..1). The wordmark also has y (its centre, as a fraction of the stage height)
+   * and scale (1 = its settled size); it follows the camera tilt. The tagline has y (its centre) and does not move.
    */
-  function stateAt(t, cues) {
+  function stateAt(t, cues, format) {
     cues = cues || (root && root.GOLDEN_PAUSE_CUES);
     if (!cues) throw new Error('stateAt needs the cue numbers from cues.js');
+    var L = layoutFor(cues, format);
     var T = typeof t === 'number' && isFinite(t) ? Math.min(Math.max(t, 0), cues.duration) : 0;
     var cIn = textCue(cues, 'in');
     var cOut = textCue(cues, 'out');
@@ -52,37 +51,46 @@
     var w = cues.welcome;
     var b = cues.breath;
 
-    // The ring and the backing behind the words share one envelope: in with the first line, out with the second.
-    var words = fade(T, cIn.fadeIn, cOut.fadeOut);
-    var mark = fade(T, w.mark);
-    var wordmark = fade(T, w.wordmark);
-    var tagline = fade(T, w.tagline);
+    var lineIn = fade(T, cIn.fadeIn, cIn.fadeOut);
+    var lineOut = fade(T, cOut.fadeIn, cOut.fadeOut);
+    var permission = fade(T, cPerm.fadeIn, cPerm.fadeOut);
+    // The soft backing behind the bottom band: in with the first line, out with the last, and never thinner
+    // than any of the words on it (so the words never stand on less backing than their contrast was checked with).
+    var backing = Math.max(fade(T, cIn.fadeIn, cOut.fadeOut), lineIn, lineOut, permission);
+    // The camera tilt: the wordmark rides it up from where the honey wrote the name, and settles to its own size.
+    // Where the lockup puts it a touch higher or lower than the tilt alone would carry it (wordmark.centerPost vs
+    // script.centerPre - tiltFrac), that small difference ("lift") is made up with the same s, so it lands on centerPost.
+    var tilt = round(win(T, cues.tilt));
+    var wm = L.wordmark;
+    var lift = wm.centerPost - (L.script.centerPre - L.tiltFrac);
 
     var phase =
       T < b.inhale[0] ? 'arrive' :
       T < b.inhale[1] ? 'inhale' :
       T < b.exhale[0] ? 'turn' :
       T < b.exhale[1] ? 'exhale' :
-      T < w.mark[0] ? 'meeting' :
+      T < cues.tilt[0] ? 'melt' :
       T < cues.settle ? 'welcome' : 'settled';
 
     return {
       t: round(T),
       phase: phase,
       settled: T >= cues.settle,
-      ring: { opacity: words, scale: breathScale(T, b) },
-      wordsBacking: { opacity: words, scale: 1 },
-      lineIn: { opacity: fade(T, cIn.fadeIn, cIn.fadeOut), scale: 1 },
-      lineOut: { opacity: fade(T, cOut.fadeIn, cOut.fadeOut), scale: 1 },
-      permission: { opacity: fade(T, cPerm.fadeIn, cPerm.fadeOut), scale: 1 },
-      welcomeBacking: { opacity: mark, scale: 1 },
-      mark: { opacity: mark, scale: round(0.94 + 0.06 * mark), offset: round(1 - mark) },
-      wordmark: { opacity: wordmark, scale: 1, offset: round(1 - wordmark) },
-      tagline: { opacity: tagline, scale: 1, offset: round(1 - tagline) }
+      tilt: tilt,
+      wordsBacking: { opacity: backing },
+      lineIn: { opacity: lineIn },
+      lineOut: { opacity: lineOut },
+      permission: { opacity: permission },
+      wordmark: {
+        opacity: fade(T, w.wordmark),
+        y: round(L.script.centerPre - L.tiltFrac * tilt + lift * tilt),
+        scale: round(wm.scalePre + (1 - wm.scalePre) * tilt)
+      },
+      tagline: { opacity: fade(T, w.tagline), y: L.tagline.centerPost }
     };
   }
 
-  var api = { stateAt: stateAt, breathScale: breathScale, fade: fade, ease: ease, ramp: ramp, RING_MIN: RING_MIN, RING_MAX: RING_MAX };
+  var api = { stateAt: stateAt, layoutFor: layoutFor, fade: fade, smooth: smooth, ramp: ramp };
   if (typeof module === 'object' && module && module.exports) module.exports = api;
   if (!root || typeof document === 'undefined') return;
   root.GoldenPause = api;
@@ -148,8 +156,8 @@
     var btnSound = q('sound');
     var btnSkip = q('skip');
     var els = {
-      ring: q('ring'), wordsBacking: q('words-backing'), lineIn: q('line-in'), lineOut: q('line-out'),
-      permission: q('permission'), welcomeBacking: q('welcome-backing'), mark: q('mark'), wordmark: q('wordmark'), tagline: q('tagline')
+      wordsBacking: q('words-backing'), lineIn: q('line-in'), lineOut: q('line-out'), permission: q('permission'),
+      wordmarkTrack: q('wordmark-track'), wordmark: q('wordmark'), tagline: q('tagline')
     };
     var END = cues.duration;
     var FPS = cues.fps || 24;
@@ -160,6 +168,15 @@
     function wantFormat() { return (root.innerWidth || html.clientWidth || 0) > 700 ? 'wide' : 'square'; }
     var fmt = wantFormat();
     stage.classList.add('gp--' + fmt);
+    // The positions the film was composed for (cues.js layout), as CSS custom properties on the stage.
+    // player.css carries the same numbers as defaults for the page without the player (checked by the unit test).
+    function setLayoutVars() {
+      var L = layoutFor(cues, fmt);
+      stage.style.setProperty('--gp-bl-center', String(L.breathLines.center));
+      stage.style.setProperty('--gp-wm-frac', String(L.wordmark.widthFrac));   // the wordmark image's width, of the stage width
+      stage.style.setProperty('--gp-tagline-y', String(L.tagline.centerPost));
+    }
+    setLayoutVars();
     var base = mediaBase();
     var media = { webm: base + 'golden-pause.webm', m4a: base + 'golden-pause.m4a' };
     function setMediaUrls() {
@@ -214,7 +231,7 @@
       video.src = media.film;
     }
 
-    // Two images over the video: the cup (still) and the settled welcome plate (end). Never both.
+    // Two images over the video: the honey name (still, 7.9 s) and the settled lockup (end). Never both.
     // A missing image hides itself; the video (its poster or its last frame) shows through instead.
     function imageLayer(img, url) {
       img.addEventListener('error', function () { img.hidden = true; img.removeAttribute('src'); img.dataset.failed = '1'; });
@@ -244,29 +261,35 @@
       if (transform !== undefined && c.tf !== transform) { node.style.transform = transform; c.tf = transform; }
     }
     function render(t) {
-      var s = stateAt(t, cues);
+      var s = stateAt(t, cues, fmt);
       lastState = s;
-      put('ring', els.ring, s.ring.opacity, 'translate(-50%, -50%) scale(' + s.ring.scale + ')');
       put('wordsBacking', els.wordsBacking, s.wordsBacking.opacity);
       put('lineIn', els.lineIn, s.lineIn.opacity);
       put('lineOut', els.lineOut, s.lineOut.opacity);
       put('permission', els.permission, s.permission.opacity);
-      put('welcomeBacking', els.welcomeBacking, s.welcomeBacking.opacity);
-      put('mark', els.mark, s.mark.opacity, 'translateY(' + round(s.mark.offset * 6) + 'px) scale(' + s.mark.scale + ')');
-      put('wordmark', els.wordmark, s.wordmark.opacity, 'translateY(' + round(s.wordmark.offset * 8) + 'px)');
-      put('tagline', els.tagline, s.tagline.opacity, 'translateY(' + round(s.tagline.offset * 6) + 'px)');
+      // The wordmark's track is as tall as the stage, so a percentage moves the wordmark's centre to y of the height.
+      // The wordmark (the title image) is centred on the track's top edge; its centre is its visual centre.
+      put('wordmarkTrack', els.wordmarkTrack, 1, 'translateY(' + round(s.wordmark.y * 100) + '%)');
+      put('wordmark', els.wordmark, s.wordmark.opacity, 'translate(-50%, -50%) scale(' + s.wordmark.scale + ')');
+      put('tagline', els.tagline, s.tagline.opacity);
       return s;
     }
     function renderCalm() {
-      // The calm still: its two static lines (.gp__calm), and the permission line in its usual place.
-      // Every timed overlay is at rest, the ring included (no ring on the calm still).
+      // The calm still: both breathing lines at once (.gp__calm) and the permission line, in the bottom band
+      // on its backing. Every timed overlay is at rest.
       render(0);
+      put('wordsBacking', els.wordsBacking, 1);
       put('permission', els.permission, 1);
+    }
+    /** draw the current state again (after the film format changed) */
+    function rerender() {
+      if (mode === 'calm') renderCalm();
+      else render(lastState ? lastState.t : 0);
     }
 
     // ---------- the clock ----------
     // requestVideoFrameCallback samples the video's time once per decoded frame; between frames
-    // requestAnimationFrame carries it forward (never more than one frame ahead) so the ring stays smooth.
+    // requestAnimationFrame carries it forward (never more than one frame ahead) so the wordmark's glide stays smooth.
     // Without requestVideoFrameCallback, requestAnimationFrame reads video.currentTime directly.
     var hasVFC = typeof video.requestVideoFrameCallback === 'function';
     var clock = { running: false, raf: 0, vfc: 0, media: 0, wall: 0, last: -1 };
@@ -356,6 +379,7 @@
       stage.classList.remove('gp--' + fmt);
       fmt = next;
       stage.classList.add('gp--' + fmt);
+      setLayoutVars();
       setMediaUrls();
       if (video.getAttribute('poster')) video.poster = media.poster;
       stillLayer.retarget();
@@ -369,6 +393,7 @@
         if (mode === 'poster' || mode === 'calm') showStill();
         else if (mode === 'ended') showEnd();
       }
+      rerender();                                     // the wordmark's path is the new format's
       updateControls();
       return true;
     }
@@ -419,7 +444,7 @@
       }
     }
     function enterPoster() {
-      // autoplay refused: the cup still with a Play button (never the blank parchment of frame 0)
+      // autoplay refused: the honey-name still with a Play button (never the blank parchment of frame 0)
       clearTimeout(startTimer);
       stopClock();
       setMode('poster');
@@ -473,13 +498,13 @@
       clearTimeout(startTimer);
       stopClock();
       setMode('ended');
-      showEnd();                                      // the settled welcome plate under the welcome
+      showEnd();                                      // the settled lockup frame under the wordmark and tagline
       render(END);
       audioStop(skipped ? 0.12 : 0.4);
     }
     function skip() {
       if (mode === 'ended' || mode === 'calm') return;
-      showEnd();                                      // the welcome plate, instantly (never the cup)
+      showEnd();                                      // the lockup frame, instantly (never the honey-name still)
       mode = 'ended';                                 // so the pause event below is not read as a user pause
       try { video.pause(); } catch (e) { /* ignore */ }
       try {
@@ -765,7 +790,7 @@
 
     // A small read-only window for testing. Nothing here stores anything.
     return {
-      stateAt: function (t) { return stateAt(t, cues); },
+      stateAt: function (t, format) { return stateAt(t, cues, format || fmt); },
       get mode() { return mode; },
       get modeAt() { return modeAt; },
       get startedAt() { return startedAt; },

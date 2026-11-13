@@ -19,7 +19,7 @@ Motion safety: no cuts (only dissolves of 0.6 s or more), no rotation above 2 de
 import bpy, numpy as np, json, os, sys, math, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CUES = json.load(open(os.path.join(HERE, 'cues.json'), encoding='utf-8'))
+CUES = json.load(open(os.path.join(HERE, 'cues-v1.json'), encoding='utf-8'))
 FPS, DUR, SETTLE = CUES['fps'], CUES['duration'], CUES['settle']
 NFRAMES = int(round(FPS * DUR))
 VARIANTS = {'wide': (1600, 900), 'square': (900, 900)}

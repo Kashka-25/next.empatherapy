@@ -1,4 +1,4 @@
-/* The Golden Pause preview. Lemon & Honey over parchment.
+/* The Golden Pause preview (cue sheet version 2: the honey writes the name). Lemon & Honey over parchment.
    The site's tokens and a few of its classes are copied here so the film is seen in context. */
 :root {
   --parchment: #FBF7EE;
@@ -11,8 +11,7 @@
   --amber: #B9823E;
   --amber-text: #8A5C1E;
   --ink: #38352F;
-  --ink-soft: #524C42;   /* between ink and muted: keeps 4.5:1 on the feathered backing in the worst case */
-  --muted: #6B6355;
+  --muted: #6B6355;      /* the tagline: 5.5:1 on parchment */
   --botanical: #667D62;
   --botanical-deep: #44583F;
   --border: #E7DCC4;
@@ -27,12 +26,10 @@
   --shadow-lift: 0 22px 48px -20px rgba(90, 64, 20, 0.35);
   --gutter: clamp(1rem, 4vw, 2rem);
 
-  /* The soft parchment backing behind words on the film: radial, with a long gaussian-like feather.
-     Each backing is sized so every glyph sits where the alpha is still >= ~0.7, which keeps ink text above
-     4.5:1 even if the film under it were black (checked by _test/check.js). */
+  /* The soft parchment backing behind the words in the bottom band: radial, with a long gaussian-like feather.
+     It is sized from the words' own box so every glyph sits where the alpha is still >= ~0.63, which keeps ink
+     text above 4.5:1 even if the film under it were black (checked by _test/check.js). */
   --gp-backing: radial-gradient(closest-side, rgba(251, 247, 238, 0.82) 0%, rgba(251, 247, 238, 0.79) 40%, rgba(251, 247, 238, 0.72) 56%, rgba(251, 247, 238, 0.5) 70%, rgba(251, 247, 238, 0.26) 82%, rgba(251, 247, 238, 0.09) 92%, rgba(251, 247, 238, 0) 100%);
-  /* denser, for the welcome (it settles over the parchment plate, so this is rarely visible) */
-  --gp-backing-strong: radial-gradient(closest-side, rgba(251, 247, 238, 0.9) 0%, rgba(251, 247, 238, 0.88) 68%, rgba(251, 247, 238, 0.66) 85%, rgba(251, 247, 238, 0) 100%);
   color-scheme: light;
 }
 
@@ -64,7 +61,7 @@ a { color: inherit; text-decoration: none; }
 .preview-note span { color: var(--muted); }
 .mock-nav { background: rgba(251, 247, 238, 0.92); border-bottom: 1px solid rgba(231, 220, 196, 0.8); }
 .mock-nav__inner {
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
   max-width: 1240px; margin: 0 auto; padding: 0.85rem var(--gutter); min-height: 64px;
 }
 .mock-wordmark { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; color: var(--botanical-deep); letter-spacing: -0.01em; }
@@ -76,42 +73,53 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ---------- The stage ---------- */
+/* Positions are fractions of the stage height, from cues.json "layout". The three --gp-* numbers below are the
+   defaults for the page without the player; player.js sets them from cues.js for the format it plays
+   (_test/stateAt.test.js checks that both match cues.json). Sizes are in units of the frame width (cqw);
+   --stage-w and --stage-h are the frame's width and height in those units. */
 .gp {
   display: block; padding-top: clamp(1rem, 3vw, 2rem);
-  /* wide (16:9) sizes, in units of the frame width */
-  --ring-d: 35cqw;
-  --ring-y: 47%;
-  --line-size: clamp(1.1rem, 2.75cqw, 2.2rem);
-  --perm-size: clamp(0.8rem, 1.45cqw, 1.05rem);
-  --wordmark-size: clamp(1.7rem, 5cqw, 3.6rem);
-  --tagline-size: clamp(0.85rem, 1.7cqw, 1.2rem);
-  --mark-w: clamp(44px, 7cqw, 92px);
+  /* wide (16:9) */
+  --stage-w: 100cqw;
+  --stage-h: 56.25cqw;
+  --gp-bl-center: 0.93;     /* layout.wide.breathLines.center */
+  --gp-wm-frac: 0.38;       /* layout.wide.wordmark.widthFrac (of the stage width) */
+  --gp-tagline-y: 0.865;    /* layout.wide.tagline.centerPost */
+  --band-margin: 6px;       /* the least room left under the permission line */
+  --line-size: clamp(0.95rem, 2.05cqw, 1.75rem);
+  --perm-size: clamp(0.75rem, 1.3cqw, 1rem);
+  --tagline-size: clamp(0.9rem, 1.8cqw, 1.3rem);
 }
 .gp:focus { outline: none; }
 .gp:focus-visible { outline: 3px solid var(--amber-text); outline-offset: 4px; }
 .gp--square {
-  --ring-d: 60cqw;
-  --ring-y: 45.5%;
-  --line-size: clamp(1.05rem, 5.4cqw, 1.9rem);
-  --perm-size: clamp(0.8rem, 3.6cqw, 1rem);
-  --wordmark-size: clamp(1.6rem, 9.5cqw, 3.2rem);
-  --tagline-size: clamp(0.82rem, 4cqw, 1.1rem);
-  --mark-w: clamp(40px, 14cqw, 84px);
+  --stage-h: 100cqw;
+  --gp-bl-center: 0.9;      /* layout.square.breathLines.center */
+  --gp-wm-frac: 0.56;       /* layout.square.wordmark.widthFrac (of the stage width) */
+  --gp-tagline-y: 0.85;     /* layout.square.tagline.centerPost */
+  --line-size: clamp(1rem, 4.6cqw, 1.6rem);
+  /* small enough that the permission line stays on one line down to a 320px phone: on two lines the band
+     would have to rise into the name */
+  --perm-size: clamp(0.7rem, 3.55cqw, 1rem);
+  --band-width: 96%;
+  --tagline-size: clamp(0.85rem, 4.2cqw, 1.15rem);
 }
 @media (max-width: 700px) {
+  /* without the player, phones get the square frame and the square still */
   .no-js .gp {
-    --ring-d: 60cqw;
-    --ring-y: 45.5%;
-    --line-size: clamp(1.05rem, 5.4cqw, 1.9rem);
-    --perm-size: clamp(0.8rem, 3.6cqw, 1rem);
+    --stage-h: 100cqw;
+    --gp-bl-center: 0.9;    /* layout.square.breathLines.center */
+    --line-size: clamp(1rem, 4.6cqw, 1.6rem);
+    --perm-size: clamp(0.7rem, 3.55cqw, 1rem);
+    --band-width: 96%;
   }
   .no-js .gp__frame { aspect-ratio: 1 / 1; }
   .no-js .gp__inner { max-width: 600px; }
-  .no-js .gp__permission { --perm-glow-x: 6.6em; --perm-glow-y: 2.4em; }
 }
 @supports not (width: 1cqw) {
-  .gp { --ring-d: 30vw; --line-size: clamp(1.1rem, 2.4vw, 2.1rem); --perm-size: clamp(0.8rem, 1.3vw, 1rem); --wordmark-size: clamp(1.7rem, 4.4vw, 3.4rem); --tagline-size: clamp(0.85rem, 1.5vw, 1.15rem); --mark-w: clamp(44px, 6vw, 88px); }
-  .gp--square { --ring-d: 58vw; --line-size: clamp(1.05rem, 4.8vw, 1.8rem); --perm-size: clamp(0.8rem, 3.2vw, 1rem); --wordmark-size: clamp(1.6rem, 8.5vw, 3rem); --tagline-size: clamp(0.82rem, 3.6vw, 1.05rem); --mark-w: clamp(40px, 12vw, 80px); }
+  /* no container units: estimate the frame from the window (the frame is the window less the gutters, up to 1080px or 600px) */
+  .gp { --stage-w: calc(min(100vw, 1080px) - 2 * var(--gutter)); --stage-h: calc((min(100vw, 1080px) - 2 * var(--gutter)) * 0.5625); --line-size: clamp(1rem, 1.85vw, 1.75rem); --perm-size: clamp(0.78rem, 1.2vw, 1rem); --tagline-size: clamp(0.9rem, 1.6vw, 1.3rem); }
+  .gp--square { --stage-w: calc(min(100vw, 600px) - 2 * var(--gutter)); --stage-h: calc(min(100vw, 600px) - 2 * var(--gutter)); --line-size: clamp(1rem, 4.2vw, 1.6rem); --perm-size: clamp(0.8rem, 3.2vw, 1rem); --tagline-size: clamp(0.85rem, 3.8vw, 1.15rem); }
 }
 
 .gp__inner { width: 100%; max-width: 1080px; margin: 0 auto; padding-inline: var(--gutter); }
@@ -121,7 +129,7 @@ a { color: inherit; text-decoration: none; }
   position: relative; overflow: hidden; isolation: isolate;
   aspect-ratio: 16 / 9; container-type: inline-size;
   border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-lift);
-  /* the ground before (or without) any media: warm parchment with a lemon glow */
+  /* the ground before (or without) any media: warm parchment, as the film begins and ends */
   background:
     radial-gradient(60% 70% at 50% 46%, rgba(250, 243, 206, 0.95), rgba(250, 243, 206, 0) 70%),
     linear-gradient(180deg, var(--surface), var(--parchment) 60%, var(--linen));
@@ -135,116 +143,95 @@ a { color: inherit; text-decoration: none; }
 .gp__still, .gp__end { z-index: 1; }
 .gp__still[hidden], .gp__end[hidden] { display: none; }
 .no-js .gp__video { display: none; }
-/* Without the player (no JavaScript, or its scripts did not load): the cup as a background, so the image is only
-   fetched when this is really shown (a missing file fails silently). While the scripts load, "gp-wait" holds it back. */
+/* Without the player (no JavaScript, or its scripts did not load): the honey-name still as a background, so the image
+   is only fetched when this is really shown (a missing file fails silently). While the scripts load, "gp-wait" holds it back. */
 .gp__fallback { display: none; z-index: 1; }
 .no-js:not(.gp-wait) .gp__fallback { display: block; background: url("still-wide.jpg") center / cover no-repeat; }
 @media (max-width: 700px) { .no-js:not(.gp-wait) .gp__fallback { background-image: url("still-square.jpg"); } }
 
 /* Overlays are driven frame by frame from the video clock (player.js), so no CSS transitions here. */
-.gp__ring, .gp__words, .gp__permission, .gp__welcome, .gp__calm, .gp__glyph { pointer-events: none; }
+.gp__band, .gp__welcome, .gp__glyph { pointer-events: none; }
 
-/* The breathing ring: a thin honey-light circle with a very soft inner glow. Never a disc. */
-.gp__ring {
-  position: absolute; left: 50%; top: var(--ring-y); z-index: 2;
-  width: var(--ring-d); height: var(--ring-d); border-radius: 50%;
-  border: clamp(1.25px, 0.17cqw, 2px) solid rgba(232, 190, 103, 0.95);
-  box-shadow:
-    0 0 0 1px rgba(251, 247, 238, 0.32),
-    inset 0 0 0 1px rgba(251, 247, 238, 0.22),
-    inset 0 0 calc(var(--ring-d) * 0.09) rgba(232, 190, 103, 0.30),
-    0 0 calc(var(--ring-d) * 0.05) rgba(232, 190, 103, 0.22);
-  opacity: 0; transform: translate(-50%, -50%) scale(0.82);
-  will-change: transform, opacity;
+/* ---------- The bottom band: breathing line, permission line ----------
+   Under the honey name (which fills about 0.575 to 0.86 of the height on wide, 0.575 to 0.78 on square).
+   The breathing line is centred at --gp-bl-center of the stage height; the permission line sits just under it.
+   An invisible twin of the permission line above the breathing line keeps the breathing line at the band's centre
+   whatever the wrapping, so the band is simply centred there; if the permission line would then come closer than
+   --band-margin to the frame's bottom edge (small screens, larger text), the whole band rises just enough. */
+.gp__band {
+  position: absolute; left: 50%; z-index: 3;
+  top: calc(var(--gp-bl-center) * 100%);
+  transform: translate(-50%, min(-50%, calc((1 - var(--gp-bl-center)) * var(--stage-h) - var(--band-margin) - 100%)));
+  width: max-content; max-width: var(--band-width, 92%);
+  display: grid; justify-items: center; text-align: center;
 }
-/* no ring on the calm still: without the breath moving it, a ring only reads as a breathing-app card */
-.no-js .gp__ring, .gp[data-gp-mode="calm"] .gp__ring { visibility: hidden; }
-
-/* Words inside the ring, on a soft parchment backing.
-   The words box shrinks to the text; the backing is never smaller than the ring-based size the film was
-   composed for, and grows with the text box (larger user text, WCAG 1.4.12 spacing) so every glyph stays on it. */
-.gp__words {
-  position: absolute; left: 50%; top: var(--ring-y); z-index: 3; transform: translate(-50%, -50%);
-  display: grid; place-items: center; font-size: var(--line-size);
-  width: max-content; max-width: 90cqw;
-}
+.gp__band-words { position: relative; display: grid; justify-items: center; }
+/* One backing for the whole band, sized from the words' own box, so it grows with larger text or wider spacing.
+   Wide and flat, so its feather has faded to almost nothing by the descenders of the name just above. While the film
+   plays, the widest row is the permission line at the bottom, so the backing sits a little low; on the calm still the
+   two breathing lines side by side are as wide, so it is centred and a little taller. */
 .gp__backing {
-  position: absolute; left: 50%; top: 50%; z-index: -1; border-radius: 50%;
-  width: max(calc(var(--ring-d) * 1.2), 230%); height: max(calc(var(--ring-d) * 0.94), 360%);
+  position: absolute; left: 50%; top: 52.2%; z-index: -1; border-radius: 50%;
+  width: 300%; height: 194%;
   transform: translate(-50%, -50%); background: var(--gp-backing); opacity: 0;
 }
-.gp__line {
-  grid-area: 1 / 1; max-width: none; opacity: 0;
-  font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 1em;
+.gp[data-gp-mode="calm"] .gp__backing, .no-js:not(.gp-wait) .gp__backing { top: 48.5%; height: 230%; }
+.gp__slot { display: grid; justify-items: center; font-size: var(--line-size); }
+.gp__line, .gp__calm p {
+  max-width: none; font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 1em;
   line-height: 1.22; text-align: center; color: var(--ink); letter-spacing: 0.005em;
 }
-.gp__line span, .gp__calm p span { display: block; white-space: normal; text-wrap: balance; }
+.gp__line { grid-area: 1 / 1; opacity: 0; text-wrap: balance; }
+.gp__permission, .gp__ghost {
+  max-width: none; margin-top: 0.2em;
+  font-family: var(--font-body); font-size: var(--perm-size); font-weight: 600; line-height: 1.35; color: var(--ink);
+}
+.gp__permission { opacity: 0; }
+.gp__ghost { visibility: hidden; margin-top: 0; margin-bottom: 0.2em; }
+/* the two halves of the permission line break between them, never inside, when the line is too long for the frame */
+.gp__l { display: inline-block; }
 
-/* The permission line, small and near the bottom of the stage, on its own soft glow.
-   It sits high enough that the frame edge only cuts the glow where it has faded to almost nothing; but never more
-   than 26px up (unless 6.5% is more), so that larger user text cannot push it up into the ring. */
-.gp__permission {
-  --perm-glow-x: 8.4em;   /* how far the glow reaches beside the words */
-  --perm-glow-y: 2.6em;   /* and above and below them */
-  position: absolute; left: 50%; z-index: 3; transform: translateX(-50%);
-  bottom: max(6.5%, min(calc(var(--perm-glow-y) - 0.25em), 26px));
-  font-size: var(--perm-size);
-  width: max-content; max-width: min(90%, 34em); text-align: center; opacity: 0;
+/* The calm still: reduced motion, Save-Data, slow or missing video, or no player (no JavaScript, or its scripts did
+   not load). Both breathing lines at once, side by side where they fit (stacked where they do not), with the
+   permission line under them, on the same backing. player.js sets the backing and the permission line to full
+   opacity in calm; without the player, this CSS does. */
+.gp__calm {
+  grid-area: 1 / 1; display: none; flex-wrap: wrap; justify-content: center; column-gap: 1.2em;
+  font-size: 0.9em;
 }
-.gp--square .gp__permission { --perm-glow-x: 6.6em; --perm-glow-y: 2.4em; }
-.gp__permission > span {
-  position: relative; display: inline-block; padding: 0.3em 0.6em;
-  font-size: 1em; font-weight: 600; line-height: 1.4; color: var(--ink);
-}
-.gp__permission .gp__l { display: block; white-space: normal; text-wrap: balance; }
-.gp__permission > span::before {
-  /* the reach also grows with the words' own box (wider spacing, more lines), so they stay well inside the glow */
-  content: ''; position: absolute; z-index: -1; border-radius: 50%; background: var(--gp-backing);
-  inset: calc(max(var(--perm-glow-y), 70%) * -1) calc(max(var(--perm-glow-x), 50%) * -1);
-}
+.gp[data-gp-mode="calm"] .gp__calm, .no-js:not(.gp-wait) .gp__calm { display: flex; }
+.gp[data-gp-mode="calm"] .gp__line, .no-js:not(.gp-wait) .gp__line { visibility: hidden; }
+.no-js:not(.gp-wait) .gp__backing, .no-js:not(.gp-wait) .gp__permission { opacity: 1; }
+.gp[data-gp-mode="calm"] .gp__welcome { visibility: hidden; }
 
-/* The welcome: provisional mark, wordmark and tagline */
-.gp__welcome { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; text-align: center; }
-.gp__welcome-inner { position: relative; display: grid; justify-items: center; }
-.gp__backing--welcome { width: 200%; height: 215%; opacity: 0; background: var(--gp-backing-strong); }
-.gp__mark { width: var(--mark-w); height: auto; display: block; opacity: 0; transform-origin: 50% 70%; overflow: visible; }
+/* ---------- The welcome: the wordmark, then the tagline ----------
+   The wordmark is Cassidy's title image (wordmark.png, layout.wordmark.image). It takes over from the honey script
+   where it was written (layout.script.centerPre), larger (wordmark.scalePre: as wide as the honey name), and rides the
+   camera tilt up to wordmark.centerPost at its own size: widthFrac of the stage width, its height from the image's
+   own proportions (the width and height attributes). player.js moves the track (as tall as the stage, so
+   translateY(y * 100%) puts the wordmark's centre at y) and scales the wordmark. The image's centre is its visual
+   centre, so no optical lift is needed. No backing: by the time the wordmark is fully in (9.7 s) the film is parchment. */
+.gp__welcome { position: absolute; inset: 0; z-index: 3; }
+.gp__wm-track { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
 .gp__wordmark {
-  margin-top: 0.12em; opacity: 0; max-width: none;
-  font-family: var(--font-display); font-weight: 500; font-size: var(--wordmark-size); line-height: 1.08;
-  letter-spacing: -0.015em; color: var(--ink);
+  position: absolute; left: 50%; top: 0; display: block; opacity: 0;
+  width: calc(var(--gp-wm-frac) * var(--stage-w)); max-width: none; height: auto;
+  transform: translate(-50%, -50%);
 }
 .gp__tagline {
-  margin-top: 0.55em; opacity: 0; max-width: none;
-  font-family: var(--font-body); font-weight: 600; font-size: var(--tagline-size); line-height: 1.4; color: var(--ink-soft);
+  position: absolute; left: 50%; top: calc(var(--gp-tagline-y) * 100%); transform: translate(-50%, -50%);
+  width: max-content; max-width: 92%; text-align: center; opacity: 0;
+  font-family: var(--font-body); font-weight: 600; font-size: var(--tagline-size); line-height: 1.35; color: #4F493E; /* darker than --muted: the backdrop stays behind the lockup */
 }
-
-/* Calm still: reduced motion, Save-Data, slow or missing video, or no player (no JavaScript, or its scripts did not load).
-   The cup, both breathing lines on one soft backing where the ring would be, and the permission line in its usual
-   place on its own glow (one backing for all three cannot keep 4.5:1 at phone width without outgrowing the frame).
-   No ring. player.js sets the permission line to full opacity in calm; without the player, this CSS does. */
-.gp__calm {
-  position: absolute; left: 50%; top: var(--ring-y, 50%); z-index: 3; transform: translate(-50%, -50%);
-  display: none; gap: 0.55em; justify-items: center; text-align: center;
-  width: max-content; max-width: 90cqw;
-  font-size: calc(var(--line-size) * 0.84);
-}
-.gp__calm p {
-  max-width: none; font-family: var(--font-display); font-style: italic; font-weight: 400;
-  font-size: 1em; line-height: 1.24; color: var(--ink);
-}
-.gp__backing--calm { width: max(calc(var(--ring-d) * 1.14), 240%); height: max(calc(var(--ring-d) * 1.02), 280%); opacity: 1; }
-.gp[data-gp-mode="calm"] .gp__calm, .no-js:not(.gp-wait) .gp__calm { display: grid; }
-.no-js:not(.gp-wait) .gp__permission { opacity: 1; }
-.gp[data-gp-mode="calm"] .gp__words,
-.gp[data-gp-mode="calm"] .gp__welcome { visibility: hidden; }
 
 /* While the scripts load (JavaScript on), keep the controls' room so nothing shifts when the player starts.
    index.html lifts gp-wait at DOMContentLoaded, so if the player never starts, the calm still above takes over. */
 .no-js.gp-wait .gp__controls { display: flex; visibility: hidden; }
 
-/* Play glyph over the cup still when autoplay was refused (the real control is the Play button below) */
+/* Play glyph over the honey-name still when autoplay was refused (the real control is the Play button below).
+   It sits above the name (which starts at 0.575 of the height). */
 .gp__glyph {
-  position: absolute; left: 50%; top: 50%; z-index: 4; transform: translate(-50%, -50%);
+  position: absolute; left: 50%; top: 42%; z-index: 4; transform: translate(-50%, -50%);
   width: clamp(58px, 9cqw, 84px); aspect-ratio: 1; border-radius: 50%;
   display: none; place-items: center; color: var(--amber-text);
   background: rgba(251, 247, 238, 0.86); border: 1.5px solid var(--honey-light); box-shadow: var(--shadow-soft);
