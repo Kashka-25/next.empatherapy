@@ -13,7 +13,7 @@ const FIELDS = [
 ];
 
 export default async function ApplicationPage({ params, searchParams }) {
-  await requireAdmin();
+  await requireAdmin('applications');
   const store = getStore();
   if (!store) notFound();
   const app = await store.get('applications', params.id);

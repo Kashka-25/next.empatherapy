@@ -36,6 +36,7 @@ app/
 components/  art/ ui/ layout/ alchemists/ modalities/ discover/ apply/
 data/        alchemists.mjs  modalities.mjs  features.mjs   (replace with a database later)
 lib/         content.mjs  directory.mjs  validation.mjs  matching/{index,vocabulary}.mjs
+             store/{index,supabase}.mjs  accounts.mjs  admin-auth.mjs  session.mjs  ratelimit.mjs  retention.mjs
 tests/       matching.test.mjs  content.test.mjs
 ```
 
@@ -57,9 +58,9 @@ Known limits: keyword rules do not understand negation ("not anxious") or nuance
 
 ## Plan for what is next
 1. ~~Storage layer, auth, admin MVP, applications, weekly features~~ **Done (Phase 6a)**, see `docs/ADMIN.md`.
-2. **Production database driver** (Supabase planned) behind `lib/store`, with row-level security from day one.
+2. ~~Production database driver~~ **Built (Phase 6c):** `lib/store/supabase.mjs` and `supabase/schema.sql` (row-level security on, no public policies). Still to do: create the Supabase project and set the secrets.
 3. ~~Admin content editing for Alchemist profiles and modality pages~~ **Done (Phase 6b).** Still to do: homepage content, photo uploads.
-4. **Individual admin accounts and roles**, shared rate limiting, enquiries.
+4. ~~Individual admin accounts and roles, shared rate limiting~~ **Built (Phase 6c).** Still to do: enquiries.
 5. **Real content and photography.** Verification workflow before any profile is listed.
 6. **IntoTheLighthouse** as a separate product behind its safeguards, linked from here.
 7. **Optional AI interpretation** feeding theme weights, behind a server route.

@@ -16,7 +16,7 @@ const BLANK = {
 };
 
 export default async function EditModalityPage({ params, searchParams }) {
-  await requireAdmin();
+  await requireAdmin('content');
   const store = getStore();
   if (!store) notFound();
   const content = await loadContent(store);

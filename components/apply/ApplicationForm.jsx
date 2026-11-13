@@ -83,7 +83,7 @@ export default function ApplicationForm() {
       <div className="field">
         <label className="check" htmlFor="consent">
           <input id="consent" type="checkbox" checked={v.consent} onChange={(e) => setV((s) => ({ ...s, consent: e.target.checked }))} aria-invalid={errors.consent ? 'true' : undefined} />
-          <span>I understand my application will be reviewed before any profile is listed, and I can ask for my details to be deleted at any time.</span>
+          <span>I understand my application will be reviewed before any profile is listed, and I can ask for my details to be deleted at any time. I have read the <a href="/privacy" target="_blank" rel="noopener">privacy notice</a>.</span>
         </label>
         {errors.consent ? <span className="error" role="alert">{errors.consent}</span> : null}
       </div>

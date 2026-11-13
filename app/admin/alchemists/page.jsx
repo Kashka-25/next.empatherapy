@@ -6,7 +6,7 @@ import { loadContent } from '@/lib/content-store.mjs';
 export const metadata = { title: 'Alchemists' };
 
 export default async function AlchemistsAdminPage({ searchParams }) {
-  await requireAdmin();
+  await requireAdmin('content');
   const store = getStore();
   const { alchemists, edited } = await loadContent(store);
 
